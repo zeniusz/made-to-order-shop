@@ -22,7 +22,7 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 
 | Style me | Advisor mode |
 |---|---|
-| ![Style me](docs/preview/11-style-me.png) | ![Advisor mode](docs/preview/09-advisor.jpg) |
+| ![Style me](docs/preview/12-style-me-photo.png) | ![Advisor mode](docs/preview/09-advisor.jpg) |
 
 <img src="docs/preview/10-phone.jpg" alt="On a phone" width="280">
 
@@ -33,7 +33,7 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 - **Style presets** that say what they change. Combinations that cannot be made are disabled with the reason.
 - **Find my size.** One suggested size with a High, Medium or Low confidence label and the reason. A low result offers a store fitting. A size grid is there for people who know theirs.
 - **Extras** in matching colours, each with its own photo, plus a monogram preview. Prices are itemised in euros.
-- **Style me**, inside the Cloth step. Type a line or add an inspiration photo and get three ranked looks. Pick one to apply it, or refine with Darker, Lighter, Cheaper, More relaxed or More formal. Questions get a short answer. It runs in the browser with no setup.
+- **Style me**, inside the Cloth step. It starts collapsed. Open it, type a line or add an inspiration photo and get three ranked looks. Pick one to apply it, or refine with Darker, Lighter, Cheaper, More relaxed or More formal. Questions get a short answer. It runs in the browser with no setup.
 - **Client / Advisor switch.** Advisor mode shows a fitting sheet: the look, contact details, a sample schedule, the suggested and final size, adjustments and notes. It can be printed.
 - **Remembers you on this device:** resume, a saved size, a link that reopens the design, and a calendar file for the fitting.
 

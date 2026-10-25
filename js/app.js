@@ -709,6 +709,7 @@
   }
 
   function smRun(raw) {
+    smOpen(true);
     var text = Brief.normalise(raw != null ? raw : $('smText').value), typed = Brief.normalise($('smText').value);
     var refine = REFINE_RX.test(text);
     if (!text && !sm.file) { smSay('Type a line first, or add a photo.'); return; }
@@ -823,7 +824,10 @@
   $('smText').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); smRun(); } };
   ['dragenter', 'dragover'].forEach(function (ev) { $('styleMe').addEventListener(ev, function (e) { e.preventDefault(); }); });
   $('styleMe').addEventListener('drop', function (e) { e.preventDefault(); smSetImage(e.dataTransfer.files && e.dataTransfer.files[0]); });
-  $('goStyleMe').onclick = function () { showTab(0); setTimeout(function () { $('styleMe').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('smText').focus(); }, 60); };
+  function smOpen(on) { $('smBody').hidden = !on; $('smToggle').setAttribute('aria-expanded', String(on)); $('styleMe').classList.toggle('open', on); }
+  $('smToggle').onclick = function () { var on = $('smBody').hidden; smOpen(on); if (on) $('smText').focus(); };
+  $('smFile').addEventListener('change', function () { smOpen(true); });
+  $('goStyleMe').onclick = function () { smOpen(true); showTab(0); setTimeout(function () { $('styleMe').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('smText').focus(); }, 60); };
   smChips(SM_START);
 
 

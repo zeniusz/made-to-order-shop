@@ -536,3 +536,13 @@ body.adv .studio{min-height:0}
 .sm-use{justify-self:start;margin-top:4px;height:36px;padding:0 16px;border:1px solid var(--btn);background:var(--btn);color:var(--btn-ink);border-radius:var(--r);font-size:.86rem;font-weight:500;cursor:pointer}
 .sm-card.on .sm-use{background:transparent;color:var(--ink);border-color:var(--line);cursor:default}
 @media (max-width:560px){.sm-bar{grid-template-columns:minmax(0,1fr) 48px}.sm-bar .btn{grid-column:1/-1}}
+.styleme{gap:0}
+.styleme h2{margin:0}
+.sm-toggle{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;font-size:1.1rem;font-weight:500}
+.sm-toggle small{display:block;font-size:.84rem;font-weight:400;color:var(--muted,#6b6b68);margin-top:2px}
+.sm-toggle:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+.sm-toggle svg{flex:none;transition:transform .2s}
+.styleme.open .sm-toggle svg{transform:rotate(180deg)}
+.styleme.open .sm-toggle small{display:none}
+#smBody{display:grid;gap:12px;margin-top:14px}
+#smBody[hidden]{display:none}

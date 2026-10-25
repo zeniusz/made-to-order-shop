@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="css/style.css?v=64">
+<link rel="stylesheet" href="css/style.css?v=67">
 </head>
 <body>
 
@@ -66,7 +66,8 @@
           <span><button type="button" class="textbtn" id="resumeYes">Resume</button><button type="button" class="textbtn" id="resumeNo">Start fresh</button></span>
         </div>
         <section class="styleme first" id="styleMe" aria-labelledby="smTitle">
-          <h2 id="smTitle">Style me</h2>
+          <h2 id="smTitle"><button type="button" class="sm-toggle" id="smToggle" aria-expanded="false" aria-controls="smBody"><span>Style me<small>Describe it or add a photo</small></span><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></button></h2>
+          <div id="smBody" hidden>
           <div class="sm-bar">
             <input id="smText" type="text" placeholder="Describe the occasion, colours or budget" autocomplete="off" maxlength="240" aria-label="Describe what you need">
             <button type="button" class="sm-photo" id="smPhoto" aria-label="Add an inspiration photo" title="Add an inspiration photo"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
@@ -81,6 +82,7 @@
           <div class="chips sm-chips" id="smChips" role="group" aria-label="Ideas"></div>
           <p class="sm-reply" id="smReply" aria-live="polite"></p>
           <div class="sm-results" id="smResults" hidden></div>
+          </div>
         </section>
         <div class="cloth-heading"><div><h2>Or start with an occasion</h2></div></div>
         <div class="look-grid" id="occ" aria-label="Choose a style or occasion"></div>
@@ -313,10 +315,10 @@
   <p id="zoomCaption">High-resolution product image</p>
 </div>
 
-<script src="js/data.js?v=64"></script>
-<script src="js/config.js?v=64"></script>
-<script src="js/assistant.js?v=64"></script>
-<script src="js/stylist.js?v=64"></script>
-<script src="js/app.js?v=64"></script>
+<script src="js/data.js?v=67"></script>
+<script src="js/config.js?v=67"></script>
+<script src="js/assistant.js?v=67"></script>
+<script src="js/stylist.js?v=67"></script>
+<script src="js/app.js?v=67"></script>
 </body>
 </html>

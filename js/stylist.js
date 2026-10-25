@@ -68,7 +68,7 @@ window.StyleEngine = (function () {
       var r = d[i], g = d[i + 1], b = d[i + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255, sat = mx ? (mx - mn) / mx : 0;
       fb[0] += r; fb[1] += g; fb[2] += b; n++;
       if ((sat < 0.13 && lum > 0.63) || lum > 0.97 || lum < 0.035) continue;
-      var k = [r, g, b].map(function (v) { return Math.min(15, Math.round(v / 17)); }).join(','), w = 1 + sat * 2.2 + (lum < 0.55 ? 0.25 : 0);
+      var px = (i / 4) % size - size / 2, k = [r, g, b].map(function (v) { return Math.min(15, Math.round(v / 17)); }).join(','), w = (1 + sat * 2.2 + (lum < 0.55 ? 0.25 : 0)) * Math.exp(-(px * px) / (2 * size * size * 0.025));
       var e = bins[k] || (bins[k] = { w: 0, r: 0, g: 0, b: 0 });
       e.w += w; e.r += r * w; e.g += g * w; e.b += b * w;
     }
@@ -115,7 +115,7 @@ window.StyleEngine = (function () {
     var t = String(ctx.message || '').toLowerCase(), target = ctx.colour || '#1d2a44', ids = Object.keys(LOOKS);
     var casual = ctx.relaxed || /casual|relaxed|less formal|no tie/.test(t);
     var scored = ids.map(function (id) {
-      var look = LOOKS[id], s = ctx.colourExplicit ? Math.min(dist(target, look.colour) * 0.24, 20) : 0;
+      var look = LOOKS[id], s = ctx.colourExplicit ? Math.min(dist(target, look.colour) * 0.24, ctx.occasionExplicit ? 20 : 60) : 0;
       if (id === ctx.occasion) s -= ctx.occasionExplicit ? 30 : 10;
       if (look.tags.some(function (tag) { return t.indexOf(tag) > -1; })) s -= 6;
       if (ctx.season && ctx.season !== 'any' && look.season !== 'all' && look.season !== ctx.season) s += 10;
