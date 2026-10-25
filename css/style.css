@@ -507,3 +507,32 @@ body.adv .studio{min-height:0}
 .fitsheet .contact-lines a{color:inherit}
 .fitsheet .contact-lines div{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:3px;font-size:.9rem}
 .fitsheet .contact-lines span{color:var(--muted);font-size:.8rem}
+
+/* Style me: the stylist, built into the Cloth step */
+.styleme{padding:20px;background:var(--ground);border-radius:var(--r);display:grid;gap:12px;margin-bottom:26px}
+.styleme h2{font-size:1.1rem}
+.sm-bar{display:grid;grid-template-columns:minmax(0,1fr) 48px auto;gap:8px}
+.sm-bar input{height:48px;padding:0 14px;border:1px solid var(--line);border-radius:var(--r);background:#fff;font-size:.95rem;min-width:0}
+.sm-photo{width:48px;height:48px;border:1px solid var(--line);border-radius:var(--r);background:#fff;display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.sm-photo:hover{border-color:var(--ink)}
+.sm-photo-row{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;align-items:center;background:#fff;border-radius:var(--r);padding:8px 12px 8px 8px}
+.sm-photo-row img{width:56px;height:56px;object-fit:cover;border-radius:2px;background:var(--ground)}
+.sm-colours{display:flex;gap:8px;align-items:center}
+.sm-colours span{width:26px;height:26px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.sm-chips{gap:6px}
+.sm-chips .chip{min-height:34px;font-size:.84rem;padding:0 13px;background:#fff}
+.sm-reply{font-size:.92rem;line-height:1.5}
+.sm-reply:empty{display:none}
+.sm-results{display:grid;gap:10px}
+.sm-card{display:grid;grid-template-columns:78px minmax(0,1fr);gap:12px;background:#fff;border:1px solid transparent;border-radius:var(--r);padding:10px;align-items:start}
+.sm-card.on{border-color:var(--ink)}
+.sm-card img.look{width:78px;aspect-ratio:3/4;object-fit:cover;border-radius:2px;background:var(--ground)}
+.sm-body{display:grid;gap:4px;min-width:0}
+.sm-body h3{font-size:.98rem;font-weight:600}
+.sm-body .tag{font-size:.7rem;font-weight:600;color:var(--muted)}
+.sm-cloth{display:flex;align-items:center;gap:8px;font-size:.86rem}
+.sm-cloth i{width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.15);flex:none}
+.sm-why{font-size:.82rem;color:var(--muted)}
+.sm-use{justify-self:start;margin-top:4px;height:36px;padding:0 16px;border:1px solid var(--btn);background:var(--btn);color:var(--btn-ink);border-radius:var(--r);font-size:.86rem;font-weight:500;cursor:pointer}
+.sm-card.on .sm-use{background:transparent;color:var(--ink);border-color:var(--line);cursor:default}
+@media (max-width:560px){.sm-bar{grid-template-columns:minmax(0,1fr) 48px}.sm-bar .btn{grid-column:1/-1}}

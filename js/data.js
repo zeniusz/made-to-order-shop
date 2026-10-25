@@ -38,7 +38,7 @@ window.CM = {
 
   /* plain-language explanations of cloth-name jargon, matched against the cloth name */
   glossary: [
-    { rx: /S\d{3}'?s/i, term: "Super numbers (S110's, S150's...)", text: 'Show how fine the wool fibre is. Higher is softer and lighter, but wears less hard. S110\u2019s is a solid everyday cloth; S150\u2019s and above suit occasions.' },
+    { rx: /S\d{3}['\u2019]?s?\b/i, term: "Super numbers (S110's, S150's...)", text: 'Show how fine the wool fibre is. Higher is softer and lighter, but wears less hard. S110\u2019s is a solid everyday cloth; S150\u2019s and above suit occasions.' },
     { rx: /Tropical/i, term: 'Tropical', text: 'A light, open weave that lets air through. Good for summer and travel.' },
     { rx: /Wrinkle-Free/i, term: 'Wrinkle-Free 4-Ply', text: 'Each yarn is twisted from four strands, which helps the cloth spring back from creasing. Built for travel.' },
     { rx: /Flannel/i, term: 'Flannel', text: 'A soft, slightly brushed surface that feels warm. Best for autumn and winter.' },

@@ -20,9 +20,9 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 |---|---|
 | ![Extras](docs/preview/06-extras.jpg) | ![Review](docs/preview/07-review.jpg) |
 
-| Stylist | Advisor mode |
+| Style me | Advisor mode |
 |---|---|
-| ![Stylist](docs/preview/08-stylist.jpg) | ![Advisor mode](docs/preview/09-advisor.jpg) |
+| ![Style me](docs/preview/11-style-me.png) | ![Advisor mode](docs/preview/09-advisor.jpg) |
 
 <img src="docs/preview/10-phone.jpg" alt="On a phone" width="280">
 
@@ -33,7 +33,7 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 - **Style presets** that say what they change. Combinations that cannot be made are disabled with the reason.
 - **Find my size.** One suggested size with a High, Medium or Low confidence label and the reason. A low result offers a store fitting. A size grid is there for people who know theirs.
 - **Extras** in matching colours, each with its own photo, plus a monogram preview. Prices are itemised in euros.
-- **Stylist.** Describe the occasion and budget, ask a question, or upload an inspiration photo. It works in the browser with no setup.
+- **Style me**, inside the Cloth step. Type a line or add an inspiration photo and get three ranked looks. Pick one to apply it, or refine with Darker, Lighter, Cheaper, More relaxed or More formal. Questions get a short answer. It runs in the browser with no setup.
 - **Client / Advisor switch.** Advisor mode shows a fitting sheet: the look, contact details, a sample schedule, the suggested and final size, adjustments and notes. It can be printed.
 - **Remembers you on this device:** resume, a saved size, a link that reopens the design, and a calendar file for the fitting.
 
@@ -54,9 +54,11 @@ index.html            the page
 css/style.css         styles
 js/data.js            cloths, occasions and extras
 js/app.js             the configurator
-js/assistant.js       the stylist
+js/assistant.js       reads the line you type
+js/stylist.js         palette sampling and look ranking
 js/config.js          optional address of a hosted AI proxy
-worker/               the proxy that keeps an AI key off the page
+worker/               optional proxy that keeps an AI key off the page
+tests/stylist-test.html  37 checks, open it on the local server
 assets/img/           photos and textures
 docs/preview/         screenshots
 catalog-gallery.html  browse every image
@@ -64,7 +66,7 @@ catalog-gallery.html  browse every image
 
 ## Optional: a hosted Claude
 
-The stylist works without it. To let Claude answer, deploy `worker/claude-proxy.js` (a small Cloudflare Worker that holds the key as a secret) and put its address in `js/config.js`. Visitors never see a key. It is written to the documented API and has not been tested with a live key.
+Style me works without it. To let Claude read the photo, deploy `worker/claude-vision-proxy.js` (a small Cloudflare Worker that holds the key as a secret) and put its address in `CUSTOM_STYLIST_AI_ENDPOINT` in `js/config.js`. Visitors never see a key. Answers are checked against the real catalogue, and if the service is down the page falls back to private matching. Not tested with a live key. The worker also contains image generation, which the page does not use.
 
 ## Notes
 

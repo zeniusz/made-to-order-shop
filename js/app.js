@@ -581,20 +581,7 @@
   }
 
   /* ---------- product gallery and stylist ---------- */
-  function openStylist() {
-    $('stylistModal').hidden = false;
-    window.setTimeout(function () { $('brief').focus(); }, 30);
-  }
-  function closeStylist() { $('stylistModal').hidden = true; }
-  $('openStylist').onclick = openStylist;
-  $('openStylistFit').onclick = openStylist;
-  $('stylistClose').onclick = closeStylist;
-  $('stylistModal').addEventListener('click', function (e) { if (e.target === $('stylistModal')) closeStylist(); });
-  document.addEventListener('keydown', function (e) {
-    if (e.key !== 'Escape') return;
-    if (!$('stylistModal').hidden) closeStylist();
-    if (!$('zoomModal').hidden) closeImageModal();
-  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('zoomModal').hidden) closeImageModal(); });
   $('viewFull').onclick = function () { setGalleryView('full'); };
   $('viewLive').onclick = function () { setGalleryView('live'); };
   $('viewDetail').onclick = function () { setGalleryView('detail'); };
@@ -643,50 +630,6 @@
     ['dragleave', 'drop'].forEach(function (ev) { btn.addEventListener(ev, function (e) { e.preventDefault(); btn.classList.remove('over'); }); });
     btn.addEventListener('drop', function (e) { readImage(e.dataTransfer.files[0], onImage); });
   }
-  var inspo = { url: null, image: null, colour: null };
-  function sampleInspiration(img) {
-    var c = document.createElement('canvas'), size = 64;
-    c.width = c.height = size;
-    var x = c.getContext('2d', { willReadFrequently: true });
-    var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
-    var side = Math.min(iw, ih) * .68;
-    /* In portrait outfit shots, sample the jacket/chest area instead of the floor and empty background. */
-    var cy = ih > iw * 1.2 ? ih * .34 : ih / 2;
-    var sx = (iw - side) / 2, sy = Math.max(0, Math.min(ih - side, cy - side / 2));
-    x.drawImage(img, sx, sy, side, side, 0, 0, size, size);
-    var d = x.getImageData(0, 0, size, size).data, bins = Object.create(null), total = 0, fallback = [0, 0, 0], count = 0;
-    for (var i = 0; i < d.length; i += 4) {
-      var r = d[i], g = d[i + 1], b = d[i + 2], max = Math.max(r, g, b), min = Math.min(r, g, b), lum = (r * .2126 + g * .7152 + b * .0722) / 255, sat = max ? (max - min) / max : 0;
-      fallback[0] += r; fallback[1] += g; fallback[2] += b; count++;
-      /* Ignore near-white studio backgrounds and black shadows; favour visible cloth colours. */
-      if ((sat < .13 && lum > .63) || lum > .96 || lum < .035) continue;
-      var key = [r, g, b].map(function (v) { return Math.min(15, Math.round(v / 17)); }).join(','), weight = 1 + sat * 2.2 + (lum < .55 ? .25 : 0);
-      if (!bins[key]) bins[key] = { n: 0, rgb: [0, 0, 0] };
-      bins[key].n += weight; bins[key].rgb[0] += r * weight; bins[key].rgb[1] += g * weight; bins[key].rgb[2] += b * weight; total += weight;
-    }
-    var best = null;
-    Object.keys(bins).forEach(function (k) { if (!best || bins[k].n > best.n) best = bins[k]; });
-    if (!best || !total) return toHex(fallback.map(function (v) { return v / Math.max(count, 1); }));
-    return toHex(best.rgb.map(function (v) { return v / best.n; }));
-  }
-  wireUpload($('inspoBtn'), $('inspoFile'), function (url, img) {
-    inspo.url = url; inspo.image = img; inspo.colour = sampleInspiration(img);
-    $('inspoPreview').src = url;
-    $('inspoPreviewWrap').hidden = false;
-    $('inspoThumb').style.backgroundImage = 'url(' + url + ')';
-    $('inspoT').textContent = 'Change inspiration photo';
-    $('inspoColourDot').style.background = inspo.colour;
-    $('inspoNote').textContent = 'Colour found: ' + inspo.colour.toUpperCase() + '. Apply it to find the closest cloth.';
-    $('applyInspo').disabled = false;
-  });
-  $('applyInspo').onclick = function () {
-    if (!inspo.colour) return;
-    setTarget(inspo.colour);
-    $('inspoNote').textContent = 'Matched ' + cloth().name + '. Your live preview is ready.';
-    closeStylist();
-    showTab(0);
-    setGalleryView('full');
-  };
   wireUpload($('selfBtn'), $('selfFile'), function (url) {
     st.self = url;
     $('selfThumb').style.backgroundImage = 'url(' + url + ')';
@@ -738,103 +681,151 @@
   };
 
 
-  /* Stylist chat */
-  function say(who, text, chips) {
-    st.chat.push({ who: who, text: text, chips: chips || [] });
-    if (st.chat.length > 8) st.chat.shift();
-    renderChat();
-  }
-  function renderChat() {
-    var t = $('thread'); t.innerHTML = '';
-    st.chat.forEach(function (m) { t.appendChild(el('div', 'msg ' + m.who, '')).textContent = m.text; });
-    t.scrollTop = t.scrollHeight;
-    var last = st.chat[st.chat.length - 1];
-    fill('quick', (last && last.who === 'bot' ? last.chips : []).map(function (c) {
-      return chip(c.label, false, function () { if (c.run) c.run(); else ask(c.say || c.label); });
-    }));
-  }
-  var START_CHIPS = [
-    { label: 'Wedding', say: 'light linen suit for a summer wedding' },
-    { label: 'Business', say: 'modern charcoal or navy suit for work' },
-    { label: 'Smart casual', say: 'smart casual blue blazer and stone trousers without a tie' },
-    { label: 'Summer & resort', say: 'relaxed breathable linen suit for a warm holiday' },
-    { label: 'Formal evening', say: 'black tuxedo for a formal evening' },
-    { label: 'Travel & weekend', say: 'comfortable wrinkle-resistant suit for travel' }
-  ];
-  var goFit = { label: 'Find my size', run: function () { showTab(2); } };
+/* ---------- Style me: the stylist, built into the Cloth step ---------- */
+  var sm = { file: null, url: null, dominant: null, palette: [], image: null, ready: Promise.resolve(null), recs: [], applied: null, history: [], busy: false };
+  var SM_START = [['Summer wedding', 'light linen suit for a summer wedding'], ['First interview', 'dark suit for a first job interview'], ['Weekend travel', 'comfortable wrinkle-resistant suit for travel'], ['Black tie', 'black tuxedo for a formal evening']];
+  var SM_REFINE = [['Darker', 'darker'], ['Lighter', 'lighter'], ['Cheaper', 'cheaper'], ['More relaxed', 'more relaxed'], ['More formal', 'more formal']];
+  var REFINE_RX = /^(darker|lighter|cheaper|more relaxed|more formal)$/i;
+  var clothPrice = function (c) { return eur(c.usd); };
+  function smChips(list) { fill('smChips', list.map(function (x) { return chip(x[0], false, function () { smRun(x[1]); }); })); }
+  function smSay(text) { $('smReply').textContent = text; }
+  function lookOf(id) { return D.occasions.filter(function (o) { return o.id === id; })[0]; }
 
-  function applyBrief(r, replyText) {
-    var bits = Brief.summary(r, D);
-    if (!bits.length && !replyText) { return false; }
+  /* style details from the text ("peak lapel", "patch pockets"); returns a note when the workroom rules force a change */
+  function applyStyleDetails(style) {
+    var keys = Object.keys(style || {}), notes = [];
+    keys.forEach(function (k) { st.style[k] = style[k]; });
+    if (st.style.lapel === 'peak' && st.style.shoulder === 'natural') { st.style.shoulder = 'structured'; notes.push('I switched to a structured shoulder, because peak lapels need one.'); }
+    if (st.style.lapel === 'peak' && st.style.pockets === 'patch') { st.style.pockets = 'flap'; notes.push('Peak lapels do not go with patch pockets, so I chose flap pockets.'); }
+    if (keys.length) st.change = '';
+    return notes;
+  }
+  /* a nearby cloth that is darker or lighter than the target, for "darker" and "lighter" */
+  function shifted(target, dir) {
+    var lt = StyleEngine.luminance(target);
+    var list = D.cloths.filter(function (c) { return dir < 0 ? StyleEngine.luminance(c.c) < lt - 0.025 : StyleEngine.luminance(c.c) > lt + 0.025; })
+      .sort(function (a, b) { return StyleEngine.dist(target, a.c) - StyleEngine.dist(target, b.c); });
+    return list.length ? list[0].c : target;
+  }
+
+  function smRun(raw) {
+    var text = Brief.normalise(raw != null ? raw : $('smText').value), typed = Brief.normalise($('smText').value);
+    var refine = REFINE_RX.test(text);
+    if (!text && !sm.file) { smSay('Type a line first, or add a photo.'); return; }
+    if (sm.busy) return;
+    var message = refine ? (typed ? typed + '. ' : '') + text : text;
+    /* questions are answered, not turned into a look */
+    var gl = D.glossary.filter(function (g) { return g.rx.test(message); })[0];
+    if (text && !refine && ((Brief.isQuestion(text) && (gl || Brief.kb(text))) || (gl && text.split(' ').length <= 4))) {
+      smSay(gl ? gl.term + ': ' + gl.text : Brief.kb(text)); return;
+    }
+    if (!message) message = 'Use this inspiration photo to suggest a coordinated outfit and matching cloth.';
+    var r = Brief.parse(message), cur = cloth();
+    if (!refine && !sm.file && !Brief.summary(r, D).length) { smSay('I could not tell what you need. Try an occasion, a colour or a budget, for example “navy suit for a wedding under €900”.'); return; }
     if (r.h) st.h = r.h;
     if (r.w) st.w = r.w;
     if (r.usual) { st.usual = r.usual; st.notSure = false; } else if (r.w) st.notSure = true;
     if (r.pref) st.pref = r.pref;
-    st.season = r.season; st.budget = r.budget; st.boost = r.weaves || [];
-    var occ = r.occ || st.occ, oc = D.occasions.filter(function (o) { return o.id === occ; })[0];
-    st.occ = occ; st.target = r.colour || (r.occ ? oc.c : st.target); st.view = 'full'; clearLook();
-    var gotSize = r.h || r.w || r.usual || r.pref;
-    if (gotSize) { st.size = null; st.fitMode = 'a'; }
-    var top = ranked()[0]; st.cloth = top.c.id; resetOutfit(); update();
-    var why = ['closest to ' + (r.colourName || oc.label.toLowerCase()) + ' (' + top.pct + '% match)'];
-    if (top.occ) why.push('suits ' + oc.label.toLowerCase());
-    if (r.season) why.push('works in ' + r.season);
-    if (r.budget) why.push('within your budget');
-    if (top.boost) why.push('has the texture you asked for');
-    var text = (replyText ? replyText + ' ' : '') + 'I set the look to ' + oc.label.toLowerCase() + ' and chose ' + top.c.name + ' at ' + money(eur(top.c.usd)) + '. ' + cap(why.join(', ')) + '.';
-    var chips = gotSize ? [goFit, { label: 'Show all matches', run: function () { st.all = true; update(); } }] : [{ label: 'Something cheaper', say: 'something cheaper' }, { label: 'A darker colour', say: 'darker' }, goFit];
-    say('bot', text, chips);
-    return true;
-  }
-
-  function localAnswer(text) {
-    var t = text.toLowerCase(), gl = D.glossary.filter(function (g) { return g.rx.test(text); })[0], k;
-    if (gl && /(what|mean|explain|difference|tell|why|is it)/.test(t)) { say('bot', gl.term + ': ' + gl.text); return; }
-    if ((k = Brief.kb(text))) { say('bot', k); return; }
-
-    var cur = eur(cloth().usd), rk = ranked();
-    if (/cheaper|less expensive|lower price|save|affordable/.test(t) && !/under|below|up to|max/.test(t)) {
-      var c1 = rk.slice(0, 10).filter(function (x) { return eur(x.c.usd) < cur; }).sort(function (a, b) { return eur(b.c.usd) - eur(a.c.usd); })[0];
-      if (!c1) { say('bot', 'This is already one of the most affordable matches for your colour.'); return; }
-      st.cloth = c1.c.id; st.view = 'full'; resetOutfit(); update();
-      say('bot', 'Switched to ' + c1.c.name + ', ' + money(eur(c1.c.usd)) + '. That is ' + money(cur - eur(c1.c.usd)) + ' less.', [{ label: 'Undo', say: 'more expensive' }]); return;
+    if (r.h || r.w || r.usual || r.pref) { st.size = null; st.fitMode = 'a'; }
+    $('h').value = st.h; $('w').value = st.w;
+    var styleNotes = applyStyleDetails(r.style);
+    if (r.season) st.season = r.season; else if (!refine) st.season = null;
+    if (!refine) st.budget = r.budget || null; else if (r.budget) st.budget = r.budget;
+    var darker = /\b(darker|deeper|more formal)\b/i.test(message) || r.shade === 'dark', lighter = /\b(lighter|brighter|paler)\b/i.test(message) || r.shade === 'light';
+    var cheaper = /\b(cheaper|lower price|less expensive|save money|affordable)\b/i.test(message), relaxed = /\b(more relaxed|relaxed|casual|less formal)\b/i.test(message);
+    var occ = r.occ || st.occ, explicit = !!r.occ;
+    var base = r.colour || (sm.file && sm.dominant) || (refine ? cur.c : null) || StyleEngine.LOOKS[occ].colour;
+    var target = base, photoColour = !!(sm.file && sm.dominant);
+    if (!r.colour && (darker || lighter)) {
+      if (refine || photoColour) target = shifted(base, darker ? -1 : 1);                 /* relative to what is on screen */
+      else target = StyleEngine.SHADES[darker ? 'dark' : 'light'][occ] || base;           /* "dark suit for a wedding" */
     }
-    if (/more expensive|luxur|finer|premium|better quality|upgrade/.test(t)) {
-      var c2 = rk.slice(0, 10).filter(function (x) { return eur(x.c.usd) > cur; }).sort(function (a, b) { return eur(a.c.usd) - eur(b.c.usd); })[0];
-      if (!c2) { say('bot', 'This is already at the top of the range for your colour.'); return; }
-      st.cloth = c2.c.id; st.view = 'full'; resetOutfit(); update();
-      say('bot', 'Switched to ' + c2.c.name + ', ' + money(eur(c2.c.usd)) + '. A finer cloth, ' + money(eur(c2.c.usd) - cur) + ' more.'); return;
-    }
-    if (/lighter|paler|brighter|lighten/.test(t) || /darker|deeper|darken/.test(t)) {
-      var up = /lighter|paler|brighter|lighten/.test(t), base = rgb(st.target);
-      var mixed = base.map(function (v) { return up ? v + (255 - v) * 0.28 : v * 0.72; });
-      setTarget(toHex(mixed)); say('bot', 'Made it a little ' + (up ? 'lighter' : 'darker') + '. Now ' + cloth().name + '.'); return;
-    }
-    if (/\b(size|how (?:does|will) it fit|what size)\b/.test(t)) { showTab(2); say('bot', 'Let\u2019s find your size. Answer the three questions on the Fit step.'); return; }
-    if (/book|appointment|fitting|walk.?in/.test(t)) { showTab(2); st.fitMode = st.size ? 'd' : st.fitMode; st.book = true; update(); say('bot', 'Pick a time on the Fit step, or choose walk-in if you prefer.'); return; }
-    if (/\b(tie|shirt|pocket square|shoes|extras|accessor)/.test(t)) {
-      var r = recs(); showTab(3);
-      say('bot', 'With ' + cloth().name + ' I would go for a ' + cname(r.shirt[0]).toLowerCase() + ' shirt, a ' + cname(r.tie[0]).toLowerCase() + ' tie and ' + cname(r.shoes[0]).toLowerCase() + ' shoes. They are on the Extras step.'); return;
-    }
-    var parsed = Brief.parse(text);
-    if (applyBrief(parsed)) return;
-    say('bot', 'I can choose a cloth from an occasion, colour, season or budget, explain terms, find your size or book a fitting. For example: \u201Cgrey flannel for the office under 800\u201D.', START_CHIPS);
-  }
-
-  function ask(text) {
-    text = String(text || '').trim();
-    if (!text) return;
-    $('brief').value = '';
-    say('me', text);
-    var ctx = { cloth: cloth().name, occasion: st.occ, season: st.season, size: st.size ? sizeText() : null, total_eur: total() };
-    Brief.remote(text, ctx).then(function (res) {
-      if (res && (res.reply || Brief.summary(res.r, D).length)) { if (!applyBrief(res.r, res.reply)) say('bot', res.reply); }
-      else localAnswer(text);
+    var budget = st.budget || null;
+    if (cheaper && (refine || !budget)) budget = clothPrice(cur) - 1;
+    var ctx = { occasion: occ, occasionExplicit: explicit, colourExplicit: !!r.colour || photoColour || refine, season: st.season || 'any', budget: budget, colour: target, colourName: r.colourName || StyleEngine.closestName(target), sampled: sm.file && sm.dominant && !r.colour ? sm.dominant : null, message: message, darker: darker, lighter: lighter, relaxed: relaxed };
+    sm.busy = true; $('smGo').disabled = true; smSay('Styling your look…');
+    var local = StyleEngine.recommend(ctx, D.cloths, clothPrice);
+    var aiOn = !!String(window.CUSTOM_STYLIST_AI_ENDPOINT || '').trim();
+    var aiCtx = { occasion: occ, season: ctx.season, budget_eur: budget, desired_colour_hex: target, sampled_hex: ctx.sampled, user_message: message.slice(0, 1000), catalog: { looks: StyleEngine.catalogForAI().looks, fabrics: D.cloths.map(function (c) { return { id: c.id, name: c.name, hex: c.c, weave: c.weave, season: c.season, price_eur: clothPrice(c), tags: StyleEngine.CLOTH_TAGS[c.id] || [] }; }) } };
+    var run = aiOn ? sm.ready.then(function (img) { return StyleEngine.callAI(message, aiCtx, img, sm.history.slice(-8), D.cloths); }) : Promise.resolve(null);
+    run.then(function (remote) {
+      var recs = remote ? remote.recommendations : local, reply = remote && remote.reply ? remote.reply : StyleEngine.describe(ctx, recs, D.cloths, clothPrice, !!sm.file, money);
+      if (aiOn && !remote) reply = 'The AI service could not be reached, so I used private matching on this device. ' + reply;
+      if (styleNotes.length) reply += ' ' + styleNotes.join(' ');
+      sm.history.push({ role: 'user', text: message.slice(0, 500) }, { role: 'assistant', text: reply.slice(0, 500) });
+      sm.recs = recs; sm.busy = false; $('smGo').disabled = false;
+      smSay(reply);
+      applyRec(recs[0], true);
+      smChips(SM_REFINE);
     });
   }
-  $('briefGo').onclick = function () { ask($('brief').value); };
-  $('brief').onkeydown = function (e) { if (e.key === 'Enter') ask($('brief').value); };
-  say('bot', 'Let’s build a look around your plans. Tell me the occasion, colours you like and budget, or choose a starting point below. I’ll select a matching catalog look and cloth, explain the choice and update your configurator.', START_CHIPS);
+
+  function smCards() {
+    var box = $('smResults'); box.hidden = !sm.recs.length; box.innerHTML = '';
+    sm.recs.forEach(function (rec, i) {
+      var look = lookOf(rec.look_id), meta = StyleEngine.LOOKS[rec.look_id], c = byId(rec.cloth_id);
+      var on = sm.applied && sm.applied.look_id === rec.look_id && sm.applied.cloth_id === rec.cloth_id;
+      var card = el('div', 'sm-card' + (on ? ' on' : ''));
+      var img = el('img', 'look'); img.src = 'assets/img/catalog/' + look.image; img.alt = meta.title; img.loading = 'lazy';
+      var body = el('div', 'sm-body');
+      body.appendChild(el('span', 'tag', i === 0 ? 'BEST MATCH' : 'ALTERNATIVE'));
+      body.appendChild(el('h3', '', meta.title));
+      var cl = el('div', 'sm-cloth'); var dot = el('i'); dot.style.background = c.c; cl.appendChild(dot); cl.appendChild(document.createTextNode(c.name + ' · ' + money(clothPrice(c)))); body.appendChild(cl);
+      body.appendChild(el('span', 'sm-why', rec.reason));
+      var btn = el('button', 'sm-use', on ? 'Applied ✓' : 'Use this look'); btn.type = 'button';
+      if (!on) btn.onclick = function () { applyRec(rec); };
+      body.appendChild(btn);
+      card.appendChild(img); card.appendChild(body); box.appendChild(card);
+    });
+  }
+  /* put a recommended look on the stage: occasion photo, cloth and the accessory colours that go with it */
+  function applyRec(rec, quiet) {
+    if (!rec) return;
+    var c = byId(rec.cloth_id); if (!c) return;
+    st.occ = rec.look_id; st.cloth = c.id; st.target = c.c; st.view = 'full';
+    var acc = StyleEngine.ACCESSORIES[rec.look_id] || {};
+    Object.keys(acc).forEach(function (k) { st.col[k] = acc[k]; });
+    sm.applied = rec; st.saved = false;
+    update(); smCards();
+    try { window.dispatchEvent(new CustomEvent('customstudio:apply-stylist-look', { detail: { occasionId: rec.look_id, lookId: rec.look_id, fabricId: c.id, fabricName: c.name, colourHex: c.c } })); } catch (e) {}
+  }
+
+  /* inspiration photo: colours are read in the browser; a small copy is sent only if a protected AI endpoint is configured */
+  function smSetImage(file) {
+    var err = StyleEngine.checkFile(file); if (err) { smSay(err); return; }
+    var reader = new FileReader();
+    reader.onerror = function () { smSay('The image could not be opened. Try another file.'); };
+    reader.onload = function () {
+      var img = new Image();
+      img.onerror = function () { smSay('The image could not be decoded. Try a JPG or PNG.'); };
+      img.onload = function () {
+        if (sm.url) URL.revokeObjectURL(sm.url);
+        sm.file = file; sm.url = URL.createObjectURL(file); sm.image = img;
+        var p = StyleEngine.palette(img); sm.dominant = p.dominant; sm.palette = p.palette;
+        $('smThumb').src = sm.url; $('smPhotoRow').hidden = false;
+        fill('smColours', p.palette.map(function (h) { var sp = el('span'); sp.style.background = h; sp.title = h; return sp; }));
+        sm.ready = StyleEngine.compress(img).catch(function () { return null; });
+        smRun($('smText').value.trim() ? $('smText').value : '');
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  function smClearImage() {
+    if (sm.url) URL.revokeObjectURL(sm.url);
+    sm.file = null; sm.url = null; sm.image = null; sm.dominant = null; sm.palette = []; sm.ready = Promise.resolve(null);
+    $('smFile').value = ''; $('smPhotoRow').hidden = true; $('smThumb').removeAttribute('src');
+  }
+  $('smPhoto').onclick = function () { $('smFile').click(); };
+  $('smFile').onchange = function (e) { smSetImage(e.target.files && e.target.files[0]); };
+  $('smRemove').onclick = smClearImage;
+  $('smGo').onclick = function () { smRun(); };
+  $('smText').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); smRun(); } };
+  ['dragenter', 'dragover'].forEach(function (ev) { $('styleMe').addEventListener(ev, function (e) { e.preventDefault(); }); });
+  $('styleMe').addEventListener('drop', function (e) { e.preventDefault(); smSetImage(e.dataTransfer.files && e.dataTransfer.files[0]); });
+  $('goStyleMe').onclick = function () { showTab(0); setTimeout(function () { $('styleMe').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('smText').focus(); }, 60); };
+  smChips(SM_START);
+
 
   /* measure yourself */
   var setChest = function (v) {
@@ -917,11 +908,11 @@
   if (q.get('fit') === 'd') { st.sug = suggest(); st.size = st.sug.size; st.group = st.sug.group; st.level = st.sug.level; st.fitMode = 'd'; }
   if (q.get('tab')) showTab(Math.max(0, Math.min(4, parseInt(q.get('tab'), 10) || 0)));
   update();
-  if (q.get('brief')) ask(q.get('brief'));
+  if (q.get('brief')) { $('smText').value = q.get('brief'); smRun(); }
   if (q.get('mode') === 'advisor') setMode('advisor');
   if (q.get('view') === 'sample') setGalleryView('live');
   if (q.get('view') === 'detail') setGalleryView('detail');
-  if (q.get('stylist') === 'open') openStylist();
+  if (q.get('stylist') === 'open') $('goStyleMe').click();
   if (q.get('measure')) { st.notSure = true; st.chest = 100; st.fitMode = 'a'; update(); $('measureHelp').open = true; }
   paintStage();
   if (st.tab === 4) renderReview(true);

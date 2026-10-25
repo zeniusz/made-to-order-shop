@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="css/style.css?v=50">
+<link rel="stylesheet" href="css/style.css?v=64">
 </head>
 <body>
 
@@ -65,10 +65,24 @@
           <span>Resume where you left off?</span>
           <span><button type="button" class="textbtn" id="resumeYes">Resume</button><button type="button" class="textbtn" id="resumeNo">Start fresh</button></span>
         </div>
-        <div class="cloth-heading first">
-          <div><h2>Start with an occasion</h2></div>
-          <button type="button" class="btn ghost ask-stylist" id="openStylist">Create my look with AI</button>
-        </div>
+        <section class="styleme first" id="styleMe" aria-labelledby="smTitle">
+          <h2 id="smTitle">Style me</h2>
+          <div class="sm-bar">
+            <input id="smText" type="text" placeholder="Describe the occasion, colours or budget" autocomplete="off" maxlength="240" aria-label="Describe what you need">
+            <button type="button" class="sm-photo" id="smPhoto" aria-label="Add an inspiration photo" title="Add an inspiration photo"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+            <button type="button" class="btn" id="smGo">Find my look</button>
+          </div>
+          <input type="file" id="smFile" accept="image/jpeg,image/png,image/webp,image/avif" hidden>
+          <div class="sm-photo-row" id="smPhotoRow" hidden>
+            <img id="smThumb" alt="Your inspiration photo">
+            <div class="sm-colours" id="smColours" aria-label="Colours found in your photo"></div>
+            <button type="button" class="textbtn" id="smRemove">Remove photo</button>
+          </div>
+          <div class="chips sm-chips" id="smChips" role="group" aria-label="Ideas"></div>
+          <p class="sm-reply" id="smReply" aria-live="polite"></p>
+          <div class="sm-results" id="smResults" hidden></div>
+        </section>
+        <div class="cloth-heading"><div><h2>Or start with an occasion</h2></div></div>
         <div class="look-grid" id="occ" aria-label="Choose a style or occasion"></div>
         <div class="field">
           <span class="flabel">Choose a cloth colour</span>
@@ -98,7 +112,7 @@
       <div class="pane" role="tabpanel" id="p-2" aria-labelledby="tab-2" hidden>
         <div class="fit-assist">
           <div><b>Not sure what suits you?</b></div>
-          <button type="button" class="textbtn" id="openStylistFit">Create a look with AI</button>
+          <button type="button" class="textbtn" id="goStyleMe">Ask the stylist</button>
         </div>
         <!-- A: tell us about you -->
         <div class="wiz" id="fitA">
@@ -292,36 +306,6 @@
 </footer>
 
 
-<div class="modal" id="stylistModal" hidden>
-  <section class="sheet stylist-sheet" role="dialog" aria-modal="true" aria-labelledby="stylistTitle">
-    <button type="button" class="close" id="stylistClose" aria-label="Close stylist">×</button>
-    <div class="stylist-modal-head">
-      <h2 id="stylistTitle">Create my look</h2>
-      <p class="muted">Tell the stylist the occasion and your budget, or upload a photo you like.</p>
-    </div>
-    <div class="stylist-modal-grid">
-      <div class="stylist first">
-        <span class="flabel" id="stylistLabel">Chat with the stylist</span>
-        <div class="thread" id="thread" role="log" aria-live="polite" aria-labelledby="stylistLabel"></div>
-        <div class="chips" id="quick"></div>
-        <div class="brief-row">
-          <input id="brief" type="text" placeholder="e.g. A summer wedding, under €900" autocomplete="off" maxlength="240" aria-label="Message to the stylist">
-          <button type="button" class="btn" id="briefGo">Create look</button>
-        </div>
-      </div>
-      <aside class="inspiration-panel">
-        <span class="flabel">Use a photo for inspiration</span>
-        <p class="muted small">The stylist picks the closest cloth to its colour.</p>
-        <button type="button" class="upload wide" id="inspoBtn"><span class="thumb" id="inspoThumb"></span><span id="inspoT">Upload inspiration photo</span></button>
-        <input type="file" id="inspoFile" accept="image/*" hidden>
-        <div class="inspo-preview-wrap" id="inspoPreviewWrap" hidden><img id="inspoPreview" alt="Your style inspiration"><div class="inspo-colour"><span id="inspoColourDot"></span><span id="inspoNote" aria-live="polite">Choose a photo to get started.</span></div></div>
-        <button type="button" class="btn full" id="applyInspo" disabled>Find a matching cloth</button>
-        <p class="privacy-note">Your photo stays on this device.</p>
-      </aside>
-    </div>
-  </section>
-</div>
-
 <div class="image-modal" id="zoomModal" hidden role="dialog" aria-modal="true" aria-label="Large product image">
   <button type="button" class="zoombtn modal-zoom-toggle" id="zoomScaleBtn" aria-pressed="false">Zoom in</button>
   <button type="button" class="close" id="zoomClose" aria-label="Close image">×</button>
@@ -329,9 +313,10 @@
   <p id="zoomCaption">High-resolution product image</p>
 </div>
 
-<script src="js/data.js?v=50"></script>
-<script src="js/config.js?v=50"></script>
-<script src="js/assistant.js?v=50"></script>
-<script src="js/app.js?v=50"></script>
+<script src="js/data.js?v=64"></script>
+<script src="js/config.js?v=64"></script>
+<script src="js/assistant.js?v=64"></script>
+<script src="js/stylist.js?v=64"></script>
+<script src="js/app.js?v=64"></script>
 </body>
 </html>

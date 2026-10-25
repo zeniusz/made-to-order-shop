@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stylist test run</title>
+<style>
+  body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;background:#fff;color:#1c1c1c}
+  header{padding:22px 28px;border-bottom:1px solid #e4e4e2;display:flex;justify-content:space-between;gap:20px;align-items:center;flex-wrap:wrap}
+  h1{font-size:1.25rem;margin:0;font-weight:600}
+  .sum{display:flex;gap:10px;align-items:center;font-weight:600}
+  .pill{padding:4px 12px;border-radius:999px;background:#eee}
+  .pill.ok{background:#e1f2e7;color:#1f6b3c}.pill.bad{background:#fbe3e0;color:#a3271f}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:9px 14px;border-bottom:1px solid #eee;vertical-align:top;font-size:.9rem}
+  th{font-size:.78rem;color:#777;font-weight:600;background:#fafaf8;position:sticky;top:0}
+  td.n{color:#999;width:34px}
+  .res{font-weight:700;width:60px}.res.pass{color:#1f6b3c}.res.fail{color:#a3271f}
+  .grp td{background:#f4f4f1;font-weight:600;font-size:.82rem;color:#555}
+  code{font:.82rem ui-monospace,Consolas,monospace;color:#555}
+  iframe{position:absolute;left:-2000px;width:1280px;height:900px;border:0}
+</style></head>
+<body>
+<header><h1>Stylist test run</h1><div class="sum" id="sum"><span class="pill">Running…</span></div></header>
+<table><thead><tr><th>#</th><th>Prompt or action</th><th>Expected</th><th>Got</th><th>Result</th></tr></thead><tbody id="rows"></tbody></table>
+<iframe id="app" title="app under test"></iframe>
+<script>
+(function () {
+  var frame = document.getElementById('app'), rows = document.getElementById('rows'), n = 0, pass = 0, fail = 0;
+  var w = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  var win, doc, $ = function (id) { return doc.getElementById(id); };
+
+  function group(name) { var tr = document.createElement('tr'); tr.className = 'grp'; tr.innerHTML = '<td colspan="5">' + name + '</td>'; rows.appendChild(tr); }
+  function record(action, expected, got, ok) {
+    n++; ok ? pass++ : fail++;
+    var tr = document.createElement('tr');
+    var esc = function (t) { return String(t).replace(/[&<>]/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]; }); };
+    tr.innerHTML = '<td class="n">' + n + '</td><td><code>' + esc(action) + '</code></td><td>' + esc(expected) + '</td><td>' + esc(got) + '</td><td class="res ' + (ok ? 'pass' : 'fail') + '">' + (ok ? 'Pass' : 'Fail') + '</td>';
+    rows.appendChild(tr);
+    document.getElementById('sum').innerHTML = '<span class="pill ok">' + pass + ' passed</span>' + (fail ? '<span class="pill bad">' + fail + ' failed</span>' : '') + '<span class="pill">' + n + ' checks</span>';
+  }
+  function load(query) {
+    return new Promise(function (resolve) {
+      frame.onload = function () { win = frame.contentWindow; doc = frame.contentDocument; try { win.localStorage.clear(); } catch (e) {} setTimeout(resolve, 1800); };
+      frame.src = '../index.html?intro=0&' + (query || '') + '&t=' + Date.now();
+    });
+  }
+  async function send(text) {
+    $('smText').value = text; $('smGo').click();
+    for (var i = 0; i < 40; i++) { await w(100); if (!$('smGo').disabled) break; }
+    await w(150);
+  }
+  var look = function () { return ($('photoCaption').textContent.split(' · ')[0] || '').trim(); };
+  var cloth = function () { return ($('photoCaption').textContent.split(' · ')[1] || '').trim(); };
+  var reply = function () { return $('smReply').textContent; };
+  var cards = function () { return doc.querySelectorAll('#smResults .sm-card').length; };
+  var applied = function () { var h = doc.querySelector('#smResults .sm-card.on h3'); return h ? h.textContent : ''; };
+
+  async function lookCase(prompt, expLook, expCloth) {
+    await send(prompt);
+    var okLook = look() === expLook, okCloth = !expCloth || expCloth.test(cloth());
+    record(prompt, expLook + (expCloth ? ', cloth ' + expCloth : ''), look() + ', ' + cloth(), okLook && okCloth && cards() === 3);
+  }
+  async function textCase(prompt, rx, label) { await send(prompt); record(prompt, label, reply().slice(0, 90), rx.test(reply())); }
+
+  async function run() {
+    await load();
+    group('Occasion briefs (the quick ideas and everyday phrasing)');
+    await lookCase('light linen suit for a summer wedding', 'Wedding', /Sand/);
+    await lookCase('modern charcoal or navy suit for work', 'Business', /Grey|Navy/);
+    await lookCase('smart casual blue blazer and stone trousers without a tie', 'Smart casual');
+    await lookCase('relaxed breathable linen suit for a warm holiday', 'Summer & resort');
+    await lookCase('black tuxedo for a formal evening', 'Formal evening', /Black/);
+    await lookCase('comfortable wrinkle-resistant suit for travel', 'Travel & weekend');
+    await lookCase('I want a grey suit for my interview', 'Interview', /Grey/);
+    await lookCase('wedding', 'Wedding');
+
+    group('Bugs found in the first test run (words hidden inside other words, shade words, travel vs resort)');
+    await lookCase('I need a tailored suit for business', 'Business', /^(?!.*Burgundy)/);
+    await lookCase('dark suit for this wedding', 'Wedding', /Navy|Dark|Black/);
+    await lookCase('taupe suit for a beach holiday', 'Summer & resort');
+    await lookCase('forest green suit for the office', 'Business', /Green/);
+
+    group('Budget, texture and size details');
+    await send('grey flannel for the office under 800');
+    var price = parseInt((doc.querySelector('#smResults .sm-card.on .sm-cloth').textContent.match(/€\s?([\d.]+)/) || [0, '9999'])[1].replace('.', ''), 10);
+    record('grey flannel for the office under 800', 'Business, flannel, €800 or less', look() + ', ' + cloth() + ', €' + price, look() === 'Business' && /Flannel/.test(cloth()) && price <= 800);
+    await send('navy suit for work, 183 cm, 80 kg, slim fit');
+    var hv = $('h').value, slim = doc.querySelector('#pref .chip[aria-pressed="true"]'), notSure = doc.querySelector('#usual .chip[aria-pressed="true"]');
+    record('navy suit for work, 183 cm, 80 kg, slim fit', 'height 183, weight 80, Slim fit, "Not sure" size', 'height ' + hv + ', weight ' + $('w').value + ', ' + (slim && slim.textContent) + ', ' + (notSure && notSure.textContent), hv === '183' && $('w').value === '80' && slim && /Slim/.test(slim.textContent) && notSure && /Not sure/.test(notSure.textContent));
+
+    group('Style details in the sentence');
+    await send('a business suit with a peak lapel');
+    var peak = doc.querySelector('#styleFields .chip[aria-pressed="true"]');
+    var lapelRow = Array.prototype.filter.call(doc.querySelectorAll('#styleFields .field'), function (f) { return /Lapel/.test(f.textContent); })[0];
+    var lapelOn = lapelRow && lapelRow.querySelector('.chip[aria-pressed="true"]');
+    var shoulderRow = Array.prototype.filter.call(doc.querySelectorAll('#styleFields .field'), function (f) { return /Shoulder/.test(f.textContent); })[0];
+    var shoulderOn = shoulderRow && shoulderRow.querySelector('.chip[aria-pressed="true"]');
+    record('a business suit with a peak lapel', 'Peak lapel and a structured shoulder, with an explanation', (lapelOn && lapelOn.textContent) + ', ' + (shoulderOn && shoulderOn.textContent), lapelOn && /Peak/.test(lapelOn.textContent) && shoulderOn && /Structured/.test(shoulderOn.textContent) && /structured shoulder/.test(reply()));
+
+    group('Questions are answered, not turned into a look');
+    await textCase('What does S120’s mean?', /^Super numbers/, 'explains Super numbers (curly apostrophe)');
+    await textCase("what does S110's mean", /^Super numbers/, 'explains Super numbers (straight apostrophe)');
+    await textCase('what is half canvas?', /Canvas is the layer/, 'explains canvas');
+    await textCase('how long does delivery take?', /2 to 3 weeks/, 'delivery time');
+    await textCase('can I return it?', /30 days/, 'return window');
+    await textCase('what does tropical wool mean?', /Tropical/, 'explains tropical wool');
+
+    group('Refinements on the look already chosen');
+    await send('light linen suit for a summer wedding');
+    var c0 = cloth(), p0 = parseInt(doc.querySelector('#smResults .sm-card.on .sm-cloth').textContent.match(/€\s?([\d.]+)/)[1].replace('.', ''), 10);
+    await send('cheaper');
+    var p1 = parseInt(doc.querySelector('#smResults .sm-card.on .sm-cloth').textContent.match(/€\s?([\d.]+)/)[1].replace('.', ''), 10);
+    record('cheaper (after a €' + p0 + ' look)', 'a lower price', c0 + ' → ' + cloth() + ', €' + p1, p1 < p0);
+    await send('light linen suit for a summer wedding');
+    var lum = function (h) { var v = [1, 3, 5].map(function (i) { return parseInt(h.substr(i, 2), 16) / 255; }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+    var dot0 = doc.querySelector('#smResults .sm-card.on .sm-cloth i').style.backgroundColor;
+    await send('darker');
+    var dot1 = doc.querySelector('#smResults .sm-card.on .sm-cloth i').style.backgroundColor;
+    var toHex = function (c) { var m = c.match(/\d+/g); return '#' + m.slice(0, 3).map(function (x) { return (+x < 16 ? '0' : '') + (+x).toString(16); }).join(''); };
+    record('darker (after sand linen)', 'a darker cloth', toHex(dot0) + ' → ' + toHex(dot1), lum(toHex(dot1)) < lum(toHex(dot0)));
+    await send('lighter');
+    var dot2 = doc.querySelector('#smResults .sm-card.on .sm-cloth i').style.backgroundColor;
+    record('lighter (after darker)', 'a lighter cloth', toHex(dot1) + ' → ' + toHex(dot2), lum(toHex(dot2)) > lum(toHex(dot1)));
+
+    group('Using a recommended look');
+    await send('black tuxedo for a formal evening');
+    var second = doc.querySelectorAll('#smResults .sm-card')[1], secondTitle = second.querySelector('h3').textContent;
+    second.querySelector('.sm-use').click(); await w(300);
+    record('click "Use this look" on the second card', secondTitle + ' becomes the applied look', 'applied: ' + applied() + ', page shows ' + look(), applied() === secondTitle);
+    $('tab-3').click(); await w(200);
+    var shoes = Array.prototype.filter.call(doc.querySelectorAll('#extras .card'), function (c) { return /Leather shoes/.test(c.textContent); })[0];
+    record('Extras after applying a look', 'accessory colours chosen to go with the look', shoes ? shoes.textContent.replace(/\s+/g, ' ').slice(0, 50) : 'no shoes card', !!shoes);
+
+    group('Bad or odd input');
+    await load();
+    await send('');
+    record('(empty)', 'asks for a line or a photo', reply(), /Type a line/.test(reply()));
+    await send('xyzzy');
+    record('xyzzy', 'says it could not tell, shows no look', reply().slice(0, 70) + ', cards ' + cards(), /could not tell/.test(reply()) && cards() === 0);
+    await send('<img src=x onerror=alert(1)>');
+    record('<img src=x onerror=alert(1)>', 'treated as plain text, nothing injected', 'injected images: ' + doc.querySelectorAll('img[src="x"]').length, doc.querySelectorAll('img[src="x"]').length === 0 && !/<img/.test(doc.getElementById('smResults').innerHTML));
+    await send('wedding wedding wedding wedding wedding wedding wedding wedding wedding wedding wedding wedding');
+    record('a very repetitive line', 'still returns a look', look() + ', cards ' + cards(), cards() === 3);
+
+    group('Inspiration photo');
+    await load();
+    function makeFile(draw, type, name) {
+      return new Promise(function (resolve) {
+        var c = document.createElement('canvas'); c.width = 400; c.height = 600; var x = c.getContext('2d'); draw(x);
+        c.toBlob(function (b) { resolve(new win.File([b], name, { type: type })); }, type);
+      });
+    }
+    async function upload(file) {
+      var dt = new win.DataTransfer(); dt.items.add(file); $('smFile').files = dt.files; $('smFile').dispatchEvent(new win.Event('change'));
+      for (var i = 0; i < 40; i++) { await w(100); if (cards() === 3) break; }
+      await w(300);
+    }
+    var navy = await makeFile(function (x) { x.fillStyle = '#e8e8e6'; x.fillRect(0, 0, 400, 600); x.fillStyle = '#1d2a44'; x.fillRect(90, 80, 220, 420); x.fillStyle = '#f3f3ef'; x.fillRect(170, 80, 60, 200); }, 'image/png', 'navy-look.png');
+    await upload(navy);
+    record('upload a navy jacket photo', 'photo shown, colours found, three looks, "From your photo" in the reply', 'photo ' + !$('smPhotoRow').hidden + ', ' + doc.querySelectorAll('#smColours span').length + ' colours, cards ' + cards() + ', ' + reply().slice(0, 40),
+      !$('smPhotoRow').hidden && doc.querySelectorAll('#smColours span').length >= 1 && cards() === 3 && /From your photo/.test(reply()) && /Navy|Dark Blue/.test(cloth()));
+    var green = await makeFile(function (x) { x.fillStyle = '#ddd'; x.fillRect(0, 0, 400, 600); x.fillStyle = '#2c4538'; x.fillRect(90, 80, 220, 420); }, 'image/png', 'green-look.png');
+    await upload(green);
+    record('replace it with a green jacket photo', 'a green cloth', cloth(), /Green/.test(cloth()) || /Olive/.test(cloth()));
+    $('smRemove').click(); await w(200);
+    record('remove the photo', 'photo row hidden', 'hidden: ' + $('smPhotoRow').hidden, $('smPhotoRow').hidden === true);
+    var bad = await makeFile(function (x) { x.fillRect(0, 0, 10, 10); }, 'image/png', 'x.txt');
+    var txt = new win.File(['hello'], 'notes.txt', { type: 'text/plain' });
+    var dt = new win.DataTransfer(); dt.items.add(txt); $('smFile').files = dt.files; $('smFile').dispatchEvent(new win.Event('change')); await w(300);
+    record('upload a text file', 'refused with a clear message', reply().slice(0, 60), /Choose a JPG/.test(reply()) && $('smPhotoRow').hidden);
+
+    group('Hosted AI (mocked: no key or network is used)');
+    await load();
+    var realFetch = win.fetch;
+    win.CUSTOM_STYLIST_AI_ENDPOINT = 'https://stylist.example/ai';
+    win.fetch = function (url, opts) {
+      if (String(url).indexOf('stylist.example') < 0) return realFetch.apply(win, arguments);
+      var body = JSON.parse(opts.body);
+      return Promise.resolve(new win.Response(JSON.stringify({ reply: 'Mock AI says: black tie it is.', recommendations: [{ look_id: 'eve', fabric_id: 'b110', reason: 'Mock reason' }, { look_id: 'int', fabric_id: 'n110', reason: 'Mock two' }], _seen: Object.keys(body) }), { status: 200, headers: { 'content-type': 'application/json' } }));
+    };
+    await send('something for a gala');
+    record('AI answers with valid catalogue choices', 'AI reply shown, its first look applied', reply().slice(0, 40) + ', ' + look(), /Mock AI says/.test(reply()) && look() === 'Formal evening' && cards() === 2);
+    win.fetch = function (url) { if (String(url).indexOf('stylist.example') < 0) return realFetch.apply(win, arguments); return Promise.resolve(new win.Response(JSON.stringify({ reply: 'x', recommendations: [{ look_id: 'nope', fabric_id: 'none' }] }), { status: 200 })); };
+    await send('navy suit for an interview');
+    record('AI answers with ids that do not exist', 'ignored, private matching used instead', reply().slice(0, 70), /could not be reached/.test(reply()) && cards() === 3 && look() === 'Interview');
+    win.fetch = function (url) { if (String(url).indexOf('stylist.example') < 0) return realFetch.apply(win, arguments); return Promise.reject(new Error('offline')); };
+    await send('grey suit for the office');
+    record('AI service is down', 'told so, private matching used', reply().slice(0, 70), /could not be reached/.test(reply()) && cards() === 3);
+    win.fetch = realFetch;
+
+    document.title = 'Stylist test run: ' + pass + ' passed, ' + fail + ' failed';
+    document.getElementById('sum').setAttribute('data-done', '1');
+  }
+  run().catch(function (e) { record('The test run itself', 'completes', String(e && e.stack || e).slice(0, 160), false); document.getElementById('sum').setAttribute('data-done', '1'); });
+})();
+</script>
+</body></html>
