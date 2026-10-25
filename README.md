@@ -40,10 +40,11 @@ Screenshots for the occasion catalog, style presets, accessory colour catalog, m
 - Four image-led style presets (Havana, Milano, Coastal and Formal evening) state which tailoring details they change, and incompatible combinations are disabled with an explanation.
 - **Find my size**: suggested size, High / Medium / Low confidence with a plain reason, store fallback (book appointment or walk-in), expert size grid with Regular / Short / Long.
 - Extras have their own product photographs. Shirts, ties, pocket squares and shoes switch to a matching catalog photo when a supported colour is selected; waistcoat and second-trouser cards show a style reference alongside a swatch of the selected cloth. The monogram is a visible embroidery-preview option in Extras and appears again in Review and the price list. Prices are itemised in euros.
-- **Client / Advisor switch.** The switch in the header turns the page into an advisor's fitting sheet: the look, the client's numbers, the suggested size with its confidence, the final size, agreed adjustments, a check-first list and notes. Saving a fitting keeps a local tally of how often the suggested size matched the final one, and the sheet can be printed.
+- **Client / Advisor switch.** The switch in the header turns the page into an advisor's fitting sheet: the look, the client's contact details (email and phone, tap to open), a sample schedule for the day showing which slots are free or booked, the client's numbers, the suggested size with its confidence, the final size, agreed adjustments, a check-first list and notes. Saving a fitting keeps a local tally of how often the suggested size matched the final one, and the sheet can be printed.
 - Store code that identifies the saved look.
 - **Remembers you, on this device only.** Resume where you left off, a Size Passport for your saved size, and a link that reopens the exact design.
 - **Measure yourself.** A short illustrated guide and an optional chest field for a more accurate size.
+- **Fitting slots show availability.** Some times are marked as taken and cannot be chosen (sample data). Contact details are optional and stay on the device.
 - **Add the fitting to your calendar** as a calendar file with the store code in it.
 - **Three product views.** Full outfit, a close crop from the selected catalog look, and a large fabric swatch. Open the original full-resolution outfit image to inspect details.
 

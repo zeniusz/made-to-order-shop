@@ -27,7 +27,7 @@
     lining: '#1f2d4d', mono: '',
     h: 180, w: 78, pref: 'Regular', usual: 50, notSure: false, size: null, group: 'regular', level: null, sug: null, fitMode: 'a', mode: 'client', finalSize: null, notes: '', book: false, walk: false, adj: { sleeve: 0, jlen: 0, waist: 0, tlen: 0, rise: 0 },
     self: null, city: 'Amsterdam', slot: null,
-    on: {}, col: {}, name: '', code: null, season: null, budget: null, boost: [], change: '', chest: null, chat: []
+    on: {}, col: {}, name: '', email: '', phone: '', cpref: 'Email', code: null, season: null, budget: null, boost: [], change: '', chest: null, chat: []
   };
   var byId = function (id) { return D.cloths.filter(function (c) { return c.id === id; })[0]; };
   var cloth = function () { return byId(st.cloth); };
@@ -66,7 +66,7 @@
     return {
       shirt: sl > 60 ? ['#f3f3ef', '#c9dcef', '#f2e6e4'] : ['#f3f3ef', '#c9dcef', '#dfe2e6'],
       tie: ties,
-      square: ['#f6f6f3', ties[0], '#c9dcef'],
+      square: ['#f6f6f3', '#6b1d2b', '#c9dcef'],
       shoes: sl > 55 ? ['#9a6a3c', '#4a2c1d', '#121212'] : sl > 32 ? ['#4a2c1d', '#121212', '#9a6a3c'] : ['#121212', '#4a2c1d', '#9a6a3c']
     };
   }
@@ -155,14 +155,15 @@
     return Math.min(100, s);
   }
   var confLabel = function (n) { return n >= 75 ? 'High' : n >= 50 ? 'Medium' : 'Low'; };
-  var SLOT_DATE = {};
+  var SLOT_DATE = {}, SLOT_BOOKED = {}, SLOT_WHO = {};
+  var SAMPLE_NAMES = ['J. de Vries', 'M. Bakker', 'S. Jansen', 'L. Visser', 'R. Smit', 'N. Dekker'];
   var SLOTS = (function () {
     var out = [], d = new Date(), days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     var times = [['10:30', '16:00'], ['12:00', '17:30'], ['11:00', '14:30']];
     for (var i = 1, n = 0; n < 3; i++) {
       var x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i);
       if (x.getDay() === 0) continue;
-      times[n].forEach(function (t) { var lab = days[x.getDay()] + ' ' + x.getDate() + ' ' + mon[x.getMonth()] + ', ' + t, hm = t.split(':'); out.push(lab); SLOT_DATE[lab] = new Date(x.getFullYear(), x.getMonth(), x.getDate(), +hm[0], +hm[1]); });
+      times[n].forEach(function (t) { var lab = days[x.getDay()] + ' ' + x.getDate() + ' ' + mon[x.getMonth()] + ', ' + t, hm = t.split(':'); out.push(lab); var hsh = 0; for (var q = 0; q < lab.length; q++) hsh = (hsh * 31 + lab.charCodeAt(q)) % 997; if (hsh % 3 === 0) { SLOT_BOOKED[lab] = true; SLOT_WHO[lab] = SAMPLE_NAMES[hsh % SAMPLE_NAMES.length]; } SLOT_DATE[lab] = new Date(x.getFullYear(), x.getMonth(), x.getDate(), +hm[0], +hm[1]); });
       n++;
     }
     return out;
@@ -310,7 +311,8 @@
       $('storeWalk').setAttribute('aria-pressed', String(st.walk));
       $('bookBox').hidden = !st.book;
       $('cal').hidden = !(st.slot && SLOT_DATE[st.slot]);
-      fill('slots', SLOTS.map(function (t) { return chip(t, st.slot === t, function () { st.slot = st.slot === t ? null : t; update(); }); }));
+      fill('slots', SLOTS.map(function (t) { var b = SLOT_BOOKED[t]; var e = chip(t + (b ? ' · taken' : ''), st.slot === t, function () { st.slot = st.slot === t ? null : t; update(); }, b ? 'This time is already taken' : ''); if (b) e.classList.add('booked'); return e; }));
+      if (!$('slotNote')) { var sn = el('p', 'slot-note', 'Sample availability. Crossed-out times are taken.'); sn.id = 'slotNote'; $('slots').parentNode.appendChild(sn); }
     }
   }
   function buildAdjustments(target) {
@@ -445,6 +447,22 @@
     if (adv) renderAdvisor();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+  function scheduleHtml() {
+    var day = (st.slot || SLOTS[0]).split(',')[0];
+    var rows = SLOTS.filter(function (l) { return l.split(',')[0] === day; }).map(function (l) {
+      var t = l.split(',')[1].trim(), mine = st.slot === l, booked = SLOT_BOOKED[l];
+      return '<div class="' + (mine ? 'mine' : booked ? 'busy' : 'free') + '"><span class="t">' + t + '</span><span>' + (mine ? (st.name || 'This client') : booked ? SLOT_WHO[l] : 'Open') + '</span><span class="st">' + (mine ? 'This client' : booked ? 'Booked' : 'Free') + '</span></div>';
+    }).join('');
+    return '<h3>Schedule · ' + day + ' <span class="muted" style="font-weight:400">(sample)</span></h3><div class="sched">' + rows + '</div>';
+  }
+  function contactHtml() {
+    var esc = function (t) { return String(t).replace(/[&<>"]/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]; }); };
+    var okMail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(st.email), okTel = /^[+0-9][0-9 ()-]{6,}$/.test(st.phone);
+    var lines = '';
+    if (st.email) lines += '<div><span>Email' + (st.cpref === 'Email' ? ' · preferred' : '') + '</span>' + (okMail ? '<a href="mailto:' + esc(st.email) + '">' + esc(st.email) + '</a>' : esc(st.email)) + '</div>';
+    if (st.phone) lines += '<div><span>Phone' + (st.cpref === 'Phone' ? ' · preferred' : '') + '</span>' + (okTel ? '<a href="tel:' + esc(st.phone.replace(/[^+0-9]/g, '')) + '">' + esc(st.phone) + '</a>' : esc(st.phone)) + '</div>';
+    return '<h3>Contact</h3>' + (lines ? '<div class="contact-lines">' + lines + '</div>' : '<p class="muted small">No contact details yet. The client adds them in Review.</p>');
+  }
   function renderAdvisor() {
     if (!document.body.classList.contains('adv')) return;
     var box = $('advisorView'), c = cloth(), shot = 'assets/img/catalog/' + activeLook().image, sg = suggest(), g = st.group || sg.group;
@@ -463,6 +481,7 @@
       '<div class="sheet-top"><div><h2>Fitting sheet</h2><p class="muted">' + (st.name || 'Guest') + ' · ' + when + '</p></div><span class="code-pill">' + (st.code || 'Preview') + '</span></div>' +
       '<div class="sheet-look"><div class="look" style="background-image:url(' + shot + ')"></div><div class="kv">' +
         kv('Cloth', c.name, true) + kv('Style', styleText(), true) + kv('Extras', ex.length ? ex.join(', ') : 'None', true) + kv('Total', money(total())) + kv('Ready in', '2–3 weeks') + '</div></div>' +
+      '<div>' + contactHtml() + '</div><div>' + scheduleHtml() + '</div>' +
       '<div><h3>Client</h3><div class="kv">' + kv('Height and weight', st.h + ' cm, ' + st.w + ' kg') + kv('Usual size', st.notSure ? 'Not sure' + (st.chest ? ', chest ' + st.chest + ' cm' : '') : String(st.usual)) + kv('Fit preference', st.pref) + kv('Photo', st.self ? 'Provided' : 'None') + '</div></div>' +
       '<div><h3>Size</h3><div class="sug"><b>' + sizeLabel(sg.size, sg.group) + ' ' + cap(sg.group) + '</b><span class="pill ' + sg.level.toLowerCase() + '">' + sg.level + ' confidence</span><p>' + sg.text + '</p></div>' +
         '<h3 style="margin-top:16px">Final size</h3><div class="chips" id="advSizes"></div><p class="cmp" id="advCmp"></p></div>' +
@@ -548,7 +567,12 @@
     $('monoHint').textContent = value ? 'Inside jacket lining · embroidered initials · +€15' : 'Preview shown on the inside lining. Enter your initials to personalise it.';
   }
 
+  function fixColours() {
+    var r = recs();
+    D.extras.forEach(function (x) { if (x.variants && st.col[x.id] && !x.variants[st.col[x.id]] && r[x.id]) st.col[x.id] = r[x.id][0]; });
+  }
   function update() {
+    fixColours();
     renderCloth(); renderSeason(); renderAbout(); renderStyle(); renderChange(); renderFit(); renderPassport(); renderExtras(); renderStrip(); renderMonogram();
     renderReview(st.tab === 4);
     renderAdvisor(); paintStage();
@@ -691,6 +715,10 @@
   $('hex').onblur = function () { this.value = st.target.toUpperCase(); };
   $('mono').oninput = function () { st.mono = this.value.replace(/[^a-z]/gi, '').slice(0, 3); this.value = st.mono.toUpperCase(); renderMonogram(); update(); };
   $('cname').oninput = function () { st.name = this.value.trim(); renderAdvisor(); };
+  $('cemail').oninput = function () { st.email = this.value.trim(); renderAdvisor(); };
+  $('cphone').oninput = function () { st.phone = this.value.trim(); renderAdvisor(); };
+  function renderCpref() { fill('cpref', ['Email', 'Phone'].map(function (x) { return chip(x, st.cpref === x, function () { st.cpref = x; renderCpref(); renderAdvisor(); }); })); }
+  renderCpref();
   $('city').onchange = function () { st.city = this.value; update(); };
   Array.prototype.forEach.call(document.querySelectorAll('.stepper[data-key]'), function (s) {
     var key = s.dataset.key, inp = $(key), bt = s.querySelectorAll('button');

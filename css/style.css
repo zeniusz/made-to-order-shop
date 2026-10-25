@@ -486,3 +486,24 @@ body.adv .studio{min-height:0}
   .mode button{padding:0 11px;height:30px;font-size:.8rem}
   .fitsheet,.advisor-view{min-width:0}
 }
+
+/* contact details, slots and the advisor schedule */
+.contact{border:0;margin:26px 0 0;padding:0;display:grid;gap:14px}
+.contact legend{padding:0;margin-bottom:2px}
+.contact .small{font-size:.82rem}
+.field-row{display:grid;gap:6px}
+.field-row label,.field-row .lab{font-size:.85rem;color:var(--muted)}
+.field-row .text{max-width:none}
+.chip.booked{text-decoration:line-through;color:var(--muted);background:var(--ground)}
+.slot-note{font-size:.8rem;color:var(--muted);margin-top:8px}
+.fitsheet .sched{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.fitsheet .sched div{background:#fff;padding:9px 12px;display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:10px;align-items:center;font-size:.88rem}
+.fitsheet .sched .t{font-variant-numeric:tabular-nums;font-weight:500}
+.fitsheet .sched .st{font-size:.75rem;padding:2px 9px;border-radius:999px;background:var(--ground);color:var(--muted)}
+.fitsheet .sched .free .st{background:#e5f2ea;color:var(--good)}
+.fitsheet .sched .mine{background:#f4f1e8}
+.fitsheet .sched .mine .st{background:var(--btn);color:var(--btn-ink)}
+.fitsheet .contact-lines{display:grid;gap:8px}
+.fitsheet .contact-lines a{color:inherit}
+.fitsheet .contact-lines div{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:3px;font-size:.9rem}
+.fitsheet .contact-lines span{color:var(--muted);font-size:.8rem}
