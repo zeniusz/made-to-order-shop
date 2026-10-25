@@ -14,6 +14,10 @@ The idea was to test how far an AI-assisted build can go with a made-to-measure 
 |---|---|
 | ![](docs/screenshots/4-find-my-size.png) | ![](docs/screenshots/7-low-confidence.png) |
 
+| Describe what you need | Style choices that tell you what changed |
+|---|---|
+| ![](docs/screenshots/8-describe-it.png) | ![](docs/screenshots/9-style-note.png) |
+
 ## What I wanted to learn
 
 - **Real imagery, not illustration.** Can a single free photograph be recoloured in the browser so that changing the cloth looks like a different jacket, with folds, shadows and lapel intact?
@@ -27,13 +31,21 @@ The idea was to test how far an AI-assisted build can go with a made-to-measure 
 
 - Recolours a real jacket photo live. Shirt, tie and pocket square recolour too.
 - First-visit picker by occasion (Interview, Office, Wedding, Evening, Travel).
-- Match any colour, hex code or uploaded photo to the closest cloths using perceptual colour distance (CIELAB ΔE).
-- Style presets (Havana, Milano) and rules that grey out combinations that do not go together, with the reason.
-- **Find my size**: suggested size, confidence label, store fallback (book appointment or walk-in), expert size grid with Regular / Short / Long.
+- Match any colour, hex code or uploaded photo to the closest cloths using perceptual colour distance (CIELAB ΔE). Filter by season.
+- **Plain-language cloth notes.** Names like "S120's" or "Wrinkle-Free 4-Ply" are explained next to the cloth, so nobody needs to know the jargon.
+- Style presets (Havana, Milano) that say exactly what they changed, and rules that grey out combinations that do not go together, with the reason.
+- **Find my size**: suggested size, High / Medium / Low confidence with a plain reason, store fallback (book appointment or walk-in), expert size grid with Regular / Short / Long.
 - Extras in matched colours, price shown line by line in euros.
 - Store code and a store-advisor screen.
+- **Remembers you, on this device only.** Resume where you left off, a Size Passport for your saved size, and a link that reopens the exact design.
 
-Shareable views: `?occ=wed` (int, off, wed, eve, trv), `?tab=4` (step 0–4), `?intro=0` (skip the first-visit picker).
+## AI features
+
+- **Describe what you need.** Type one sentence, for example "navy suit for a summer wedding, 183 cm, 80 kg, slim fit". The page picks the occasion, season, colour, texture and budget, fills in your height, weight and fit preference, ranks the cloths and says why the top one was chosen. This runs in the browser with a small rule-based reader. Nothing is sent anywhere.
+- **Optional: let Claude read it.** Open "Use Claude to read it" and paste your own Anthropic API key. The sentence is then read by Claude (`claude-haiku-5-5`) instead of the built-in reader, with the built-in reader as a fallback if the call fails. The key stays in that tab and is never stored. This path is written to the API's documented format but has not been tested against a live key, so treat it as experimental.
+- **Explain, don't just list.** Every suggestion comes with a reason: why this cloth, why this size, and how sure the page is.
+
+Shareable views: `?occ=wed` (int, off, wed, eve, trv), `?tab=4` (step 0–4), `?intro=0` (skip the first-visit picker), `?brief=...` (run the describe-it box with that sentence).
 
 ## Run it
 
@@ -66,6 +78,7 @@ css/style.css
 js/data.js        catalogue and options
 js/recolor.js     photo recolouring engine
 js/app.js         configurator logic and UI
+js/assistant.js   describe-it reader (local) and optional Claude call
 assets/img/       photos, masks and textures
 docs/             screenshots and learning notes
 tools/            script that builds the masks from the source photo

@@ -22,10 +22,19 @@ Find out how far an AI-assisted build can go toward a believable product page, a
 - Free photographs of suits with clean licences are rare; one photo had to carry the whole page.
 - Keeping prices and facts honest: anything not read from a real source is labelled illustrative.
 
+## Added after reviewing real use of a live configurator
+
+Notes from walking through a real configurator turned into changes:
+
+- **Jargon in cloth names** became a short explainer under the selected cloth, plus a season filter.
+- **Silent changes** (switching a style quietly changed another default) became a one-line note saying what changed.
+- **A bare size grid** became a guided size step with a confidence label and a store fallback.
+- **Returning visitors** got resume, a saved size and a link that reopens the design.
+- **"AI"** was added where it removes typing: one sentence fills several choices. The built-in reader is deliberately simple and honest about what it understood; the Claude option is optional and uses the visitor's own key.
+
 ## Ideas for next
 
 - A second and third photo (full length, back view) so more of the suit changes.
 - Real size data from fittings to replace the simple height and weight estimate.
-- Saving a look and reopening it by code.
 - Comparing two cloths side by side on the same jacket.
 - Measuring whether the size step helps people finish: time on step, use of the grid, store bookings.

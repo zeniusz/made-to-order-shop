@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="css/style.css?v=16">
+<link rel="stylesheet" href="css/style.css?v=20">
 </head>
 <body>
 
@@ -48,7 +48,25 @@
 
     <div class="panes">
       <div class="pane" role="tabpanel" id="p-0" aria-labelledby="tab-0">
-        <div class="chips scroll first" id="occ" aria-label="Occasion"></div>
+        <div class="resume" id="resumeBar" hidden>
+          <span>Resume where you left off?</span>
+          <span><button type="button" class="textbtn" id="resumeYes">Resume</button><button type="button" class="textbtn" id="resumeNo">Start fresh</button></span>
+        </div>
+        <div class="brief first">
+          <label class="flabel" for="brief">Describe what you need</label>
+          <div class="brief-row">
+            <input id="brief" type="text" placeholder="e.g. navy suit for a summer wedding, 183 cm, 80 kg, slim fit" autocomplete="off" maxlength="240">
+            <button type="button" class="btn" id="briefGo">Suggest</button>
+          </div>
+          <div class="chips" id="briefChips" aria-live="polite"></div>
+          <p class="brief-why" id="briefWhy"></p>
+          <details class="ai">
+            <summary>Use Claude to read it</summary>
+            <p>Optional. Paste your own Anthropic API key and your sentence is read by Claude instead of the built-in parser. The key stays in this tab only and is never saved. Without a key, everything runs in your browser and nothing is sent anywhere.</p>
+            <div class="brief-row"><input id="aiKey" type="password" placeholder="sk-ant-..." autocomplete="off" spellcheck="false" aria-label="Anthropic API key"><button type="button" class="btn ghost" id="aiClear">Forget</button></div>
+          </details>
+        </div>
+        <div class="chips scroll" id="occ" aria-label="Occasion" style="margin-top:22px"></div>
         <div class="field">
           <div class="dots" id="dots"></div>
           <div class="colour-row">
@@ -59,13 +77,16 @@
           </div>
         </div>
         <div class="field">
+          <div class="chips" id="season" role="group" aria-label="Season"></div>
           <div class="head-row"><h2 id="matchHead">Best matches</h2><button type="button" class="textbtn" id="more"></button></div>
           <div class="grid" id="cloths"></div>
+          <div class="about" id="about"></div>
         </div>
       </div>
 
       <div class="pane" role="tabpanel" id="p-1" aria-labelledby="tab-1" hidden>
         <div class="presets" id="presets"></div>
+        <p class="change" id="changeNote" aria-live="polite"></p>
         <div id="styleFields"></div>
         <p class="rule" id="ruleNote" aria-live="polite"></p>
         <div class="field"><span class="flabel">Lining</span><div class="dots" id="lining"></div></div>
@@ -96,6 +117,7 @@
             <span class="flabel">How do you like it to fit?</span>
             <div class="chips" id="pref" role="group" aria-label="Fit preference"></div>
           </div>
+          <div class="passport" id="ppUse" hidden><span id="ppText"></span><button type="button" class="btn ghost" id="ppGo">Use it</button></div>
           <button type="button" class="btn full" id="fitGo">Suggest my size</button>
           <button type="button" class="textbtn center" id="fitSkip">I know my size</button>
         </div>
@@ -158,6 +180,7 @@
               <div class="chips" id="slots" style="margin-top:10px"></div>
             </div>
           </div>
+          <label class="toggle"><input type="checkbox" id="ppSave"> Save this to my Size Passport on this device</label>
           <details class="field fine">
             <summary>Know your adjustments?</summary>
             <div class="adjs" id="adjs"></div>
@@ -184,6 +207,8 @@
           <input id="cname" class="text" maxlength="30" autocomplete="given-name">
         </div>
         <button type="button" class="btn full" id="save">Get store code</button>
+        <button type="button" class="btn ghost full" id="share" style="margin-top:10px">Copy link to this design</button>
+        <p class="share-note" id="shareNote" aria-live="polite"></p>
         <div class="codebox" id="codebox" hidden>
           <span class="muted">Show this in store</span>
           <span class="code" id="code"></span>
@@ -245,8 +270,9 @@
   </div>
 </div>
 
-<script src="js/data.js?v=16"></script>
-<script src="js/recolor.js?v=16"></script>
-<script src="js/app.js?v=16"></script>
+<script src="js/data.js?v=20"></script>
+<script src="js/assistant.js?v=20"></script>
+<script src="js/recolor.js?v=20"></script>
+<script src="js/app.js?v=20"></script>
 </body>
 </html>
