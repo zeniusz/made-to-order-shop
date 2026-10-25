@@ -1,0 +1,252 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Custom Made Studio</title>
+<meta name="description" content="Concept for a made-to-measure suit configurator: real cloth on a real jacket, colour matching, a starting size and a hand-off to a Style Advisor.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="css/style.css?v=16">
+</head>
+<body>
+
+<header class="bar">
+  <a class="icon" href="#how" aria-label="How it works">
+    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 5h16M2 10h16M2 15h16" stroke="currentColor" stroke-width="1.4"/></svg>
+  </a>
+  <a class="logo" href="#studio">CUSTOM MADE STUDIO</a>
+  <button class="icon bag" id="bag" type="button" aria-label="Review your look">
+    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 6.5h13v10h-13z M7 6.5V5a3 3 0 0 1 6 0v1.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+    <span id="bagCount">1</span>
+  </button>
+</header>
+
+<main>
+<section class="studio" id="studio" aria-label="Suit configurator">
+  <div class="stage">
+    <div class="stage-in">
+      <div class="photo">
+        <canvas id="suitCanvas" width="795" height="957" aria-label="The jacket in your cloth, shirt, tie and pocket square"></canvas>
+        <img id="suitFallback" src="assets/img/suit-base.jpg" alt="Jacket on a mannequin" hidden>
+        <div class="you" id="you" hidden><img id="youImg" alt="Your photo"><span id="youCloth"></span></div>
+      </div>
+      <div class="strip" id="strip" aria-label="Pieces in your look"></div>
+      <button type="button" class="cta" id="cta">Review look</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="tabs" role="tablist" aria-label="Steps">
+      <button role="tab" id="tab-0" aria-controls="p-0" class="tab">Cloth</button>
+      <button role="tab" id="tab-1" aria-controls="p-1" class="tab">Style</button>
+      <button role="tab" id="tab-2" aria-controls="p-2" class="tab">Fit</button>
+      <button role="tab" id="tab-3" aria-controls="p-3" class="tab">Extras</button>
+      <button role="tab" id="tab-4" aria-controls="p-4" class="tab">Review</button>
+    </div>
+
+    <div class="panes">
+      <div class="pane" role="tabpanel" id="p-0" aria-labelledby="tab-0">
+        <div class="chips scroll first" id="occ" aria-label="Occasion"></div>
+        <div class="field">
+          <div class="dots" id="dots"></div>
+          <div class="colour-row">
+            <input type="color" id="cp" value="#1d2a44" aria-label="Any colour">
+            <input id="hex" class="hex" value="#1D2A44" maxlength="7" spellcheck="false" aria-label="Hex code">
+            <button type="button" class="upload" id="lookBtn"><span class="thumb" id="lookThumb"></span><span id="lookT">Match a photo</span></button>
+            <input type="file" id="lookFile" accept="image/*" hidden>
+          </div>
+        </div>
+        <div class="field">
+          <div class="head-row"><h2 id="matchHead">Best matches</h2><button type="button" class="textbtn" id="more"></button></div>
+          <div class="grid" id="cloths"></div>
+        </div>
+      </div>
+
+      <div class="pane" role="tabpanel" id="p-1" aria-labelledby="tab-1" hidden>
+        <div class="presets" id="presets"></div>
+        <div id="styleFields"></div>
+        <p class="rule" id="ruleNote" aria-live="polite"></p>
+        <div class="field"><span class="flabel">Lining</span><div class="dots" id="lining"></div></div>
+        <div class="field">
+          <label class="flabel" for="mono">Monogram <span class="muted">+â‚¬15</span></label>
+          <input id="mono" class="text" maxlength="3" placeholder="Initials" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="pane" role="tabpanel" id="p-2" aria-labelledby="tab-2" hidden>
+        <!-- A: tell us about you -->
+        <div class="wiz" id="fitA">
+          <h2>Find my size</h2>
+          <p class="sub">Three quick questions. We suggest one size and tell you how sure we are.</p>
+          <div class="field">
+            <span class="flabel">Height</span>
+            <div class="stepper one" data-key="h"><button type="button" aria-label="Less">−</button><label><input id="h" type="number" inputmode="numeric" min="150" max="210" step="1" value="180"><span>cm</span></label><button type="button" aria-label="More">+</button></div>
+          </div>
+          <div class="field">
+            <span class="flabel">Your usual jacket size</span>
+            <div class="chips" id="usual" role="group" aria-label="Usual jacket size"></div>
+          </div>
+          <div class="field" id="wRow" hidden>
+            <span class="flabel">Weight</span>
+            <div class="stepper one" data-key="w"><button type="button" aria-label="Less">−</button><label><input id="w" type="number" inputmode="numeric" min="45" max="150" step="1" value="78"><span>kg</span></label><button type="button" aria-label="More">+</button></div>
+          </div>
+          <div class="field">
+            <span class="flabel">How do you like it to fit?</span>
+            <div class="chips" id="pref" role="group" aria-label="Fit preference"></div>
+          </div>
+          <button type="button" class="btn full" id="fitGo">Suggest my size</button>
+          <button type="button" class="textbtn center" id="fitSkip">I know my size</button>
+        </div>
+
+        <!-- B: suggested size -->
+        <div class="wiz" id="fitB" hidden>
+          <h2>Your suggested size</h2>
+          <div class="suggest">
+            <div class="big" id="sugSize"></div>
+            <div class="sug-meta">
+              <span class="pill" id="sugLevel"></span>
+              <p id="sugWhy"></p>
+            </div>
+          </div>
+          <div class="field">
+            <span class="flabel">Not quite?</span>
+            <div class="chips" id="sugAdj"></div>
+          </div>
+          <div class="fallback" id="fallback" hidden>
+            <b>We’re not sure about this one.</b>
+            <p>A quick measurement in store will get it right.</p>
+            <div class="row2">
+              <button type="button" class="btn" id="fbBook">Book appointment</button>
+              <button type="button" class="btn ghost" id="fbWalk">Walk-in anytime</button>
+            </div>
+          </div>
+          <button type="button" class="btn full" id="useSize"></button>
+          <button type="button" class="textbtn center" id="toGrid">Choose from all sizes</button>
+          <button type="button" class="textbtn center" id="backA">Back</button>
+        </div>
+
+        <!-- C: size grid for people who know their size -->
+        <div class="wiz" id="fitC" hidden>
+          <h2>All sizes</h2>
+          <p class="sub">Regular is for 168 to 186 cm. Short is below 168 cm. Long is above 186 cm.</p>
+          <div class="field first"><div class="chips" id="gGroup" role="group" aria-label="Length"></div></div>
+          <div class="field"><div class="chips" id="gSizes" role="group" aria-label="Size"></div></div>
+          <button type="button" class="textbtn center" id="backA2">Back to Find my size</button>
+        </div>
+
+        <!-- D: size chosen -->
+        <div id="fitD" hidden>
+          <div class="chosen">
+            <div><span class="muted">Your size</span><b id="chSize"></b></div>
+            <div><span class="muted">Fit confidence</span><b id="chLevel"></b></div>
+            <button type="button" class="textbtn" id="chChange">Change</button>
+          </div>
+          <div class="confidence">
+            <div class="meter" id="meter" role="meter" aria-valuemin="0" aria-valuemax="100"><i id="meterI"></i></div>
+            <div class="conf-row"><b id="confLabel"></b><span class="muted" id="confTip"></span></div>
+          </div>
+          <div class="field">
+            <span class="flabel">Get it checked in store</span>
+            <div class="row2">
+              <button type="button" class="chip tall" id="storeBook" aria-pressed="false">Book appointment</button>
+              <button type="button" class="chip tall" id="storeWalk" aria-pressed="false">Walk-in anytime</button>
+            </div>
+            <div id="bookBox" hidden>
+              <select id="city" aria-label="City"><option>Amsterdam</option><option>Rotterdam</option><option>The Hague</option><option>Utrecht</option></select>
+              <div class="chips" id="slots" style="margin-top:10px"></div>
+            </div>
+          </div>
+          <details class="field fine">
+            <summary>Know your adjustments?</summary>
+            <div class="adjs" id="adjs"></div>
+          </details>
+          <div class="field">
+            <span class="flabel">Your photo <span class="muted">optional</span></span>
+            <button type="button" class="upload wide" id="selfBtn"><span class="thumb round" id="selfThumb"></span><span id="selfT">Add a photo for your advisor</span></button>
+            <input type="file" id="selfFile" accept="image/*" hidden>
+          </div>
+        </div>
+      </div>
+
+      <div class="pane" role="tabpanel" id="p-3" aria-labelledby="tab-3" hidden>
+        <div class="grid first" id="extras"></div>
+      </div>
+
+      <div class="pane" role="tabpanel" id="p-4" aria-labelledby="tab-4" hidden>
+        <div class="look-head first"><h2>Your look</h2><span class="muted" id="itemCount"></span></div>
+        <div class="grid" id="lookGrid"></div>
+        <div class="bill" id="bill"></div>
+        <ol class="timeline" id="timeline"></ol>
+        <div class="field">
+          <label class="flabel" for="cname">First name</label>
+          <input id="cname" class="text" maxlength="30" autocomplete="given-name">
+        </div>
+        <button type="button" class="btn full" id="save">Get store code</button>
+        <div class="codebox" id="codebox" hidden>
+          <span class="muted">Show this in store</span>
+          <span class="code" id="code"></span>
+          <button type="button" class="btn ghost" id="copy">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-foot">
+      <div class="total"><b id="total"></b><span class="muted" id="eta"></span></div>
+      <div class="nav-btns">
+        <button type="button" class="btn ghost" id="prev">Back</button>
+        <button type="button" class="btn" id="next">Next</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="wrap">
+    <h2 class="section-title">How it works</h2>
+    <ol class="steps">
+      <li><span class="n">1</span><h3>Design</h3><p>Here, or in store.</p></li>
+      <li><span class="n">2</span><h3>Get measured</h3><p>Saved to your Size Passport.</p></li>
+      <li><span class="n">3</span><h3>Made for you</h3><p>3â€“4 weeks. Free delivery or pick-up.</p></li>
+      <li><span class="n">4</span><h3>Final fitting</h3><p>Tailored in store, 30 min to 3 days.</p></li>
+      <li><span class="n">5</span><h3>Not right?</h3><p>Return within 30 days.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="store" id="store">
+  <div class="wrap store-grid">
+    <div class="store-text">
+      <h2 class="section-title">What your advisor sees</h2>
+      <p class="muted">Your look is ready before you arrive.</p>
+    </div>
+    <div class="tablet" aria-label="Style Advisor screen">
+      <div class="tablet-bar"><span>Style Advisor</span><span class="mono" id="advCode">No code yet</span></div>
+      <div class="tablet-body" id="advisor"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p><b>A learning project.</b> Not an official product of any brand. Euro prices, options, appointment times and the size suggestion are illustrative.</p>
+    <p>Photos: suit on mannequin by Paul Goyette, <a href="https://commons.wikimedia.org/wiki/File:Grey_and_navy_suit_on_mannequin.jpg">CC BY-SA 2.0</a>, cropped and recoloured in the browser (adaptation under the same licence). Wool texture by Rico Cilliers and colormass via Poly Haven, CC0. â€œTweed 1â€, public domain. Via Wikimedia Commons.</p>
+  </div>
+</footer>
+
+<div class="modal" id="intro" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+    <button type="button" class="close" id="introClose" aria-label="Close">Ã—</button>
+    <h2 id="introTitle">Whatâ€™s it for?</h2>
+    <div class="intro-grid" id="introGrid"></div>
+    <button type="button" class="btn" id="introGo">Proceed</button>
+  </div>
+</div>
+
+<script src="js/data.js?v=16"></script>
+<script src="js/recolor.js?v=16"></script>
+<script src="js/app.js?v=16"></script>
+</body>
+</html>
