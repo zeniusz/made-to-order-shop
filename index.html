@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="css/style.css?v=40">
+<link rel="stylesheet" href="css/style.css?v=50">
 </head>
 <body>
 
@@ -42,7 +42,7 @@
         <button type="button" class="zoombtn" id="zoomBtn" aria-pressed="false">Inspect image</button>
         <div class="you" id="you" hidden><img id="youImg" alt="Your photo"><span id="youCloth"></span></div>
       </div>
-      <p class="photo-caption" id="photoCaption">Choose a look, then select the actual cloth from the swatches.</p>
+      <p class="photo-caption" id="photoCaption">Pick a look, then a cloth.</p>
       <div class="strip" id="strip" aria-label="Pieces in your look"></div>
       <button type="button" class="cta" id="cta">Review look</button>
     </div>
@@ -66,7 +66,7 @@
           <span><button type="button" class="textbtn" id="resumeYes">Resume</button><button type="button" class="textbtn" id="resumeNo">Start fresh</button></span>
         </div>
         <div class="cloth-heading first">
-          <div><h2>Start with an occasion</h2><p class="sub">Wedding, business, smart casual, summer escape or formal evening. Choose the look that feels right.</p></div>
+          <div><h2>Start with an occasion</h2></div>
           <button type="button" class="btn ghost ask-stylist" id="openStylist">Create my look with AI</button>
         </div>
         <div class="look-grid" id="occ" aria-label="Choose a style or occasion"></div>
@@ -97,13 +97,13 @@
 
       <div class="pane" role="tabpanel" id="p-2" aria-labelledby="tab-2" hidden>
         <div class="fit-assist">
-          <div><b>Not sure what suits you?</b><p class="muted">Share your occasion or a reference photo with the stylist.</p></div>
+          <div><b>Not sure what suits you?</b></div>
           <button type="button" class="textbtn" id="openStylistFit">Create a look with AI</button>
         </div>
         <!-- A: tell us about you -->
         <div class="wiz" id="fitA">
           <h2>Find my size</h2>
-          <p class="sub">Three quick questions. We suggest one size and tell you how sure we are.</p>
+          
           <div class="field">
             <span class="flabel">Height</span>
             <div class="stepper one" data-key="h"><button type="button" aria-label="Less">−</button><label><input id="h" type="number" inputmode="numeric" min="150" max="210" step="1" value="180"><span>cm</span></label><button type="button" aria-label="More">+</button></div>
@@ -179,7 +179,7 @@
         <!-- C: size grid for people who know their size -->
         <div class="wiz" id="fitC" hidden>
           <h2>All sizes</h2>
-          <p class="sub">Regular is for 168 to 186 cm. Short is below 168 cm. Long is above 186 cm.</p>
+          <p class="sub">Regular 168 to 186 cm. Short below. Long above.</p>
           <div class="field first"><div class="chips" id="gGroup" role="group" aria-label="Length"></div></div>
           <div class="field"><div class="chips" id="gSizes" role="group" aria-label="Size"></div></div>
           <button type="button" class="textbtn center" id="backA2">Back to Find my size</button>
@@ -231,7 +231,7 @@
             <div class="monogram-copy"><b id="monoPreviewTitle">Your initials, embroidered</b><span id="monoHint">Preview shown on the inside lining. Enter your initials to personalise it.</span></div>
           </div>
         </section>
-        <div class="extras-heading"><h2>Finish the look</h2><p class="sub">Choose accessories and match their colours to your outfit.</p></div>
+        <div class="extras-heading"><h2>Finish the look</h2></div>
         <div class="grid first" id="extras"></div>
       </div>
 
@@ -242,7 +242,7 @@
         <ol class="timeline" id="timeline"></ol>
         <fieldset class="contact">
           <legend class="flabel">Your details</legend>
-          <p class="muted small">So your advisor can confirm your fitting. Optional, and kept on this device until you share your code.</p>
+          <p class="muted small">Optional. Stays on this device.</p>
           <div class="field-row"><label for="cname">Name</label><input id="cname" class="text" maxlength="60" autocomplete="name" placeholder="First and last name"></div>
           <div class="field-row"><label for="cemail">Email</label><input id="cemail" class="text" type="email" maxlength="80" autocomplete="email" inputmode="email" placeholder="name@example.com"></div>
           <div class="field-row"><label for="cphone">Phone</label><input id="cphone" class="text" type="tel" maxlength="24" autocomplete="tel" inputmode="tel" placeholder="+31 6 1234 5678"></div>
@@ -273,11 +273,11 @@
   <div class="wrap">
     <h2 class="section-title">How it works</h2>
     <ol class="steps">
-      <li><span class="n">1</span><h3>Design</h3><p>Here, or in store.</p></li>
-      <li><span class="n">2</span><h3>Get measured</h3><p>Saved to your Size Passport.</p></li>
-      <li><span class="n">3</span><h3>Made for you</h3><p>3–4 weeks. Free delivery or pick-up.</p></li>
-      <li><span class="n">4</span><h3>Final fitting</h3><p>Tailored in store, 30 min to 3 days.</p></li>
-      <li><span class="n">5</span><h3>Not right?</h3><p>Return within 30 days.</p></li>
+      <li><span class="n">1</span><h3>Design</h3><p>Design your suit here or in a store.</p></li>
+      <li><span class="n">2</span><h3>Get measured</h3><p>An advisor checks your size and saves it to your Size Passport.</p></li>
+      <li><span class="n">3</span><h3>Made for you</h3><p>Ready in 2–3 weeks. Delivery is free, or pick it up in store.</p></li>
+      <li><span class="n">4</span><h3>Final fitting</h3><p>In-store tailors make the final adjustments in 30 minutes to 3 days.</p></li>
+      <li><span class="n">5</span><h3>Not right?</h3><p>Return it within 30 days if it is unworn and unaltered.</p></li>
     </ol>
   </div>
 </section>
@@ -287,12 +287,7 @@
 
 <footer class="footer">
   <div class="wrap">
-    <p>Custom Made Studio · An independent configurator concept</p>
-    <details class="credits">
-      <summary>About this concept &amp; image credits</summary>
-      <p>Suit and accessory photographs were generated specifically for this prototype. Each occasion has its own look image, each accessory colour switches to a matching product photo where available, and the main suit photos are never recoloured. Prices, appointment times and size suggestions are illustrative—not official product prices or fit advice.</p>
-      <p>The 16 fabric swatches use high-resolution generated textile macro references mapped to each selectable cloth colour and weave. These are fabric references, not a guarantee of the exact material a real manufacturer would supply. All assets ship locally with the project.</p>
-    </details>
+    <p>Custom Made Studio · An independent concept, not an official product. Photos are generated for this prototype; prices and sizes are illustrative.</p>
   </div>
 </footer>
 
@@ -301,9 +296,8 @@
   <section class="sheet stylist-sheet" role="dialog" aria-modal="true" aria-labelledby="stylistTitle">
     <button type="button" class="close" id="stylistClose" aria-label="Close stylist">×</button>
     <div class="stylist-modal-head">
-      <p class="eyebrow">YOUR PERSONAL STYLIST</p>
       <h2 id="stylistTitle">Create my look</h2>
-      <p class="muted">Tell your AI stylist where you are going, the mood you want and your budget—or upload an inspiration photo to match its colours to the fabric catalog.</p>
+      <p class="muted">Tell the stylist the occasion and your budget, or upload a photo you like.</p>
     </div>
     <div class="stylist-modal-grid">
       <div class="stylist first">
@@ -317,12 +311,12 @@
       </div>
       <aside class="inspiration-panel">
         <span class="flabel">Use a photo for inspiration</span>
-        <p class="muted small">Upload a suit, outfit or fabric you like. The stylist samples its dominant colour and matches it to an actual textured fabric sample; catalog photos stay unchanged.</p>
+        <p class="muted small">The stylist picks the closest cloth to its colour.</p>
         <button type="button" class="upload wide" id="inspoBtn"><span class="thumb" id="inspoThumb"></span><span id="inspoT">Upload inspiration photo</span></button>
         <input type="file" id="inspoFile" accept="image/*" hidden>
         <div class="inspo-preview-wrap" id="inspoPreviewWrap" hidden><img id="inspoPreview" alt="Your style inspiration"><div class="inspo-colour"><span id="inspoColourDot"></span><span id="inspoNote" aria-live="polite">Choose a photo to get started.</span></div></div>
         <button type="button" class="btn full" id="applyInspo" disabled>Find a matching cloth</button>
-        <p class="privacy-note">Your photo stays on this device in this demo. Style matching works locally; generated outfit photography needs a configured image-generation service.</p>
+        <p class="privacy-note">Your photo stays on this device.</p>
       </aside>
     </div>
   </section>
@@ -335,9 +329,9 @@
   <p id="zoomCaption">High-resolution product image</p>
 </div>
 
-<script src="js/data.js?v=40"></script>
-<script src="js/config.js?v=40"></script>
-<script src="js/assistant.js?v=40"></script>
-<script src="js/app.js?v=40"></script>
+<script src="js/data.js?v=50"></script>
+<script src="js/config.js?v=50"></script>
+<script src="js/assistant.js?v=50"></script>
+<script src="js/app.js?v=50"></script>
 </body>
 </html>

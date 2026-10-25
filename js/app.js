@@ -521,11 +521,7 @@
     $('viewFull').setAttribute('aria-pressed', String(view === 'full'));
     $('viewLive').setAttribute('aria-pressed', String(view === 'live'));
     $('viewDetail').setAttribute('aria-pressed', String(view === 'detail'));
-    $('photoCaption').textContent = view === 'full'
-      ? 'Style reference · ' + o.desc + '. Chosen fabric swatch: ' + cloth().name + '.'
-      : view === 'live'
-        ? 'Fabric sample · ' + cloth().name + '. Texture shown separately from the outfit photograph.'
-        : 'Detail view of the original ' + o.label.toLowerCase() + ' look. Open the full-resolution photo to inspect the tailoring.';
+    $('photoCaption').textContent = view === 'live' ? cloth().name + ' · fabric sample' : o.label + ' · ' + cloth().name + (view === 'detail' ? ' · detail' : '');
     $('zoomBtn').hidden = view === 'live';
     $('zoomBtn').textContent = view === 'detail' ? 'View full-resolution image' : 'Inspect full-size photo';
     $('zoomBtn').setAttribute('aria-pressed', 'false');
@@ -923,6 +919,9 @@
   update();
   if (q.get('brief')) ask(q.get('brief'));
   if (q.get('mode') === 'advisor') setMode('advisor');
+  if (q.get('view') === 'sample') setGalleryView('live');
+  if (q.get('view') === 'detail') setGalleryView('detail');
+  if (q.get('stylist') === 'open') openStylist();
   if (q.get('measure')) { st.notSure = true; st.chest = 100; st.fitMode = 'a'; update(); $('measureHelp').open = true; }
   paintStage();
   if (st.tab === 4) renderReview(true);
