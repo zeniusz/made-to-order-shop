@@ -30,7 +30,8 @@ Notes from walking through a real configurator turned into changes:
 - **Silent changes** (switching a style quietly changed another default) became a one-line note saying what changed.
 - **A bare size grid** became a guided size step with a confidence label and a store fallback.
 - **Returning visitors** got resume, a saved size and a link that reopens the design.
-- **"AI"** was added where it removes typing: one sentence fills several choices. The built-in reader is deliberately simple and honest about what it understood; the Claude option is optional and uses the visitor's own key.
+- **"AI"** was added where it removes typing and guessing: a chat that picks cloth from a sentence, explains terms and answers how-it-works questions. A first version asked visitors to paste their own API key, which was a bad experience, so it was replaced by a built-in stylist that needs nothing, plus an optional hosted proxy that keeps the key off the page.
+- **Fit help for the unsure:** a chest measurement and a short measuring guide give a better size than height and weight alone, and a calendar file helps people keep the fitting.
 
 ## Ideas for next
 

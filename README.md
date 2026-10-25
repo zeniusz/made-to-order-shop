@@ -14,9 +14,9 @@ The idea was to test how far an AI-assisted build can go with a made-to-measure 
 |---|---|
 | ![](docs/screenshots/4-find-my-size.png) | ![](docs/screenshots/7-low-confidence.png) |
 
-| Describe what you need | Style choices that tell you what changed |
-|---|---|
-| ![](docs/screenshots/8-describe-it.png) | ![](docs/screenshots/9-style-note.png) |
+| The stylist | Style choices that tell you what changed | Measure yourself |
+|---|---|---|
+| ![](docs/screenshots/8-describe-it.png) | ![](docs/screenshots/9-style-note.png) | ![](docs/screenshots/10-measure.png) |
 
 ## What I wanted to learn
 
@@ -38,14 +38,24 @@ The idea was to test how far an AI-assisted build can go with a made-to-measure 
 - Extras in matched colours, price shown line by line in euros.
 - Store code and a store-advisor screen.
 - **Remembers you, on this device only.** Resume where you left off, a Size Passport for your saved size, and a link that reopens the exact design.
+- **Measure yourself.** A short illustrated guide and an optional chest field for a more accurate size.
+- **Add the fitting to your calendar** as a calendar file with the store code in it.
+- **Close-up.** Hover or touch the jacket to magnify the weave.
 
-## AI features
+## The stylist (AI)
 
-- **Describe what you need.** Type one sentence, for example "navy suit for a summer wedding, 183 cm, 80 kg, slim fit". The page picks the occasion, season, colour, texture and budget, fills in your height, weight and fit preference, ranks the cloths and says why the top one was chosen. This runs in the browser with a small rule-based reader. Nothing is sent anywhere.
-- **Optional: let Claude read it.** Open "Use Claude to read it" and paste your own Anthropic API key. The sentence is then read by Claude (`claude-haiku-5-5`) instead of the built-in reader, with the built-in reader as a fallback if the call fails. The key stays in that tab and is never stored. This path is written to the API's documented format but has not been tested against a live key, so treat it as experimental.
-- **Explain, don't just list.** Every suggestion comes with a reason: why this cloth, why this size, and how sure the page is.
+A chat at the top of the Cloth step. Type what you need and it does the choosing, or ask a question.
 
-Shareable views: `?occ=wed` (int, off, wed, eve, trv), `?tab=4` (step 0–4), `?intro=0` (skip the first-visit picker), `?brief=...` (run the describe-it box with that sentence).
+- **"Navy suit for a summer wedding, 183 cm, 80 kg, slim fit"**: picks the occasion, season, colour, texture and budget it finds, fills in your height, weight and fit preference, ranks the cloths and explains why the top one won.
+- **"What does S120's mean?" / "What is half canvas?" / "How long is delivery?"**: answers from the facts the page already shows.
+- **"Something cheaper", "darker", "a finer cloth"**: changes the choice and says by how much.
+- **"What size am I?", "book a fitting", "what tie goes with this?"**: takes you to the right step with a suggestion.
+
+It works for everyone with no setup. The built-in reader runs entirely in the browser and sends nothing anywhere.
+
+**Connecting a hosted Claude (optional, for the site owner).** A static page cannot keep a secret key, so visitors never see or enter one. Instead, deploy `worker/claude-proxy.js` (a small Cloudflare Worker that holds the key as a secret), then put its address in `js/config.js`. From then on each message is answered by Claude, and if the worker is down or unset the built-in reader answers. The worker is written to Anthropic's documented API but has not been tested against a live key.
+
+Shareable views: `?occ=wed` (int, off, wed, eve, trv), `?tab=4` (step 0–4), `?intro=0` (skip the first-visit picker), `?brief=...` (send that sentence to the stylist).
 
 ## Run it
 
@@ -78,7 +88,9 @@ css/style.css
 js/data.js        catalogue and options
 js/recolor.js     photo recolouring engine
 js/app.js         configurator logic and UI
-js/assistant.js   describe-it reader (local) and optional Claude call
+js/assistant.js   the stylist: built-in reader, facts, optional hosted Claude
+js/config.js      optional address of the hosted Claude proxy
+worker/           the proxy that keeps the API key off the page
 assets/img/       photos, masks and textures
 docs/             screenshots and learning notes
 tools/            script that builds the masks from the source photo

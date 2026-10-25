@@ -27,7 +27,7 @@
     lining: '#1f2d4d', mono: '',
     h: 180, w: 78, pref: 'Regular', usual: 50, notSure: false, size: null, group: 'regular', level: null, sug: null, fitMode: 'a', book: false, walk: false, adj: { sleeve: 0, jlen: 0, waist: 0, tlen: 0, rise: 0 },
     self: null, city: 'Amsterdam', slot: null,
-    on: {}, col: {}, name: '', code: null, season: null, budget: null, boost: [], change: ''
+    on: {}, col: {}, name: '', code: null, season: null, budget: null, boost: [], change: '', chest: null, chat: []
   };
   var byId = function (id) { return D.cloths.filter(function (c) { return c.id === id; })[0]; };
   var cloth = function () { return byId(st.cloth); };
@@ -123,7 +123,10 @@
   /* One suggested size, a High / Medium / Low label and a plain reason */
   function suggest() {
     var g = groupFor(st.h), reasons = [], size, level, shift = st.pref === 'Relaxed' ? 2 : 0;
-    if (st.usual && !st.notSure) {
+    if (st.notSure && st.chest) {
+      size = evenSize(st.chest / 2 + shift); level = 'High';
+      reasons.push('your chest measurement (' + st.chest + ' cm)', 'your height (' + st.h + ' cm)');
+    } else if (st.usual && !st.notSure) {
       size = evenSize(st.usual + shift); level = 'High';
       reasons.push('your height (' + st.h + ' cm)', 'your usual size ' + st.usual);
     } else {
@@ -153,13 +156,14 @@
     return Math.min(100, s);
   }
   var confLabel = function (n) { return n >= 75 ? 'High' : n >= 50 ? 'Medium' : 'Low'; };
+  var SLOT_DATE = {};
   var SLOTS = (function () {
     var out = [], d = new Date(), days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     var times = [['10:30', '16:00'], ['12:00', '17:30'], ['11:00', '14:30']];
     for (var i = 1, n = 0; n < 3; i++) {
       var x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i);
       if (x.getDay() === 0) continue;
-      times[n].forEach(function (t) { out.push(days[x.getDay()] + ' ' + x.getDate() + ' ' + mon[x.getMonth()] + ', ' + t); });
+      times[n].forEach(function (t) { var lab = days[x.getDay()] + ' ' + x.getDate() + ' ' + mon[x.getMonth()] + ', ' + t, hm = t.split(':'); out.push(lab); SLOT_DATE[lab] = new Date(x.getFullYear(), x.getMonth(), x.getDate(), +hm[0], +hm[1]); });
       n++;
     }
     return out;
@@ -259,6 +263,8 @@
     usual.push(chip('Not sure', st.notSure, function () { st.notSure = true; update(); }));
     fill('usual', usual);
     $('wRow').hidden = !st.notSure;
+    $('chestRow').hidden = !st.notSure;
+    if (document.activeElement !== $('chest')) $('chest').value = st.chest || '';
     fill('pref', PREFS.map(function (p) { return chip(p, st.pref === p, function () { st.pref = p; update(); }); }));
 
     /* B: suggestion */
@@ -298,6 +304,7 @@
       $('storeBook').setAttribute('aria-pressed', String(st.book));
       $('storeWalk').setAttribute('aria-pressed', String(st.walk));
       $('bookBox').hidden = !st.book;
+      $('cal').hidden = !(st.slot && SLOT_DATE[st.slot]);
       fill('slots', SLOTS.map(function (t) { return chip(t, st.slot === t, function () { st.slot = st.slot === t ? null : t; update(); }); }));
     }
   }
@@ -395,11 +402,11 @@
   function renderChange() { $('changeNote').textContent = st.change || ''; }
 
   /* ---------- Size Passport and resume (this device only) ---------- */
-  var KEEP = ['occ', 'target', 'cloth', 'season', 'budget', 'boost', 'style', 'lining', 'mono', 'h', 'w', 'pref', 'usual', 'notSure', 'size', 'group', 'level', 'adj', 'book', 'walk', 'slot', 'city', 'on', 'col'];
+  var KEEP = ['chest', 'occ', 'target', 'cloth', 'season', 'budget', 'boost', 'style', 'lining', 'mono', 'h', 'w', 'pref', 'usual', 'notSure', 'size', 'group', 'level', 'adj', 'book', 'walk', 'slot', 'city', 'on', 'col'];
   function snap(keys) { var o = {}; keys.forEach(function (k) { o[k] = st[k]; }); return JSON.parse(JSON.stringify(o)); }
   function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   function load(k) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
-  var PASS = ['h', 'w', 'pref', 'usual', 'notSure', 'size', 'group', 'level', 'adj'];
+  var PASS = ['chest', 'h', 'w', 'pref', 'usual', 'notSure', 'size', 'group', 'level', 'adj'];
   var saveTimer = 0, canSave = false; /* held until we know whether a saved session is waiting */
   function persist() { if (!canSave) return; clearTimeout(saveTimer); saveTimer = setTimeout(function () { store('cm-state-v1', snap(KEEP)); }, 400); }
   function renderPassport() {
@@ -576,14 +583,32 @@
   };
 
 
-  /* Describe what you need */
-  var CHIP_NOTE = 'Runs in your browser.';
-  function applyBrief(r) {
+  /* Stylist chat */
+  function say(who, text, chips) {
+    st.chat.push({ who: who, text: text, chips: chips || [] });
+    if (st.chat.length > 8) st.chat.shift();
+    renderChat();
+  }
+  function renderChat() {
+    var t = $('thread'); t.innerHTML = '';
+    st.chat.forEach(function (m) { t.appendChild(el('div', 'msg ' + m.who, '')).textContent = m.text; });
+    t.scrollTop = t.scrollHeight;
+    var last = st.chat[st.chat.length - 1];
+    fill('quick', (last && last.who === 'bot' ? last.chips : []).map(function (c) {
+      return chip(c.label, false, function () { if (c.run) c.run(); else ask(c.say || c.label); });
+    }));
+  }
+  var START_CHIPS = [
+    { label: 'Summer wedding', say: 'navy suit for a summer wedding' },
+    { label: 'First interview', say: 'dark suit for a first job interview' },
+    { label: 'For travel', say: 'wrinkle-free suit for travel' },
+    { label: 'What does S120\u2019s mean?', say: 'what does S120\u2019s mean' }
+  ];
+  var goFit = { label: 'Find my size', run: function () { showTab(2); } };
+
+  function applyBrief(r, replyText) {
     var bits = Brief.summary(r, D);
-    if (!bits.length) {
-      $('briefChips').innerHTML = ''; $('briefWhy').textContent = 'I could not pick anything out. Try an occasion, a colour, a season, or your height and weight.';
-      return;
-    }
+    if (!bits.length && !replyText) { return false; }
     if (r.h) st.h = r.h;
     if (r.w) st.w = r.w;
     if (r.usual) { st.usual = r.usual; st.notSure = false; } else if (r.w) st.notSure = true;
@@ -591,29 +616,119 @@
     st.season = r.season; st.budget = r.budget; st.boost = r.weaves || [];
     var occ = r.occ || st.occ, oc = D.occasions.filter(function (o) { return o.id === occ; })[0];
     st.occ = occ; st.target = r.colour || (r.occ ? oc.c : st.target); clearLook();
-    if (r.h || r.w || r.usual || r.pref) { st.size = null; st.fitMode = 'a'; }
+    var gotSize = r.h || r.w || r.usual || r.pref;
+    if (gotSize) { st.size = null; st.fitMode = 'a'; }
     var top = ranked()[0]; st.cloth = top.c.id; resetOutfit(); update();
-    fill('briefChips', bits.map(function (b) { var e = el('span', 'chip read', b); return e; }));
     var why = ['closest to ' + (r.colourName || oc.label.toLowerCase()) + ' (' + top.pct + '% match)'];
     if (top.occ) why.push('suits ' + oc.label.toLowerCase());
     if (r.season) why.push('works in ' + r.season);
     if (r.budget) why.push('within your budget');
     if (top.boost) why.push('has the texture you asked for');
-    $('briefWhy').textContent = 'Best match: ' + top.c.name + ', ' + money(eur(top.c.usd)) + '. ' + cap(why.join(', ')) + '.' + ((r.h || r.w || r.usual) ? ' Your size details are filled in on the Fit step.' : '') + (r.via === 'claude' ? ' Read by Claude.' : ' ' + CHIP_NOTE);
+    var text = (replyText ? replyText + ' ' : '') + 'I chose ' + top.c.name + ' at ' + money(eur(top.c.usd)) + '. ' + cap(why.join(', ')) + '.';
+    var chips = gotSize ? [goFit, { label: 'Show all matches', run: function () { st.all = true; update(); } }] : [{ label: 'Something cheaper', say: 'something cheaper' }, { label: 'A darker colour', say: 'darker' }, goFit];
+    say('bot', text, chips);
+    return true;
   }
-  function runBrief() {
-    var text = $('brief').value.trim(), key = $('aiKey').value.trim();
-    if (!text) { $('briefWhy').textContent = 'Type a sentence first, for example: grey suit for the office, 178 cm, 72 kg.'; return; }
-    if (!key) { applyBrief(Brief.parse(text)); return; }
-    $('briefWhy').textContent = 'Asking Claude...';
-    Brief.askClaude(text, key).then(applyBrief).catch(function (e) {
-      var r = Brief.parse(text); applyBrief(r);
-      $('briefWhy').textContent = (e && e.message ? e.message + ' ' : 'Claude could not read that. ') + 'Used the built-in reader instead. ' + $('briefWhy').textContent;
+
+  function localAnswer(text) {
+    var t = text.toLowerCase(), gl = D.glossary.filter(function (g) { return g.rx.test(text); })[0], k;
+    if (gl && /(what|mean|explain|difference|tell|why|is it)/.test(t)) { say('bot', gl.term + ': ' + gl.text); return; }
+    if ((k = Brief.kb(text))) { say('bot', k); return; }
+
+    var cur = eur(cloth().usd), rk = ranked();
+    if (/cheaper|less expensive|lower price|save|affordable/.test(t) && !/under|below|up to|max/.test(t)) {
+      var c1 = rk.slice(0, 10).filter(function (x) { return eur(x.c.usd) < cur; }).sort(function (a, b) { return eur(b.c.usd) - eur(a.c.usd); })[0];
+      if (!c1) { say('bot', 'This is already one of the most affordable matches for your colour.'); return; }
+      st.cloth = c1.c.id; resetOutfit(); update();
+      say('bot', 'Switched to ' + c1.c.name + ', ' + money(eur(c1.c.usd)) + '. That is ' + money(cur - eur(c1.c.usd)) + ' less.', [{ label: 'Undo', say: 'more expensive' }]); return;
+    }
+    if (/more expensive|luxur|finer|premium|better quality|upgrade/.test(t)) {
+      var c2 = rk.slice(0, 10).filter(function (x) { return eur(x.c.usd) > cur; }).sort(function (a, b) { return eur(a.c.usd) - eur(b.c.usd); })[0];
+      if (!c2) { say('bot', 'This is already at the top of the range for your colour.'); return; }
+      st.cloth = c2.c.id; resetOutfit(); update();
+      say('bot', 'Switched to ' + c2.c.name + ', ' + money(eur(c2.c.usd)) + '. A finer cloth, ' + money(eur(c2.c.usd) - cur) + ' more.'); return;
+    }
+    if (/lighter|paler|brighter|lighten/.test(t) || /darker|deeper|darken/.test(t)) {
+      var up = /lighter|paler|brighter|lighten/.test(t), base = rgb(st.target);
+      var mixed = base.map(function (v) { return up ? v + (255 - v) * 0.28 : v * 0.72; });
+      setTarget(toHex(mixed)); say('bot', 'Made it a little ' + (up ? 'lighter' : 'darker') + '. Now ' + cloth().name + '.'); return;
+    }
+    if (/\b(size|how (?:does|will) it fit|what size)\b/.test(t)) { showTab(2); say('bot', 'Let\u2019s find your size. Answer the three questions on the Fit step.'); return; }
+    if (/book|appointment|fitting|walk.?in/.test(t)) { showTab(2); st.fitMode = st.size ? 'd' : st.fitMode; st.book = true; update(); say('bot', 'Pick a time on the Fit step, or choose walk-in if you prefer.'); return; }
+    if (/\b(tie|shirt|pocket square|shoes|extras|accessor)/.test(t)) {
+      var r = recs(); showTab(3);
+      say('bot', 'With ' + cloth().name + ' I would go for a ' + cname(r.shirt[0]).toLowerCase() + ' shirt, a ' + cname(r.tie[0]).toLowerCase() + ' tie and ' + cname(r.shoes[0]).toLowerCase() + ' shoes. They are on the Extras step.'); return;
+    }
+    var parsed = Brief.parse(text);
+    if (applyBrief(parsed)) return;
+    say('bot', 'I can choose a cloth from an occasion, colour, season or budget, explain terms, find your size or book a fitting. For example: \u201Cgrey flannel for the office under 800\u201D.', START_CHIPS);
+  }
+
+  function ask(text) {
+    text = String(text || '').trim();
+    if (!text) return;
+    $('brief').value = '';
+    say('me', text);
+    var ctx = { cloth: cloth().name, occasion: st.occ, season: st.season, size: st.size ? sizeText() : null, total_eur: total() };
+    Brief.remote(text, ctx).then(function (res) {
+      if (res && (res.reply || Brief.summary(res.r, D).length)) { if (!applyBrief(res.r, res.reply)) say('bot', res.reply); }
+      else localAnswer(text);
     });
   }
-  $('briefGo').onclick = runBrief;
-  $('brief').onkeydown = function (e) { if (e.key === 'Enter') runBrief(); };
-  $('aiClear').onclick = function () { $('aiKey').value = ''; };
+  $('briefGo').onclick = function () { ask($('brief').value); };
+  $('brief').onkeydown = function (e) { if (e.key === 'Enter') ask($('brief').value); };
+  say('bot', 'Tell me what you need, like \u201Cnavy suit for a summer wedding\u201D, or ask me about any cloth or term.', START_CHIPS);
+
+  /* measure yourself */
+  var setChest = function (v) {
+    if (v == null || isNaN(v)) st.chest = null; else st.chest = Math.max(80, Math.min(140, Math.round(v)));
+    $('chest').value = st.chest || ''; update();
+  };
+  $('chestMinus').onclick = function () { setChest((st.chest || 101) - 1); };
+  $('chestPlus').onclick = function () { setChest((st.chest || 99) + 1); };
+  $('chest').onchange = function () { var v = parseInt(this.value, 10); setChest(isNaN(v) ? null : v); };
+  $('fbMeasure').onclick = function () { st.notSure = true; st.fitMode = 'a'; update(); $('measureHelp').open = true; $('measureHelp').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+
+  /* fitting to calendar */
+  var icsDate = function (d) { var p = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + 'T' + p(d.getHours()) + p(d.getMinutes()) + '00'; };
+  var icsText = function (t) { return String(t).replace(/([,;\\])/g, '\\$1').replace(/\n/g, '\\n'); };
+  $('cal').onclick = function () {
+    var d = SLOT_DATE[st.slot]; if (!d) return;
+    var end = new Date(d.getTime() + 20 * 60000);
+    var desc = 'Cloth: ' + cloth().name + '\nSize: ' + (st.size ? sizeText() : 'to be confirmed') + (st.code ? '\nStore code: ' + st.code : '');
+    var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Custom Made Studio//EN', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT',
+      'UID:' + Date.now() + '@custom-made-studio', 'DTSTAMP:' + icsDate(new Date()), 'DTSTART:' + icsDate(d), 'DTEND:' + icsDate(end),
+      'SUMMARY:' + icsText('Suit fitting'), 'LOCATION:' + icsText(st.city + ' store'), 'DESCRIPTION:' + icsText(desc),
+      'BEGIN:VALARM', 'TRIGGER:-PT2H', 'ACTION:DISPLAY', 'DESCRIPTION:Suit fitting', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+    var url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })), a = document.createElement('a');
+    a.href = url; a.download = 'suit-fitting.ics'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  };
+
+  /* close-up lens over the jacket photo */
+  var lens = $('lens'), lctx = lens.getContext('2d'), zoomOn = false, ZOOM = 3;
+  $('zoomBtn').onclick = function () {
+    zoomOn = !zoomOn; this.setAttribute('aria-pressed', String(zoomOn));
+    $('suitPhoto').classList.toggle('zoom', zoomOn); if (!zoomOn) lens.hidden = true;
+  };
+  function lensMove(e) {
+    if (!zoomOn || !Recolor.state.ready) return;
+    var cv = $('suitCanvas'), r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    if (x < 0 || y < 0 || x > r.width || y > r.height) { lens.hidden = true; return; }
+    var sc = Math.max(r.width / cv.width, r.height / cv.height);
+    var ix = (x - (r.width - cv.width * sc) / 2) / sc, iy = (y - (r.height - cv.height * sc) / 2) / sc;
+    var css = 170, src = css / sc / ZOOM;
+    lctx.clearRect(0, 0, lens.width, lens.height);
+    lctx.drawImage(cv, ix - src / 2, iy - src / 2, src, src, 0, 0, lens.width, lens.height);
+    lens.style.left = (x - css / 2) + 'px';
+    lens.style.top = (y - css / 2 - (e.pointerType === 'touch' ? 100 : 0)) + 'px';
+    lens.hidden = false;
+  }
+  var ph = $('suitPhoto');
+  ph.addEventListener('pointermove', lensMove);
+  ph.addEventListener('pointerdown', lensMove);
+  ph.addEventListener('pointerleave', function () { lens.hidden = true; });
+  ph.addEventListener('pointerup', function (e) { if (e.pointerType === 'touch') lens.hidden = true; });
 
   /* Size Passport */
   $('ppSave').onchange = function () {
@@ -662,7 +777,8 @@
   if (q.get('fit') === 'd') { st.sug = suggest(); st.size = st.sug.size; st.group = st.sug.group; st.level = st.sug.level; st.fitMode = 'd'; }
   if (q.get('tab')) showTab(Math.max(0, Math.min(4, parseInt(q.get('tab'), 10) || 0)));
   update();
-  if (q.get('brief')) { $('brief').value = q.get('brief'); runBrief(); }
+  if (q.get('brief')) ask(q.get('brief'));
+  if (q.get('measure')) { st.notSure = true; st.chest = 100; st.fitMode = 'a'; update(); $('measureHelp').open = true; }
   Recolor.init($('suitCanvas')).then(function () {
     paintStage();
     if (st.tab === 4) renderReview(true);

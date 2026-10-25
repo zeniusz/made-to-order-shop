@@ -278,3 +278,29 @@ select{max-width:220px}
 .share-note{font-size:.82rem;color:var(--muted);margin-top:8px;word-break:break-all}
 .share-note:empty{display:none}
 @media (max-width:560px){.brief-row{grid-template-columns:1fr}}
+
+/* stylist chat */
+.stylist{display:grid;gap:10px}
+.thread{display:grid;gap:8px;max-height:230px;overflow:auto;padding:2px 2px 2px 0}
+.msg{max-width:88%;padding:10px 14px;border-radius:14px;font-size:.92rem;line-height:1.45;white-space:pre-wrap}
+.msg.bot{background:var(--ground);justify-self:start;border-bottom-left-radius:4px}
+.msg.me{background:var(--btn);color:var(--btn-ink);justify-self:end;border-bottom-right-radius:4px}
+.stylist .chips{gap:6px}
+.stylist .chip{min-height:34px;font-size:.84rem;padding:0 13px}
+.stylist input[type=text]{height:48px;padding:0 14px;border:1px solid var(--line);border-radius:var(--r);background:#fff;font-size:.95rem;min-width:0}
+.brief-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+/* measure help */
+.measure{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;margin-top:10px;font-size:.88rem;align-items:start}
+.measure svg{width:100%;height:auto}
+.measure .ln{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.measure .dash{stroke:var(--ink);stroke-width:1.4;stroke-dasharray:4 3}
+.measure .dot{fill:var(--btn)}
+.measure text{fill:#fff;font-size:10px;font-weight:600}
+.measure ol{margin:0;padding-left:18px;display:grid;gap:6px}
+.measure p{grid-column:1/-1}
+/* close-up */
+.zoombtn{position:absolute;left:12px;top:12px;height:34px;padding:0 14px;border:0;border-radius:999px;background:rgba(255,255,255,.92);font-size:.82rem;font-weight:500;cursor:pointer;z-index:3}
+.zoombtn[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink)}
+.photo.zoom{cursor:crosshair;touch-action:none}
+.lens{position:absolute;width:170px;height:170px;border-radius:50%;border:3px solid #fff;box-shadow:0 8px 30px rgba(0,0,0,.35);pointer-events:none;z-index:4;background:#ddd}
+@media (max-width:560px){.measure{grid-template-columns:1fr}.measure svg{max-width:150px}}

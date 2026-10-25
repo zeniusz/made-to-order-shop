@@ -4,10 +4,10 @@
 window.Recolor = (function () {
   var R = { ready: false };
   var SRC = {
-    base: 'assets/img/suit-base.jpg?v=20',
-    plain: 'assets/img/suit-plain.jpg?v=20',
-    mask: 'assets/img/suit-mask.png?v=20',
-    shirt: 'assets/img/suit-mask-shirt.png?v=20',
+    base: 'assets/img/suit-base.jpg?v=19',
+    plain: 'assets/img/suit-plain.jpg?v=19',
+    mask: 'assets/img/suit-mask.png?v=19',
+    shirt: 'assets/img/suit-mask-shirt.png?v=19',
     wool: 'assets/img/wool-texture.jpg',
     tweed: 'assets/img/tweed-gray.jpg'
   };
