@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="css/style.css?v=21">
+<link rel="stylesheet" href="css/style.css?v=26">
 </head>
 <body>
 
@@ -27,13 +27,21 @@
 <section class="studio" id="studio" aria-label="Suit configurator">
   <div class="stage">
     <div class="stage-in">
-      <div class="photo" id="suitPhoto">
-        <canvas id="suitCanvas" width="795" height="957" aria-label="The jacket in your cloth, shirt, tie and pocket square"></canvas>
-        <img id="suitFallback" src="assets/img/suit-base.jpg" alt="Jacket on a mannequin" hidden>
-        <canvas class="lens" id="lens" width="340" height="340" hidden aria-hidden="true"></canvas>
-        <button type="button" class="zoombtn" id="zoomBtn" aria-pressed="false">Close-up</button>
+      <div class="visual-switch" role="group" aria-label="Product views">
+        <button type="button" class="visual-tab" id="viewFull" aria-pressed="true">Full outfit</button>
+        <button type="button" class="visual-tab" id="viewLive" aria-pressed="false">Fabric sample</button>
+        <button type="button" class="visual-tab" id="viewDetail" aria-pressed="false">Tailoring detail</button>
+      </div>
+      <div class="photo" id="suitPhoto" data-view="full">
+        <img id="suitFullImage" src="assets/img/catalog/business-navy.jpg" alt="Navy wool business suit, full-length studio catalog photo">
+        <div class="fabric-sample-view" id="fabricSampleView" hidden>
+          <div class="large-swatch" id="fabricSample"></div>
+          <div class="fabric-sample-meta"><b id="fabricSampleName">Navy Pure S110's Wool</b><span id="fabricSampleWeave">Plain weave · all-season wool</span></div>
+        </div>
+        <button type="button" class="zoombtn" id="zoomBtn" aria-pressed="false">Inspect image</button>
         <div class="you" id="you" hidden><img id="youImg" alt="Your photo"><span id="youCloth"></span></div>
       </div>
+      <p class="photo-caption" id="photoCaption">Choose a look, then select the actual cloth from the swatches.</p>
       <div class="strip" id="strip" aria-label="Pieces in your look"></div>
       <button type="button" class="cta" id="cta">Review look</button>
     </div>
@@ -54,23 +62,17 @@
           <span>Resume where you left off?</span>
           <span><button type="button" class="textbtn" id="resumeYes">Resume</button><button type="button" class="textbtn" id="resumeNo">Start fresh</button></span>
         </div>
-        <div class="stylist first">
-          <span class="flabel" id="stylistLabel">Ask the stylist</span>
-          <div class="thread" id="thread" role="log" aria-live="polite" aria-labelledby="stylistLabel"></div>
-          <div class="chips" id="quick"></div>
-          <div class="brief-row">
-            <input id="brief" type="text" placeholder="Describe what you need, or ask a question" autocomplete="off" maxlength="240" aria-label="Message to the stylist">
-            <button type="button" class="btn" id="briefGo">Send</button>
-          </div>
+        <div class="cloth-heading first">
+          <div><h2>Start with an occasion</h2><p class="sub">Wedding, business, smart casual, summer escape or formal evening. Choose the look that feels right.</p></div>
+          <button type="button" class="btn ghost ask-stylist" id="openStylist">Create my look with AI</button>
         </div>
-        <div class="chips scroll" id="occ" aria-label="Occasion" style="margin-top:22px"></div>
+        <div class="look-grid" id="occ" aria-label="Choose a style or occasion"></div>
         <div class="field">
+          <span class="flabel">Choose a cloth colour</span>
           <div class="dots" id="dots"></div>
           <div class="colour-row">
             <input type="color" id="cp" value="#1d2a44" aria-label="Any colour">
             <input id="hex" class="hex" value="#1D2A44" maxlength="7" spellcheck="false" aria-label="Hex code">
-            <button type="button" class="upload" id="lookBtn"><span class="thumb" id="lookThumb"></span><span id="lookT">Match a photo</span></button>
-            <input type="file" id="lookFile" accept="image/*" hidden>
           </div>
         </div>
         <div class="field">
@@ -87,13 +89,14 @@
         <div id="styleFields"></div>
         <p class="rule" id="ruleNote" aria-live="polite"></p>
         <div class="field"><span class="flabel">Lining</span><div class="dots" id="lining"></div></div>
-        <div class="field">
-          <label class="flabel" for="mono">Monogram <span class="muted">+â‚¬15</span></label>
-          <input id="mono" class="text" maxlength="3" placeholder="Initials" autocomplete="off">
-        </div>
+
       </div>
 
       <div class="pane" role="tabpanel" id="p-2" aria-labelledby="tab-2" hidden>
+        <div class="fit-assist">
+          <div><b>Not sure what suits you?</b><p class="muted">Share your occasion or a reference photo with the stylist.</p></div>
+          <button type="button" class="textbtn" id="openStylistFit">Create a look with AI</button>
+        </div>
         <!-- A: tell us about you -->
         <div class="wiz" id="fitA">
           <h2>Find my size</h2>
@@ -162,7 +165,7 @@
             <p>A quick measurement in store will get it right. Or <button type="button" class="textbtn" id="fbMeasure">measure yourself</button> for a better suggestion.</p>
             <div class="row2">
               <button type="button" class="btn" id="fbBook">Book appointment</button>
-              <button type="button" class="btn ghost" id="fbWalk">Walk-in anytime</button>
+              <button type="button" class="btn ghost" id="fbWalk">Visit without booking</button>
             </div>
           </div>
           <button type="button" class="btn full" id="useSize"></button>
@@ -194,7 +197,7 @@
             <span class="flabel">Get it checked in store</span>
             <div class="row2">
               <button type="button" class="chip tall" id="storeBook" aria-pressed="false">Book appointment</button>
-              <button type="button" class="chip tall" id="storeWalk" aria-pressed="false">Walk-in anytime</button>
+              <button type="button" class="chip tall" id="storeWalk" aria-pressed="false">Visit without booking</button>
             </div>
             <button type="button" class="btn ghost full" id="cal" hidden>Add fitting to calendar</button>
             <div id="bookBox" hidden>
@@ -216,6 +219,16 @@
       </div>
 
       <div class="pane" role="tabpanel" id="p-3" aria-labelledby="tab-3" hidden>
+        <section class="personalisation field first" aria-labelledby="monoHeading">
+          <div class="personalisation-head"><div><h2 id="monoHeading">Make it personal</h2><p class="sub">Add embroidered initials inside your jacket lining.</p></div><span class="addon-price">+€15</span></div>
+          <label class="flabel" for="mono">Monogram initials</label>
+          <input id="mono" class="text" maxlength="3" placeholder="Enter up to 3 initials" autocomplete="off" aria-describedby="monoHint">
+          <div class="monogram-preview" id="monogramPreview" aria-live="polite">
+            <div class="monogram-lining"><span class="mono-stitch" id="monoDisplay">AJ</span></div>
+            <div class="monogram-copy"><b id="monoPreviewTitle">Your initials, embroidered</b><span id="monoHint">Preview shown on the inside lining. Enter your initials to personalise it.</span></div>
+          </div>
+        </section>
+        <div class="extras-heading"><h2>Finish the look</h2><p class="sub">Choose accessories and match their colours to your outfit.</p></div>
         <div class="grid first" id="extras"></div>
       </div>
 
@@ -255,7 +268,7 @@
     <ol class="steps">
       <li><span class="n">1</span><h3>Design</h3><p>Here, or in store.</p></li>
       <li><span class="n">2</span><h3>Get measured</h3><p>Saved to your Size Passport.</p></li>
-      <li><span class="n">3</span><h3>Made for you</h3><p>3â€“4 weeks. Free delivery or pick-up.</p></li>
+      <li><span class="n">3</span><h3>Made for you</h3><p>3–4 weeks. Free delivery or pick-up.</p></li>
       <li><span class="n">4</span><h3>Final fitting</h3><p>Tailored in store, 30 min to 3 days.</p></li>
       <li><span class="n">5</span><h3>Not right?</h3><p>Return within 30 days.</p></li>
     </ol>
@@ -278,24 +291,57 @@
 
 <footer class="footer">
   <div class="wrap">
-    <p><b>A learning project.</b> Not an official product of any brand. Euro prices, options, appointment times and the size suggestion are illustrative.</p>
-    <p>Photos: suit on mannequin by Paul Goyette, <a href="https://commons.wikimedia.org/wiki/File:Grey_and_navy_suit_on_mannequin.jpg">CC BY-SA 2.0</a>, cropped and recoloured in the browser (adaptation under the same licence). Wool texture by Rico Cilliers and colormass via Poly Haven, CC0. â€œTweed 1â€, public domain. Via Wikimedia Commons.</p>
+    <p>Custom Made Studio · An independent configurator concept</p>
+    <details class="credits">
+      <summary>About this concept &amp; image credits</summary>
+      <p>Suit and accessory photographs were generated specifically for this prototype. Each occasion has its own look image, each accessory colour switches to a matching product photo where available, and the main suit photos are never recoloured. Prices, appointment times and size suggestions are illustrative—not official product prices or fit advice.</p>
+      <p>The 16 fabric swatches use high-resolution generated textile macro references mapped to each selectable cloth colour and weave. These are fabric references, not a guarantee of the exact material a real manufacturer would supply. All assets ship locally with the project.</p>
+    </details>
   </div>
 </footer>
 
-<div class="modal" id="intro" hidden>
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="introTitle">
-    <button type="button" class="close" id="introClose" aria-label="Close">Ã—</button>
-    <h2 id="introTitle">Whatâ€™s it for?</h2>
-    <div class="intro-grid" id="introGrid"></div>
-    <button type="button" class="btn" id="introGo">Proceed</button>
-  </div>
+
+<div class="modal" id="stylistModal" hidden>
+  <section class="sheet stylist-sheet" role="dialog" aria-modal="true" aria-labelledby="stylistTitle">
+    <button type="button" class="close" id="stylistClose" aria-label="Close stylist">×</button>
+    <div class="stylist-modal-head">
+      <p class="eyebrow">YOUR PERSONAL STYLIST</p>
+      <h2 id="stylistTitle">Create my look</h2>
+      <p class="muted">Tell your AI stylist where you are going, the mood you want and your budget—or upload an inspiration photo to match its colours to the fabric catalog.</p>
+    </div>
+    <div class="stylist-modal-grid">
+      <div class="stylist first">
+        <span class="flabel" id="stylistLabel">Chat with the stylist</span>
+        <div class="thread" id="thread" role="log" aria-live="polite" aria-labelledby="stylistLabel"></div>
+        <div class="chips" id="quick"></div>
+        <div class="brief-row">
+          <input id="brief" type="text" placeholder="e.g. A summer wedding, under €900" autocomplete="off" maxlength="240" aria-label="Message to the stylist">
+          <button type="button" class="btn" id="briefGo">Create look</button>
+        </div>
+      </div>
+      <aside class="inspiration-panel">
+        <span class="flabel">Use a photo for inspiration</span>
+        <p class="muted small">Upload a suit, outfit or fabric you like. The stylist samples its dominant colour and matches it to an actual textured fabric sample; catalog photos stay unchanged.</p>
+        <button type="button" class="upload wide" id="inspoBtn"><span class="thumb" id="inspoThumb"></span><span id="inspoT">Upload inspiration photo</span></button>
+        <input type="file" id="inspoFile" accept="image/*" hidden>
+        <div class="inspo-preview-wrap" id="inspoPreviewWrap" hidden><img id="inspoPreview" alt="Your style inspiration"><div class="inspo-colour"><span id="inspoColourDot"></span><span id="inspoNote" aria-live="polite">Choose a photo to get started.</span></div></div>
+        <button type="button" class="btn full" id="applyInspo" disabled>Find a matching cloth</button>
+        <p class="privacy-note">Your photo stays on this device in this demo. Style matching works locally; generated outfit photography needs a configured image-generation service.</p>
+      </aside>
+    </div>
+  </section>
 </div>
 
-<script src="js/data.js?v=21"></script>
-<script src="js/config.js?v=21"></script>
-<script src="js/assistant.js?v=21"></script>
-<script src="js/recolor.js?v=21"></script>
-<script src="js/app.js?v=21"></script>
+<div class="image-modal" id="zoomModal" hidden role="dialog" aria-modal="true" aria-label="Large product image">
+  <button type="button" class="zoombtn modal-zoom-toggle" id="zoomScaleBtn" aria-pressed="false">Zoom in</button>
+  <button type="button" class="close" id="zoomClose" aria-label="Close image">×</button>
+  <img id="zoomModalImg" alt="Large suit detail">
+  <p id="zoomCaption">High-resolution product image</p>
+</div>
+
+<script src="js/data.js?v=26"></script>
+<script src="js/config.js?v=26"></script>
+<script src="js/assistant.js?v=26"></script>
+<script src="js/app.js?v=26"></script>
 </body>
 </html>

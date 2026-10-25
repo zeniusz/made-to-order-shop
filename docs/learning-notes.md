@@ -1,41 +1,27 @@
 # Learning notes
 
-What this project was meant to teach, and what it did.
-
 ## Goal
 
-Find out how far an AI-assisted build can go toward a believable product page, and what it takes to get there. The test case was a made-to-measure suit configurator.
+Build a made-to-measure suit configurator that feels like a considered retail experience: realistic outfit photography, fabric discovery, clear fit guidance and a stylist that can help without taking over the page.
 
-## What worked
+## What changed after reviewing the visuals
 
-- **A real photo beats any illustration.** The first version drew the suit in vector shapes and looked fake. Recolouring a real photograph with masks made the same page look like a shop.
-- **Masks do the hard work.** Separate soft masks for jacket, tie, pocket square and shirt let each piece change colour on its own. Most of the time went into getting mask edges clean.
-- **Blend over the result, not the original.** Painting the tie and pocket square over the already recoloured jacket removed the dark halos that appeared on light cloths.
-- **Tone curve matters.** A curve that is linear in the darks and soft in the highlights keeps navy looking navy and stops sand from blowing out.
-- **Explain the choice.** Showing one suggested size, a High / Medium / Low confidence label and a plain reason is easier to trust than a grid of numbers.
-- **Test on a phone-width view and with real screenshots.** Several problems only showed up when looking at the rendered page.
+- **A recoloured photograph can imply something that is not real.** Tinting one jacket image across many fabrics produced inconsistent edges and made the suit look artificial. The current version uses independent catalog photographs for each look instead of pretending the same image accurately represents every cloth.
+- **Separate the style reference from the actual cloth choice.** The full outfit is a style/occasion reference. Each of the 16 cloths has its own color-mapped, high-resolution textile swatch. The main suit photo is never recoloured, avoiding impossible edges and fake material detail.
+- **Let the customer start from how they will wear it.** Wedding, business, smart casual, summer/resort and formal evening lead the occasion catalog, with interview, travel and statement options also available. Four pictured style presets—Havana, Milano, Coastal and Formal evening—offer a second starting point for the tailoring details.
+- **Zoom should open the original image.** The product viewer can switch between fit-to-screen and native-resolution inspection, with the source pixels preserved.
+- **Keep the stylist helpful, not dominant.** It opens in a compact modal from the Cloth or Fit step. Prompts choose a style and rank cloths; an uploaded inspiration photo is sampled locally for a colour match. Full generative image creation would need a protected image-generation endpoint.
 
-## What was hard
+## What remains illustrative
 
-- Tie and shirt masks on a soft-focus photo: pattern, shadow and edge blur all fight the colour rules.
-- Light colours expose every mask error that dark colours hide.
-- Free photographs of suits with clean licences are rare; one photo had to carry the whole page.
-- Keeping prices and facts honest: anything not read from a real source is labelled illustrative.
+- Prices, appointment times, and availability are example data.
+- Size guidance is a prototype heuristic, not professional fit advice.
+- Hosted AI is optional. Without a configured endpoint, the stylist uses local rules.
+- Catalog photos and textile references were generated for the prototype and are not product photos for a real retailer. Images are bundled locally with a complete `catalog-gallery.html` asset browser.
 
-## Added after reviewing real use of a live configurator
+## Next steps
 
-Notes from walking through a real configurator turned into changes:
-
-- **Jargon in cloth names** became a short explainer under the selected cloth, plus a season filter.
-- **Silent changes** (switching a style quietly changed another default) became a one-line note saying what changed.
-- **A bare size grid** became a guided size step with a confidence label and a store fallback.
-- **Returning visitors** got resume, a saved size and a link that reopens the design.
-- **"AI"** was added where it removes typing and guessing: a chat that picks cloth from a sentence, explains terms and answers how-it-works questions. A first version asked visitors to paste their own API key, which was a bad experience, so it was replaced by a built-in stylist that needs nothing, plus an optional hosted proxy that keeps the key off the page.
-- **Fit help for the unsure:** a chest measurement and a short measuring guide give a better size than height and weight alone, and a calendar file helps people keep the fitting.
-
-## Ideas for next
-
-- A second and third photo (full length, back view) so more of the suit changes.
-- Real size data from fittings to replace the simple height and weight estimate.
-- Comparing two cloths side by side on the same jacket.
-- Measuring whether the size step helps people finish: time on step, use of the grid, store bookings.
+- Connect a secure image-generation endpoint to create bespoke looks from a reference photo.
+- Add front/back/side views for each cut, or real approved garment photography for each fabric.
+- Replace sample prices and size assumptions with verified product and fitting data.
+- Test the flow with customers on phone and desktop widths.

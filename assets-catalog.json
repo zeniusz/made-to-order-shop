@@ -1,0 +1,214 @@
+[
+  {
+    "path": "assets/img/catalog/black-tie.jpg",
+    "bytes": 156009
+  },
+  {
+    "path": "assets/img/catalog/business-navy.jpg",
+    "bytes": 156567
+  },
+  {
+    "path": "assets/img/catalog/modern-grey-check.jpg",
+    "bytes": 237660
+  },
+  {
+    "path": "assets/img/catalog/smart-casual-blue.jpg",
+    "bytes": 208624
+  },
+  {
+    "path": "assets/img/catalog/statement-forest.jpg",
+    "bytes": 211692
+  },
+  {
+    "path": "assets/img/catalog/summer-resort-taupe.jpg",
+    "bytes": 274686
+  },
+  {
+    "path": "assets/img/catalog/travel-blue-grey.jpg",
+    "bytes": 205718
+  },
+  {
+    "path": "assets/img/catalog/wedding-linen.jpg",
+    "bytes": 248545
+  },
+  {
+    "path": "assets/img/extras/oxford-black.jpg",
+    "bytes": 95292
+  },
+  {
+    "path": "assets/img/extras/pocket-square-ivory.jpg",
+    "bytes": 99478
+  },
+  {
+    "path": "assets/img/extras/shirt-white.jpg",
+    "bytes": 74153
+  },
+  {
+    "path": "assets/img/extras/tie-burgundy.jpg",
+    "bytes": 146099
+  },
+  {
+    "path": "assets/img/extras/trousers-navy.jpg",
+    "bytes": 100987
+  },
+  {
+    "path": "assets/img/extras/variants/pocket-square-burgundy.jpg",
+    "bytes": 83987
+  },
+  {
+    "path": "assets/img/extras/variants/pocket-square-ivory.jpg",
+    "bytes": 74329
+  },
+  {
+    "path": "assets/img/extras/variants/pocket-square-sky-blue.jpg",
+    "bytes": 80934
+  },
+  {
+    "path": "assets/img/extras/variants/shirt-pale-grey.jpg",
+    "bytes": 75278
+  },
+  {
+    "path": "assets/img/extras/variants/shirt-pale-pink.jpg",
+    "bytes": 70380
+  },
+  {
+    "path": "assets/img/extras/variants/shirt-sky-blue.jpg",
+    "bytes": 81028
+  },
+  {
+    "path": "assets/img/extras/variants/shirt-white.jpg",
+    "bytes": 57635
+  },
+  {
+    "path": "assets/img/extras/variants/shoes-black.jpg",
+    "bytes": 81152
+  },
+  {
+    "path": "assets/img/extras/variants/shoes-brown.jpg",
+    "bytes": 88090
+  },
+  {
+    "path": "assets/img/extras/variants/shoes-tan.jpg",
+    "bytes": 133953
+  },
+  {
+    "path": "assets/img/extras/variants/tie-burgundy.jpg",
+    "bytes": 73021
+  },
+  {
+    "path": "assets/img/extras/variants/tie-charcoal.jpg",
+    "bytes": 72376
+  },
+  {
+    "path": "assets/img/extras/variants/tie-forest-green.jpg",
+    "bytes": 66290
+  },
+  {
+    "path": "assets/img/extras/variants/tie-mustard.jpg",
+    "bytes": 72345
+  },
+  {
+    "path": "assets/img/extras/variants/tie-navy.jpg",
+    "bytes": 66546
+  },
+  {
+    "path": "assets/img/extras/variants/tie-rust.jpg",
+    "bytes": 70723
+  },
+  {
+    "path": "assets/img/extras/variants/tie-steel-blue.jpg",
+    "bytes": 70656
+  },
+  {
+    "path": "assets/img/extras/waistcoat-navy.jpg",
+    "bytes": 94494
+  },
+  {
+    "path": "assets/img/textures/macro/check-macro.jpg",
+    "bytes": 549859
+  },
+  {
+    "path": "assets/img/textures/macro/flannel-macro.jpg",
+    "bytes": 435803
+  },
+  {
+    "path": "assets/img/textures/macro/herring-macro.jpg",
+    "bytes": 471383
+  },
+  {
+    "path": "assets/img/textures/macro/linen-macro.jpg",
+    "bytes": 513281
+  },
+  {
+    "path": "assets/img/textures/macro/plain-macro.jpg",
+    "bytes": 562146
+  },
+  {
+    "path": "assets/img/textures/macro/stripe-macro.jpg",
+    "bytes": 488252
+  },
+  {
+    "path": "assets/img/textures/swatches/b110.jpg",
+    "bytes": 184472
+  },
+  {
+    "path": "assets/img/textures/swatches/burfl.jpg",
+    "bytes": 424508
+  },
+  {
+    "path": "assets/img/textures/swatches/db180.jpg",
+    "bytes": 362574
+  },
+  {
+    "path": "assets/img/textures/swatches/dbtro.jpg",
+    "bytes": 353126
+  },
+  {
+    "path": "assets/img/textures/swatches/dgfl.jpg",
+    "bytes": 395828
+  },
+  {
+    "path": "assets/img/textures/swatches/dgstr.jpg",
+    "bytes": 373025
+  },
+  {
+    "path": "assets/img/textures/swatches/dgwc.jpg",
+    "bytes": 371418
+  },
+  {
+    "path": "assets/img/textures/swatches/lgwc.jpg",
+    "bytes": 513619
+  },
+  {
+    "path": "assets/img/textures/swatches/mb110.jpg",
+    "bytes": 646257
+  },
+  {
+    "path": "assets/img/textures/swatches/mbchk.jpg",
+    "bytes": 647688
+  },
+  {
+    "path": "assets/img/textures/swatches/mgfl.jpg",
+    "bytes": 457342
+  },
+  {
+    "path": "assets/img/textures/swatches/n110.jpg",
+    "bytes": 367895
+  },
+  {
+    "path": "assets/img/textures/swatches/n150.jpg",
+    "bytes": 383911
+  },
+  {
+    "path": "assets/img/textures/swatches/nher.jpg",
+    "bytes": 364642
+  },
+  {
+    "path": "assets/img/textures/swatches/nwf.jpg",
+    "bytes": 400233
+  },
+  {
+    "path": "assets/img/textures/swatches/sand.jpg",
+    "bytes": 625835
+  }
+]

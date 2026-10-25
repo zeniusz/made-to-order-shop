@@ -12,10 +12,13 @@ window.Brief = (function () {
     ['sand', '#b9a68a'], ['beige', '#b9a68a'], ['stone', '#b9a68a'], ['tan', '#b9a68a'], ['camel', '#b08a5b'], ['brown', '#5e4540']
   ];
   var OCC = [
-    ['wed', /wedding|ceremony|groom|best man|reception|guest/],
+    ['wed', /wedding|ceremony|groom|best man|reception|guest|marriage/],
+    ['eve', /evening|black tie|gala|party|formal dinner|cocktail|prom|tuxedo/],
+    ['res', /resort|linen|destination wedding|summer holiday|beach wedding|warm weather/],
+    ['sig', /statement tailoring|double.?breasted|bold suit|stand.?out suit/],
+    ['cas', /smart.?casual|casual|date night|brunch|lifestyle|without a tie|no tie/],
+    ['trv', /travel|trip|flight|commut|holiday|business trip|weekend/],
     ['int', /interview|first job|graduat|internship/],
-    ['eve', /evening|black tie|gala|party|dinner|cocktail|formal|prom/],
-    ['trv', /travel|trip|flight|commut|holiday|business trip/],
     ['off', /office|work|business|daily|everyday|meeting|day to day/]
   ];
   var WEAVES = [
@@ -95,7 +98,7 @@ window.Brief = (function () {
         return {
           reply: typeof o.reply === 'string' ? o.reply.slice(0, 600) : '',
           r: {
-            occ: ['int', 'off', 'wed', 'eve', 'trv'].indexOf(b.occasion) > -1 ? b.occasion : null,
+            occ: ['int', 'off', 'wed', 'eve', 'trv', 'cas', 'sig', 'res'].indexOf(b.occasion) > -1 ? b.occasion : null,
             season: b.season === 'summer' || b.season === 'winter' ? b.season : null,
             colour: okHex ? b.colour_hex.toLowerCase() : null, colourName: b.colour_name || null,
             h: b.height_cm >= 140 && b.height_cm <= 220 ? Math.round(b.height_cm) : null,

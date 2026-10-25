@@ -22,7 +22,7 @@
 
   /* ---------- state ---------- */
   var st = {
-    tab: 0, seen: { 0: true }, occ: 'int', target: '#1d2a44', cloth: 'n110', all: false,
+    tab: 0, seen: { 0: true }, view: 'full', occ: 'wed', target: '#b9a68a', cloth: 'sand', all: false,
     style: { shoulder: 'natural', lapel: 'notch', closure: 'sb2', pockets: 'flap', canvas: 'half', button: 'horn' },
     lining: '#1f2d4d', mono: '',
     h: 180, w: 78, pref: 'Regular', usual: 50, notSure: false, size: null, group: 'regular', level: null, sug: null, fitMode: 'a', book: false, walk: false, adj: { sleeve: 0, jlen: 0, waist: 0, tlen: 0, rise: 0 },
@@ -42,18 +42,17 @@
 
   /* ---------- swatches: real wool photo, tinted ---------- */
   function swatch(c, size) {
-    var tex = c.weave === 'herring' ? 'assets/img/tweed-gray.jpg' : 'assets/img/wool-texture.jpg';
-    var over = c.weave === 'stripe' ? 'repeating-linear-gradient(90deg,rgba(255,255,255,.28) 0 1px,transparent 1px 9px),' :
-               c.weave === 'check' ? 'repeating-linear-gradient(0deg,rgba(255,255,255,.22) 0 1px,transparent 1px 16px),repeating-linear-gradient(90deg,rgba(255,255,255,.22) 0 1px,transparent 1px 16px),' : '';
-    var modes = c.weave === 'stripe' ? 'normal,multiply' : c.weave === 'check' ? 'normal,normal,multiply' : 'multiply';
-    var sizes = c.weave === 'stripe' ? 'auto,' : c.weave === 'check' ? 'auto,auto,' : '';
-    return 'background-color:' + c.c + ';background-image:' + over + 'url(' + tex + ');background-blend-mode:' + modes + ';background-size:' + sizes + (size || 160) + 'px';
+    /* Every real catalog cloth has its own texture/color-mapped photographic swatch.
+       No complete outfit photograph is recoloured. */
+    var id = c && c.id ? c.id : 'n110';
+    return 'background-color:' + (c.c || '#1d2a44') + ';background-image:url(assets/img/textures/swatches/' + id + '.jpg);background-position:center;background-size:cover;background-repeat:no-repeat';
   }
   function itemSwatch(kind, hex) {
     if (kind === 'vest' || kind === 'trs2') return swatch(cloth(), 120);
-    var layer = kind === 'tie' ? 'repeating-linear-gradient(45deg,rgba(255,255,255,.10) 0 2px,transparent 2px 7px),' :
-                kind === 'shoes' ? 'radial-gradient(circle at 30% 28%,rgba(255,255,255,.35),transparent 55%),' : '';
-    return 'background-color:' + hex + ';background-image:' + layer + 'url(assets/img/wool-texture.jpg);background-blend-mode:' + (layer ? 'normal,multiply' : 'multiply') + ';background-size:' + (layer ? 'auto,' : '') + '90px';
+    var texture = kind === 'tie' ? 'assets/img/textures/macro/plain-macro.jpg' :
+                  kind === 'square' || kind === 'shirt' ? 'assets/img/textures/macro/linen-macro.jpg' :
+                  kind === 'shoes' ? 'assets/img/textures/macro/flannel-macro.jpg' : 'assets/img/textures/macro/plain-macro.jpg';
+    return 'background-color:' + (hex || '#999') + ';background-image:url(' + texture + ');background-blend-mode:soft-light;background-position:center;background-size:cover';
   }
 
   /* ---------- outfit matching: classic pairings by cloth family ---------- */
@@ -197,7 +196,13 @@
   /* ---------- cloth ---------- */
   function renderCloth() {
     fill('occ', D.occasions.map(function (o) {
-      return chip(o.label, st.occ === o.id, function () { applyOccasion(o.id); });
+      var b = el('button', 'look-card'); b.type = 'button';
+      b.setAttribute('aria-pressed', String(st.occ === o.id));
+      b.setAttribute('aria-label', o.label + ': ' + o.desc);
+      b.innerHTML = '<span class="look-photo"><img loading="lazy" src="assets/img/catalog/' + o.image + '" alt="" /></span>' +
+        '<span class="look-copy"><b>' + o.label + '</b><span>' + o.desc + '</span></span>';
+      b.onclick = function () { applyOccasion(o.id); };
+      return b;
     }));
     fill('dots', D.quickColours.map(function (q) { return dot(q, st.target === q, 'Colour ' + q, function () { setTarget(q); }); }));
     $('cp').value = st.target;
@@ -210,13 +215,13 @@
       b.innerHTML = '<span class="img"><span class="sw" style="' + swatch(x.c, 130) + '"></span>' +
         (i === 0 && !st.all ? '<span class="badge">Best match</span>' : '') + '<span class="pct">' + x.pct + '%</span></span>' +
         '<span class="nm">' + x.c.name + '</span><span class="sub">' + x.c.wear + '</span><span class="pc">' + money(eur(x.c.usd)) + '</span>';
-      b.onclick = function () { st.cloth = x.c.id; resetOutfit(); update(); };
+      b.onclick = function () { st.cloth = x.c.id; st.view = 'full'; resetOutfit(); update(); };
       return b;
     }));
   }
   function applyOccasion(id) {
     var o = D.occasions.filter(function (x) { return x.id === id; })[0];
-    st.occ = id; st.target = o.c; clearLook();
+    st.occ = id; st.target = o.c; st.view = 'full'; clearLook();
     st.cloth = ranked()[0].c.id; resetOutfit(); update();
   }
   function setTarget(hex) { st.target = hex.toLowerCase(); clearLook(); st.cloth = ranked()[0].c.id; resetOutfit(); update(); }
@@ -227,7 +232,7 @@
     fill('presets', D.presets.map(function (p) {
       var on = Object.keys(p.set).every(function (k) { return st.style[k] === p.set[k]; });
       var b = el('button', 'preset'); b.type = 'button'; b.setAttribute('aria-pressed', String(on));
-      b.innerHTML = '<b>' + p.name + '</b><span>' + p.desc + '</span><em>' + p.who + '</em>';
+      b.innerHTML = '<span class="preset-photo"><img src="assets/img/catalog/' + p.image + '" alt="' + p.name + ' style reference" loading="lazy"><i>Style reference</i></span><span class="preset-copy"><b>' + p.name + '</b><span>' + p.desc + '</span><em>' + p.who + '</em></span>';
       b.onclick = function () {
         var ch = [];
         for (var k in p.set) if (st.style[k] !== p.set[k]) { var g = D.style.filter(function (x) { return x.key === k; })[0]; ch.push(g.label.toLowerCase() + ' to ' + g.opts.filter(function (o) { return o[0] === p.set[k]; })[0][1].toLowerCase()); }
@@ -329,13 +334,16 @@
     var r = recs();
     fill('extras', D.extras.map(function (x) {
       var on = !!st.on[x.id], card = el('div', 'card extra' + (on ? ' on' : ''));
+      var selectedImage = x.variants && st.col[x.id] && x.variants[st.col[x.id]] ? x.variants[st.col[x.id]] : x.image;
       var img = el('button', 'img'); img.type = 'button'; img.setAttribute('aria-pressed', String(on)); img.setAttribute('aria-label', (on ? 'Remove ' : 'Add ') + x.name);
       img.style.border = '0'; img.style.padding = '0'; img.style.cursor = 'pointer';
-      img.innerHTML = '<span class="sw" style="' + itemSwatch(x.id, st.col[x.id] || '#999') + '"></span><span class="check">' + (on ? '✓' : '+') + '</span>';
+      img.innerHTML = '<img class="extra-product-photo" src="assets/img/extras/' + selectedImage + '" alt="' + x.name + (st.col[x.id] ? ' in ' + cname(st.col[x.id]) : ' product reference') + '" loading="lazy">' + ((x.id === 'vest' || x.id === 'trs2') ? '<span class="cloth-reference-swatch" style="' + swatch(cloth(), 75) + '"></span>' : '') + '<span class="check">' + (on ? '✓' : '+') + '</span>';
       img.onclick = function () { st.on[x.id] = !on; update(); };
       card.appendChild(img);
       card.appendChild(el('span', 'nm', x.name));
-      card.appendChild(el('span', 'sub', st.col[x.id] ? cname(st.col[x.id]) + (st.col[x.id] === (r[x.id] || [])[0] ? ', best match' : '') : 'In ' + cloth().name));
+      var detail = st.col[x.id] ? cname(st.col[x.id]) + (st.col[x.id] === (r[x.id] || [])[0] ? ' · recommended colour' : '') : (x.detail || 'Pairs with your selected look');
+      if (x.id === 'vest' || x.id === 'trs2') detail = (x.detail || 'Style reference') + ' · cut from ' + cloth().name;
+      card.appendChild(el('span', 'sub', detail));
       card.appendChild(el('span', 'pc', money(x.price)));
       if (r[x.id]) {
         var o = el('div', 'opts');
@@ -369,11 +377,17 @@
   var lastShot = '';
   function renderReview(withShot) {
     var c = cloth();
-    if (withShot && Recolor.state.ready) { lastShot = Recolor.snapshot(look(), 360); }
-    var items = [{ img: lastShot ? '<img src="' + lastShot + '" alt="">' : '<span class="sw" style="' + swatch(c, 120) + '"></span>', nm: 'Custom Made suit', sub: c.name + '. ' + styleText(), pc: eur(c.usd) }];
+    if (withShot) { lastShot = 'assets/img/catalog/' + activeLook().image; }
+    var items = [{ img: lastShot ? '<img src="' + lastShot + '" alt="">' : '<span class="sw" style="' + swatch(c, 120) + '"></span>', nm: activeLook().label + ' look', sub: c.name + '. ' + styleText(), pc: eur(c.usd) }];
     D.extras.forEach(function (x) {
-      if (st.on[x.id]) items.push({ img: '<span class="sw" style="' + itemSwatch(x.id, st.col[x.id] || '#999') + '"></span>', nm: x.name, sub: st.col[x.id] ? cname(st.col[x.id]) : 'In ' + c.name, pc: x.price });
+      if (st.on[x.id]) {
+        var itemImage = x.variants && st.col[x.id] && x.variants[st.col[x.id]] ? x.variants[st.col[x.id]] : x.image;
+        var itemSub = st.col[x.id] ? cname(st.col[x.id]) : (x.detail || 'Selected extra');
+        if (x.id === 'vest' || x.id === 'trs2') itemSub = (x.detail || 'Style reference') + ' · cut from ' + c.name;
+        items.push({ img: '<img class="review-product-photo" src="assets/img/extras/' + itemImage + '" alt="">', nm: x.name, sub: itemSub, pc: x.price });
+      }
     });
+    if (st.mono.trim()) items.push({ img: '<div class=\"review-monogram\"><span>' + st.mono.toUpperCase() + '</span></div>', nm: 'Embroidered monogram', sub: 'Inside jacket lining · ' + st.mono.toUpperCase(), pc: 15 });
     $('itemCount').textContent = items.length + (items.length === 1 ? ' item' : ' items');
     $('lookGrid').innerHTML = items.map(function (i) {
       return '<div class="card"><span class="img">' + i.img + '</span><span class="nm">' + i.nm + '</span><span class="sub">' + i.sub + '</span><span class="pc">' + money(i.pc) + '</span></div>';
@@ -381,7 +395,7 @@
     $('bill').innerHTML = lines().map(function (l, i) { return '<div><span>' + l[0] + '</span><span class="pr">' + (i ? '+' : '') + money(l[1]) + '</span></div>'; }).join('') +
       '<div class="tot"><span>Total</span><span class="pr">' + money(total()) + '</span></div>';
     $('timeline').innerHTML = [
-      ['Fitting', st.slot ? st.slot + ', ' + st.city : st.walk ? 'Walk in anytime with your code' : 'Book or walk in'],
+      ['Fitting', st.slot ? st.slot + ', ' + st.city : st.walk ? 'Visit a store without booking' : 'Book or walk in'],
       ['2–3 weeks', 'Delivered free, or pick up in store'],
       ['Final fitting', 'Tailored in 30 min to 3 days'],
       ['30 days', 'To return if it isn’t right']
@@ -391,7 +405,7 @@
   /* ---------- season, about this cloth, change note ---------- */
   function renderSeason() {
     fill('season', [[null, 'Any season'], ['summer', 'Summer'], ['winter', 'Winter']].map(function (x) {
-      return chip(x[1], st.season === x[0], function () { st.season = x[0]; st.cloth = ranked()[0].c.id; resetOutfit(); update(); });
+      return chip(x[1], st.season === x[0], function () { st.season = x[0]; st.cloth = ranked()[0].c.id; st.view = 'full'; resetOutfit(); update(); });
     }));
   }
   function renderAbout() {
@@ -408,9 +422,9 @@
   function load(k) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
   var PASS = ['chest', 'h', 'w', 'pref', 'usual', 'notSure', 'size', 'group', 'level', 'adj'];
   var saveTimer = 0, canSave = false; /* held until we know whether a saved session is waiting */
-  function persist() { if (!canSave) return; clearTimeout(saveTimer); saveTimer = setTimeout(function () { store('cm-state-v1', snap(KEEP)); }, 400); }
+  function persist() { if (!canSave) return; clearTimeout(saveTimer); saveTimer = setTimeout(function () { store('cm-state-v2', snap(KEEP)); }, 400); }
   function renderPassport() {
-    var p = load('cm-passport-v1');
+    var p = load('cm-passport-v2');
     $('ppUse').hidden = !(p && p.size && st.fitMode === 'a');
     if (p && p.size) $('ppText').textContent = 'Your saved size: ' + sizeLabel(p.size, p.group) + ' ' + cap(p.group);
     $('ppSave').checked = !!p;
@@ -421,17 +435,18 @@
     var box = $('advisor');
     if (!st.code) { box.innerHTML = '<div class="adv-empty">Save a look to see it here.</div>'; $('advCode').textContent = 'No code yet'; return; }
     $('advCode').textContent = st.code;
-    var c = cloth(), checks = ['Pull ' + c.name + ' from the cloth book'];
+    var c = cloth(), advisorShot = 'assets/img/catalog/' + activeLook().image, checks = ['Pull ' + c.name + ' from the cloth book'];
     if (!st.size) checks.push('No size chosen. Measure and find a starting size by try-on');
     else if (st.level === 'Low') checks.push('Low confidence on ' + sizeText() + '. Measure before fitting');
     else checks.push('Try on ' + sizeText() + ' (' + (st.level || 'medium').toLowerCase() + ' confidence)');
     D.adjustments.forEach(function (a) { var v = st.adj[a.key]; if (v) checks.push(a.label + ' ' + (v > 0 ? '+' : '') + v + ' cm requested'); });
     var ex = D.extras.filter(function (x) { return st.on[x.id]; }).map(function (x) { return x.name.toLowerCase() + (st.col[x.id] ? ' (' + cname(st.col[x.id]).toLowerCase() + ')' : ''); });
     if (ex.length) checks.push('Have ready: ' + ex.join(', '));
+    if (st.mono.trim()) checks.push('Embroider initials ' + st.mono.toUpperCase() + ' inside the jacket lining (+€15)');
     var av = st.self ? '<div class="av" style="background-image:url(' + st.self + ')"></div>' : '<div class="av">' + (st.name ? st.name[0].toUpperCase() : '?') + '</div>';
     box.innerHTML =
       '<div class="adv-head">' + av + '<div><b>' + (st.name || 'Guest') + '</b><span class="muted">' + (st.slot ? st.slot + ', ' + st.city : st.walk ? 'Walk-in' : 'No appointment') + '</span></div>' +
-      (lastShot ? '<div class="look" style="background-image:url(' + lastShot + ')"></div>' : '') + '</div>' +
+      ('<div class="look" style="background-image:url(' + advisorShot + ')"></div>') + '</div>' +
       '<div class="adv-grid">' +
       '<div><span>Cloth</span>' + c.name + '</div>' +
       '<div><span>Style</span>' + styleText() + '</div>' +
@@ -443,12 +458,40 @@
       '<div><span class="flabel">Check first</span><ul class="adv-list">' + checks.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
   }
 
-  /* ---------- stage ---------- */
-  var raf = 0;
+  /* ---------- stage: original catalog photography, never recoloured ---------- */
+  function activeLook() {
+    return D.occasions.filter(function (o) { return o.id === st.occ; })[0] || D.occasions[0];
+  }
+  function paintGallery() {
+    var view = st.view || 'full', o = activeLook(), image = 'assets/img/catalog/' + o.image;
+    $('suitPhoto').setAttribute('data-view', view);
+    var hero = $('suitFullImage');
+    if (!hero.src || hero.getAttribute('src') !== image) hero.setAttribute('src', image);
+    hero.hidden = view === 'live';
+    hero.alt = o.label + ' — ' + o.desc;
+    $('fabricSampleView').hidden = view !== 'live';
+    $('fabricSample').setAttribute('style', swatch(cloth(), 520));
+    $('fabricSampleName').textContent = cloth().name;
+    $('fabricSampleWeave').textContent = ({ plain: 'Plain weave', herring: 'Herringbone weave', flannel: 'Brushed flannel', check: 'Checked weave', stripe: 'Striped weave' }[cloth().weave] || 'Woven fabric') + ' · ' + (cloth().season === 'all' ? 'All-season' : cap(cloth().season));
+    $('viewFull').setAttribute('aria-pressed', String(view === 'full'));
+    $('viewLive').setAttribute('aria-pressed', String(view === 'live'));
+    $('viewDetail').setAttribute('aria-pressed', String(view === 'detail'));
+    $('photoCaption').textContent = view === 'full'
+      ? 'Style reference · ' + o.desc + '. Chosen fabric swatch: ' + cloth().name + '.'
+      : view === 'live'
+        ? 'Fabric sample · ' + cloth().name + '. Texture shown separately from the outfit photograph.'
+        : 'Detail view of the original ' + o.label.toLowerCase() + ' look. Open the full-resolution photo to inspect the tailoring.';
+    $('zoomBtn').hidden = view === 'live';
+    $('zoomBtn').textContent = view === 'detail' ? 'View full-resolution image' : 'Inspect full-size photo';
+    $('zoomBtn').setAttribute('aria-pressed', 'false');
+  }
+  function setGalleryView(view) {
+    st.view = view;
+    paintGallery();
+  }
   function paintStage() {
     if (st.self) $('youCloth').setAttribute('style', swatch(cloth(), 60));
-    if (raf) cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(function () { Recolor.render(look()); });
+    paintGallery();
   }
 
   /* ---------- tabs ---------- */
@@ -471,8 +514,16 @@
     $('cta').textContent = st.tab === 4 ? (st.code ? 'Code ' + st.code : 'Get store code') : 'Review look · ' + money(total());
   }
 
+  function renderMonogram() {
+    var value = (st.mono || '').toUpperCase();
+    $('monoDisplay').textContent = value || 'AJ';
+    $('monogramPreview').classList.toggle('is-placeholder', !value);
+    $('monoPreviewTitle').textContent = value ? 'Monogram ' + value + ' is selected' : 'Your initials, embroidered';
+    $('monoHint').textContent = value ? 'Inside jacket lining · embroidered initials · +€15' : 'Preview shown on the inside lining. Enter your initials to personalise it.';
+  }
+
   function update() {
-    renderCloth(); renderSeason(); renderAbout(); renderStyle(); renderChange(); renderFit(); renderPassport(); renderExtras(); renderStrip();
+    renderCloth(); renderSeason(); renderAbout(); renderStyle(); renderChange(); renderFit(); renderPassport(); renderExtras(); renderStrip(); renderMonogram();
     renderReview(st.tab === 4);
     renderAdvisor(); paintStage();
     $('total').textContent = money(total());
@@ -483,8 +534,56 @@
     persist();
   }
 
+  /* ---------- product gallery and stylist ---------- */
+  function openStylist() {
+    $('stylistModal').hidden = false;
+    window.setTimeout(function () { $('brief').focus(); }, 30);
+  }
+  function closeStylist() { $('stylistModal').hidden = true; }
+  $('openStylist').onclick = openStylist;
+  $('openStylistFit').onclick = openStylist;
+  $('stylistClose').onclick = closeStylist;
+  $('stylistModal').addEventListener('click', function (e) { if (e.target === $('stylistModal')) closeStylist(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!$('stylistModal').hidden) closeStylist();
+    if (!$('zoomModal').hidden) closeImageModal();
+  });
+  $('viewFull').onclick = function () { setGalleryView('full'); };
+  $('viewLive').onclick = function () { setGalleryView('live'); };
+  $('viewDetail').onclick = function () { setGalleryView('detail'); };
+  $('suitFullImage').addEventListener('load', function () { paintGallery(); });
+
+  function openImageModal(src, alt, caption) {
+    $('zoomModalImg').src = src;
+    $('zoomModalImg').alt = alt;
+    $('zoomCaption').textContent = caption || alt;
+    $('zoomModal').classList.remove('zoomed');
+    $('zoomScaleBtn').textContent = 'Zoom in';
+    $('zoomScaleBtn').setAttribute('aria-pressed', 'false');
+    $('zoomModal').hidden = false;
+    $('zoomClose').focus();
+  }
+  function closeImageModal() {
+    $('zoomModal').hidden = true; $('zoomModalImg').src = '';
+    $('zoomModal').classList.remove('zoomed');
+  }
+  $('zoomClose').onclick = closeImageModal;
+  $('zoomScaleBtn').onclick = function () {
+    var zoomed = !$('zoomModal').classList.contains('zoomed');
+    $('zoomModal').classList.toggle('zoomed', zoomed);
+    $('zoomScaleBtn').textContent = zoomed ? 'Fit to screen' : 'Zoom in';
+    $('zoomScaleBtn').setAttribute('aria-pressed', String(zoomed));
+    var img = $('zoomModalImg');
+    $('zoomCaption').textContent = zoomed
+      ? 'Original image · ' + img.naturalWidth + ' × ' + img.naturalHeight + ' pixels. Scroll to inspect details.'
+      : 'High-resolution original image · ' + activeLook().label + '.';
+  };
+  $('zoomModalImg').onclick = function () { $('zoomScaleBtn').click(); };
+  $('zoomModal').addEventListener('click', function (e) { if (e.target === $('zoomModal')) closeImageModal(); });
+
   /* ---------- uploads ---------- */
-  function clearLook() { $('lookThumb').style.backgroundImage = ''; $('lookT').textContent = 'Match a photo'; }
+  function clearLook() { /* Inspiration matching is handled in the stylist modal. */ }
   function readImage(file, cb) {
     if (!file || file.type.indexOf('image/') !== 0) return;
     var url = URL.createObjectURL(file), img = new Image();
@@ -498,16 +597,50 @@
     ['dragleave', 'drop'].forEach(function (ev) { btn.addEventListener(ev, function (e) { e.preventDefault(); btn.classList.remove('over'); }); });
     btn.addEventListener('drop', function (e) { readImage(e.dataTransfer.files[0], onImage); });
   }
-  wireUpload($('lookBtn'), $('lookFile'), function (url, img) {
-    var c = document.createElement('canvas'); c.width = c.height = 24;
-    var x = c.getContext('2d'), s = Math.min(img.width, img.height) * 0.5;
-    x.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 24, 24);
-    var d = x.getImageData(0, 0, 24, 24).data, r = 0, g = 0, b = 0, n = 0;
-    for (var i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; }
-    setTarget(toHex([r / n, g / n, b / n]));
-    $('lookThumb').style.backgroundImage = 'url(' + url + ')';
-    $('lookT').textContent = 'Matched ' + st.target.toUpperCase();
+  var inspo = { url: null, image: null, colour: null };
+  function sampleInspiration(img) {
+    var c = document.createElement('canvas'), size = 64;
+    c.width = c.height = size;
+    var x = c.getContext('2d', { willReadFrequently: true });
+    var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    var side = Math.min(iw, ih) * .68;
+    /* In portrait outfit shots, sample the jacket/chest area instead of the floor and empty background. */
+    var cy = ih > iw * 1.2 ? ih * .34 : ih / 2;
+    var sx = (iw - side) / 2, sy = Math.max(0, Math.min(ih - side, cy - side / 2));
+    x.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+    var d = x.getImageData(0, 0, size, size).data, bins = Object.create(null), total = 0, fallback = [0, 0, 0], count = 0;
+    for (var i = 0; i < d.length; i += 4) {
+      var r = d[i], g = d[i + 1], b = d[i + 2], max = Math.max(r, g, b), min = Math.min(r, g, b), lum = (r * .2126 + g * .7152 + b * .0722) / 255, sat = max ? (max - min) / max : 0;
+      fallback[0] += r; fallback[1] += g; fallback[2] += b; count++;
+      /* Ignore near-white studio backgrounds and black shadows; favour visible cloth colours. */
+      if ((sat < .13 && lum > .63) || lum > .96 || lum < .035) continue;
+      var key = [r, g, b].map(function (v) { return Math.min(15, Math.round(v / 17)); }).join(','), weight = 1 + sat * 2.2 + (lum < .55 ? .25 : 0);
+      if (!bins[key]) bins[key] = { n: 0, rgb: [0, 0, 0] };
+      bins[key].n += weight; bins[key].rgb[0] += r * weight; bins[key].rgb[1] += g * weight; bins[key].rgb[2] += b * weight; total += weight;
+    }
+    var best = null;
+    Object.keys(bins).forEach(function (k) { if (!best || bins[k].n > best.n) best = bins[k]; });
+    if (!best || !total) return toHex(fallback.map(function (v) { return v / Math.max(count, 1); }));
+    return toHex(best.rgb.map(function (v) { return v / best.n; }));
+  }
+  wireUpload($('inspoBtn'), $('inspoFile'), function (url, img) {
+    inspo.url = url; inspo.image = img; inspo.colour = sampleInspiration(img);
+    $('inspoPreview').src = url;
+    $('inspoPreviewWrap').hidden = false;
+    $('inspoThumb').style.backgroundImage = 'url(' + url + ')';
+    $('inspoT').textContent = 'Change inspiration photo';
+    $('inspoColourDot').style.background = inspo.colour;
+    $('inspoNote').textContent = 'Colour found: ' + inspo.colour.toUpperCase() + '. Apply it to find the closest cloth.';
+    $('applyInspo').disabled = false;
   });
+  $('applyInspo').onclick = function () {
+    if (!inspo.colour) return;
+    setTarget(inspo.colour);
+    $('inspoNote').textContent = 'Matched ' + cloth().name + '. Your live preview is ready.';
+    closeStylist();
+    showTab(0);
+    setGalleryView('full');
+  };
   wireUpload($('selfBtn'), $('selfFile'), function (url) {
     st.self = url;
     $('selfThumb').style.backgroundImage = 'url(' + url + ')';
@@ -515,34 +648,6 @@
     $('youImg').src = url; $('you').hidden = false;
     update();
   });
-
-  /* ---------- first-visit picker ---------- */
-  function openIntro() {
-    var seen = false;
-    try { seen = localStorage.getItem('cm-intro') === '1'; } catch (e) {}
-    if (seen) return;
-    var pick = st.occ;
-    var opts = D.occasions.map(function (o) {
-      var c = ranked(o.c, o.id)[0].c, r0 = st.cloth;
-      st.cloth = c.id; resetOutfit();
-      var shot = Recolor.snapshot(look(), 160);
-      st.cloth = r0; resetOutfit();
-      var b = el('button', 'opt'); b.type = 'button'; b.dataset.id = o.id;
-      b.innerHTML = '<span class="im" style="background-image:url(' + shot + ')"></span>' + o.label;
-      b.setAttribute('aria-pressed', String(o.id === pick));
-      b.onclick = function () { pick = o.id; Array.prototype.forEach.call($('introGrid').children, function (x) { x.setAttribute('aria-pressed', String(x.dataset.id === pick)); }); };
-      return b;
-    });
-    fill('introGrid', opts);
-    paintStage();
-    var close = function () { $('intro').hidden = true; try { localStorage.setItem('cm-intro', '1'); } catch (e) {} };
-    $('introGo').onclick = function () { close(); applyOccasion(pick); };
-    $('introClose').onclick = close;
-    $('intro').onclick = function (e) { if (e.target === $('intro')) close(); };
-    document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape' && !$('intro').hidden) close(); });
-    $('intro').hidden = false;
-    $('introGo').focus();
-  }
 
   /* ---------- wiring ---------- */
   for (var k = 0; k < 5; k++) (function (k) { $('tab-' + k).onclick = function () { showTab(k); }; })(k);
@@ -558,7 +663,7 @@
   $('cp').oninput = function () { setTarget(this.value); };
   $('hex').oninput = function () { var v = this.value.trim(); if (v[0] !== '#') v = '#' + v; if (/^#[0-9a-f]{6}$/i.test(v)) setTarget(v); };
   $('hex').onblur = function () { this.value = st.target.toUpperCase(); };
-  $('mono').oninput = function () { st.mono = this.value.replace(/[^a-z]/gi, '').slice(0, 3); this.value = st.mono.toUpperCase(); update(); };
+  $('mono').oninput = function () { st.mono = this.value.replace(/[^a-z]/gi, '').slice(0, 3); this.value = st.mono.toUpperCase(); renderMonogram(); update(); };
   $('cname').oninput = function () { st.name = this.value.trim(); renderAdvisor(); };
   $('city').onchange = function () { st.city = this.value; update(); };
   Array.prototype.forEach.call(document.querySelectorAll('.stepper[data-key]'), function (s) {
@@ -599,10 +704,12 @@
     }));
   }
   var START_CHIPS = [
-    { label: 'Summer wedding', say: 'navy suit for a summer wedding' },
-    { label: 'First interview', say: 'dark suit for a first job interview' },
-    { label: 'For travel', say: 'wrinkle-free suit for travel' },
-    { label: 'What does S120\u2019s mean?', say: 'what does S120\u2019s mean' }
+    { label: 'Wedding', say: 'light linen suit for a summer wedding' },
+    { label: 'Business', say: 'modern charcoal or navy suit for work' },
+    { label: 'Smart casual', say: 'smart casual blue blazer and stone trousers without a tie' },
+    { label: 'Summer & resort', say: 'relaxed breathable linen suit for a warm holiday' },
+    { label: 'Formal evening', say: 'black tuxedo for a formal evening' },
+    { label: 'Travel & weekend', say: 'comfortable wrinkle-resistant suit for travel' }
   ];
   var goFit = { label: 'Find my size', run: function () { showTab(2); } };
 
@@ -615,7 +722,7 @@
     if (r.pref) st.pref = r.pref;
     st.season = r.season; st.budget = r.budget; st.boost = r.weaves || [];
     var occ = r.occ || st.occ, oc = D.occasions.filter(function (o) { return o.id === occ; })[0];
-    st.occ = occ; st.target = r.colour || (r.occ ? oc.c : st.target); clearLook();
+    st.occ = occ; st.target = r.colour || (r.occ ? oc.c : st.target); st.view = 'full'; clearLook();
     var gotSize = r.h || r.w || r.usual || r.pref;
     if (gotSize) { st.size = null; st.fitMode = 'a'; }
     var top = ranked()[0]; st.cloth = top.c.id; resetOutfit(); update();
@@ -624,7 +731,7 @@
     if (r.season) why.push('works in ' + r.season);
     if (r.budget) why.push('within your budget');
     if (top.boost) why.push('has the texture you asked for');
-    var text = (replyText ? replyText + ' ' : '') + 'I chose ' + top.c.name + ' at ' + money(eur(top.c.usd)) + '. ' + cap(why.join(', ')) + '.';
+    var text = (replyText ? replyText + ' ' : '') + 'I set the look to ' + oc.label.toLowerCase() + ' and chose ' + top.c.name + ' at ' + money(eur(top.c.usd)) + '. ' + cap(why.join(', ')) + '.';
     var chips = gotSize ? [goFit, { label: 'Show all matches', run: function () { st.all = true; update(); } }] : [{ label: 'Something cheaper', say: 'something cheaper' }, { label: 'A darker colour', say: 'darker' }, goFit];
     say('bot', text, chips);
     return true;
@@ -639,13 +746,13 @@
     if (/cheaper|less expensive|lower price|save|affordable/.test(t) && !/under|below|up to|max/.test(t)) {
       var c1 = rk.slice(0, 10).filter(function (x) { return eur(x.c.usd) < cur; }).sort(function (a, b) { return eur(b.c.usd) - eur(a.c.usd); })[0];
       if (!c1) { say('bot', 'This is already one of the most affordable matches for your colour.'); return; }
-      st.cloth = c1.c.id; resetOutfit(); update();
+      st.cloth = c1.c.id; st.view = 'full'; resetOutfit(); update();
       say('bot', 'Switched to ' + c1.c.name + ', ' + money(eur(c1.c.usd)) + '. That is ' + money(cur - eur(c1.c.usd)) + ' less.', [{ label: 'Undo', say: 'more expensive' }]); return;
     }
     if (/more expensive|luxur|finer|premium|better quality|upgrade/.test(t)) {
       var c2 = rk.slice(0, 10).filter(function (x) { return eur(x.c.usd) > cur; }).sort(function (a, b) { return eur(a.c.usd) - eur(b.c.usd); })[0];
       if (!c2) { say('bot', 'This is already at the top of the range for your colour.'); return; }
-      st.cloth = c2.c.id; resetOutfit(); update();
+      st.cloth = c2.c.id; st.view = 'full'; resetOutfit(); update();
       say('bot', 'Switched to ' + c2.c.name + ', ' + money(eur(c2.c.usd)) + '. A finer cloth, ' + money(eur(c2.c.usd) - cur) + ' more.'); return;
     }
     if (/lighter|paler|brighter|lighten/.test(t) || /darker|deeper|darken/.test(t)) {
@@ -677,7 +784,7 @@
   }
   $('briefGo').onclick = function () { ask($('brief').value); };
   $('brief').onkeydown = function (e) { if (e.key === 'Enter') ask($('brief').value); };
-  say('bot', 'Tell me what you need, like \u201Cnavy suit for a summer wedding\u201D, or ask me about any cloth or term.', START_CHIPS);
+  say('bot', 'Let’s build a look around your plans. Tell me the occasion, colours you like and budget, or choose a starting point below. I’ll select a matching catalog look and cloth, explain the choice and update your configurator.', START_CHIPS);
 
   /* measure yourself */
   var setChest = function (v) {
@@ -695,7 +802,7 @@
   $('cal').onclick = function () {
     var d = SLOT_DATE[st.slot]; if (!d) return;
     var end = new Date(d.getTime() + 20 * 60000);
-    var desc = 'Cloth: ' + cloth().name + '\nSize: ' + (st.size ? sizeText() : 'to be confirmed') + (st.code ? '\nStore code: ' + st.code : '');
+    var desc = 'Cloth: ' + cloth().name + '\nSize: ' + (st.size ? sizeText() : 'to be confirmed') + (st.mono.trim() ? '\nMonogram: ' + st.mono.toUpperCase() : '') + (st.code ? '\nStore code: ' + st.code : '');
     var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Custom Made Studio//EN', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT',
       'UID:' + Date.now() + '@custom-made-studio', 'DTSTAMP:' + icsDate(new Date()), 'DTSTART:' + icsDate(d), 'DTEND:' + icsDate(end),
       'SUMMARY:' + icsText('Suit fitting'), 'LOCATION:' + icsText(st.city + ' store'), 'DESCRIPTION:' + icsText(desc),
@@ -705,46 +812,27 @@
     setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
   };
 
-  /* close-up lens over the jacket photo */
-  var lens = $('lens'), lctx = lens.getContext('2d'), zoomOn = false, ZOOM = 2, LENS = 120;
+  /* Open the original, full-resolution catalog photo in the image viewer. */
   $('zoomBtn').onclick = function () {
-    zoomOn = !zoomOn; this.setAttribute('aria-pressed', String(zoomOn));
-    $('suitPhoto').classList.toggle('zoom', zoomOn); if (!zoomOn) lens.hidden = true;
+    var o = activeLook();
+    openImageModal($('suitFullImage').src, o.label + ' — full-resolution catalog photograph', o.desc + '. This is the original image used for this look.');
   };
-  function lensMove(e) {
-    if (!zoomOn || !Recolor.state.ready) return;
-    var cv = $('suitCanvas'), r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-    if (x < 0 || y < 0 || x > r.width || y > r.height) { lens.hidden = true; return; }
-    var sc = Math.max(r.width / cv.width, r.height / cv.height);
-    var ix = (x - (r.width - cv.width * sc) / 2) / sc, iy = (y - (r.height - cv.height * sc) / 2) / sc;
-    var css = LENS, src = css / sc / ZOOM;
-    lctx.clearRect(0, 0, lens.width, lens.height);
-    lctx.drawImage(cv, ix - src / 2, iy - src / 2, src, src, 0, 0, lens.width, lens.height);
-    lens.style.left = (x - css / 2) + 'px';
-    lens.style.top = (y - css / 2 - (e.pointerType === 'touch' ? 80 : 0)) + 'px';
-    lens.hidden = false;
-  }
-  var ph = $('suitPhoto');
-  ph.addEventListener('pointermove', lensMove);
-  ph.addEventListener('pointerdown', lensMove);
-  ph.addEventListener('pointerleave', function () { lens.hidden = true; });
-  ph.addEventListener('pointerup', function (e) { if (e.pointerType === 'touch') lens.hidden = true; });
 
   /* Size Passport */
   $('ppSave').onchange = function () {
-    if (this.checked && st.size) store('cm-passport-v1', snap(PASS)); else store('cm-passport-v1', null);
+    if (this.checked && st.size) store('cm-passport-v2', snap(PASS)); else store('cm-passport-v2', null);
     renderPassport();
   };
-  $('ppGo').onclick = function () { var p = load('cm-passport-v1'); if (!p) return; PASS.forEach(function (k) { if (p[k] != null) st[k] = p[k]; }); st.fitMode = 'd'; update(); };
+  $('ppGo').onclick = function () { var p = load('cm-passport-v2'); if (!p) return; PASS.forEach(function (k) { if (p[k] != null) st[k] = p[k]; }); st.fitMode = 'd'; update(); };
 
   /* Resume and share */
   function applySaved(o) { KEEP.forEach(function (k) { if (o[k] !== undefined) st[k] = o[k]; }); }
-  $('resumeYes').onclick = function () { canSave = true; var o = load('cm-state-v1'); if (o) { applySaved(o); st.fitMode = st.size ? 'd' : 'a'; } $('resumeBar').hidden = true; update(); };
-  $('resumeNo').onclick = function () { canSave = true; store('cm-state-v1', null); $('resumeBar').hidden = true; };
+  $('resumeYes').onclick = function () { canSave = true; var o = load('cm-state-v2'); if (o) { applySaved(o); st.fitMode = st.size ? 'd' : 'a'; } $('resumeBar').hidden = true; update(); };
+  $('resumeNo').onclick = function () { canSave = true; store('cm-state-v2', null); $('resumeBar').hidden = true; };
   function encodeState() { return btoa(unescape(encodeURIComponent(JSON.stringify(snap(KEEP))))); }
   function decodeState(t) { return JSON.parse(decodeURIComponent(escape(atob(t)))); }
   $('share').onclick = function () {
-    var url = location.origin + location.pathname + '?intro=0&d=' + encodeURIComponent(encodeState());
+    var url = location.origin + location.pathname + '?d=' + encodeURIComponent(encodeState());
     $('shareNote').textContent = url;
     try { navigator.clipboard.writeText(url).then(function () { $('shareNote').textContent = 'Link copied. ' + url; }, function () {}); } catch (e) {}
   };
@@ -766,11 +854,11 @@
   resetOutfit();
   showTab(0);
   update();
-  /* shareable views: ?occ=wed&tab=4&intro=0 */
+  /* shareable views: ?occ=wed&tab=4 */
   var q = new URLSearchParams(location.search);
   var resumable = null;
   if (q.get('d')) { try { var sh = decodeState(q.get('d')); applySaved(sh); st.fitMode = sh.size ? 'd' : 'a'; } catch (e) {} }
-  else if (!q.get('occ') && !q.get('tab') && !q.get('fit')) { resumable = load('cm-state-v1'); if (resumable) $('resumeBar').hidden = false; }
+  else if (!q.get('occ') && !q.get('tab') && !q.get('fit')) { resumable = load('cm-state-v2'); if (resumable) $('resumeBar').hidden = false; }
   if (!resumable) canSave = true;
   if (q.get('occ') && D.occasions.some(function (o) { return o.id === q.get('occ'); })) applyOccasion(q.get('occ'));
   if (q.get('fit') === 'b') { if (q.get('weight')) { st.notSure = true; st.w = +q.get('weight'); } if (q.get('h')) st.h = +q.get('h'); st.sug = suggest(); st.fitMode = 'b'; }
@@ -779,11 +867,6 @@
   update();
   if (q.get('brief')) ask(q.get('brief'));
   if (q.get('measure')) { st.notSure = true; st.chest = 100; st.fitMode = 'a'; update(); $('measureHelp').open = true; }
-  Recolor.init($('suitCanvas')).then(function () {
-    paintStage();
-    if (st.tab === 4) renderReview(true);
-    if (q.get('intro') !== '0' && !resumable) openIntro();
-  }).catch(function () {
-    $('suitCanvas').hidden = true; $('suitFallback').hidden = false;
-  });
+  paintStage();
+  if (st.tab === 4) renderReview(true);
 })();
