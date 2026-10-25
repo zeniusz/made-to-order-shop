@@ -425,3 +425,11 @@ select{max-width:220px}
 .extras-heading{display:grid;gap:2px;margin-bottom:10px}
 .extras-heading h2{font-size:1.08rem;font-weight:600}
 @media(max-width:560px){.presets{grid-template-columns:1fr}.preset{grid-template-columns:82px minmax(0,1fr)}.personalisation{padding:12px}}
+
+/* breathing room in the size step */
+#fitA .field{margin-top:28px}
+#fitA .field.first{margin-top:0}
+#fitGo{margin-top:36px}
+#fitSkip{margin-top:18px}
+#fitB #useSize{margin-top:24px}
+#fitB .field{margin-top:24px}
