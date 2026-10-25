@@ -302,5 +302,5 @@ select{max-width:220px}
 .zoombtn{position:absolute;left:12px;top:12px;height:34px;padding:0 14px;border:0;border-radius:999px;background:rgba(255,255,255,.92);font-size:.82rem;font-weight:500;cursor:pointer;z-index:3}
 .zoombtn[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink)}
 .photo.zoom{cursor:crosshair;touch-action:none}
-.lens{position:absolute;width:170px;height:170px;border-radius:50%;border:3px solid #fff;box-shadow:0 8px 30px rgba(0,0,0,.35);pointer-events:none;z-index:4;background:#ddd}
+.photo .lens{position:absolute;width:120px;height:120px;max-width:none;border-radius:50%;border:2px solid #fff;box-shadow:0 6px 20px rgba(0,0,0,.3);pointer-events:none;z-index:4;background:#ddd}
 @media (max-width:560px){.measure{grid-template-columns:1fr}.measure svg{max-width:150px}}

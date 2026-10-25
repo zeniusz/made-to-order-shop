@@ -706,7 +706,7 @@
   };
 
   /* close-up lens over the jacket photo */
-  var lens = $('lens'), lctx = lens.getContext('2d'), zoomOn = false, ZOOM = 3;
+  var lens = $('lens'), lctx = lens.getContext('2d'), zoomOn = false, ZOOM = 2, LENS = 120;
   $('zoomBtn').onclick = function () {
     zoomOn = !zoomOn; this.setAttribute('aria-pressed', String(zoomOn));
     $('suitPhoto').classList.toggle('zoom', zoomOn); if (!zoomOn) lens.hidden = true;
@@ -717,11 +717,11 @@
     if (x < 0 || y < 0 || x > r.width || y > r.height) { lens.hidden = true; return; }
     var sc = Math.max(r.width / cv.width, r.height / cv.height);
     var ix = (x - (r.width - cv.width * sc) / 2) / sc, iy = (y - (r.height - cv.height * sc) / 2) / sc;
-    var css = 170, src = css / sc / ZOOM;
+    var css = LENS, src = css / sc / ZOOM;
     lctx.clearRect(0, 0, lens.width, lens.height);
     lctx.drawImage(cv, ix - src / 2, iy - src / 2, src, src, 0, 0, lens.width, lens.height);
     lens.style.left = (x - css / 2) + 'px';
-    lens.style.top = (y - css / 2 - (e.pointerType === 'touch' ? 100 : 0)) + 'px';
+    lens.style.top = (y - css / 2 - (e.pointerType === 'touch' ? 80 : 0)) + 'px';
     lens.hidden = false;
   }
   var ph = $('suitPhoto');
