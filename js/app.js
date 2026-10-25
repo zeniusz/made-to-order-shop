@@ -25,7 +25,7 @@
     tab: 0, seen: { 0: true }, view: 'full', occ: 'wed', target: '#b9a68a', cloth: 'sand', all: false,
     style: { shoulder: 'natural', lapel: 'notch', closure: 'sb2', pockets: 'flap', canvas: 'half', button: 'horn' },
     lining: '#1f2d4d', mono: '',
-    h: 180, w: 78, pref: 'Regular', usual: 50, notSure: false, size: null, group: 'regular', level: null, sug: null, fitMode: 'a', book: false, walk: false, adj: { sleeve: 0, jlen: 0, waist: 0, tlen: 0, rise: 0 },
+    h: 180, w: 78, pref: 'Regular', usual: 50, notSure: false, size: null, group: 'regular', level: null, sug: null, fitMode: 'a', mode: 'client', finalSize: null, notes: '', book: false, walk: false, adj: { sleeve: 0, jlen: 0, waist: 0, tlen: 0, rise: 0 },
     self: null, city: 'Amsterdam', slot: null,
     on: {}, col: {}, name: '', code: null, season: null, budget: null, boost: [], change: '', chest: null, chat: []
   };
@@ -313,14 +313,15 @@
       fill('slots', SLOTS.map(function (t) { return chip(t, st.slot === t, function () { st.slot = st.slot === t ? null : t; update(); }); }));
     }
   }
-  function buildAdjustments() {
-    var box = $('adjs'); box.innerHTML = '';
+  function buildAdjustments(target) {
+    var box = target || $('adjs'); box.innerHTML = '';
     D.adjustments.forEach(function (a) {
       var row = el('div', 'adj');
       row.appendChild(el('span', '', a.label));
       var s = el('div', 'stepper');
       s.innerHTML = '<button type="button" aria-label="Shorter">−</button><label><input type="text" inputmode="decimal" value="0" aria-label="' + a.label + ' in cm"><span>cm</span></label><button type="button" aria-label="Longer">+</button>';
       var inp = s.querySelector('input'), bt = s.querySelectorAll('button');
+      var cur = st.adj[a.key] || 0; inp.value = cur > 0 ? '+' + cur : String(cur);
       var set = function (v) { v = Math.max(-4, Math.min(4, Math.round(v * 2) / 2)); st.adj[a.key] = v; inp.value = v > 0 ? '+' + v : String(v); update(); };
       bt[0].onclick = function () { set(st.adj[a.key] - 0.5); };
       bt[1].onclick = function () { set(st.adj[a.key] + 0.5); };
@@ -430,32 +431,57 @@
     $('ppSave').checked = !!p;
   }
 
-  /* ---------- advisor screen ---------- */
+  /* ---------- advisor mode: the fitting sheet ---------- */
+  var FITLOG = 'cm-fitlog-v1';
+  function fitStats() {
+    var log = load(FITLOG) || [], hit = log.filter(function (x) { return x.sug === x.final; }).length;
+    return log.length ? log.length + (log.length === 1 ? ' fitting' : ' fittings') + ' logged. The suggested size matched in ' + hit + '.' : 'No fittings logged yet.';
+  }
+  function setMode(m) {
+    st.mode = m; var adv = m === 'advisor';
+    document.body.classList.toggle('adv', adv);
+    $('advisorView').hidden = !adv;
+    $('modeClient').setAttribute('aria-pressed', String(!adv)); $('modeAdvisor').setAttribute('aria-pressed', String(adv));
+    if (adv) renderAdvisor();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
   function renderAdvisor() {
-    var box = $('advisor');
-    if (!st.code) { box.innerHTML = '<div class="adv-empty">Save a look to see it here.</div>'; $('advCode').textContent = 'No code yet'; return; }
-    $('advCode').textContent = st.code;
-    var c = cloth(), advisorShot = 'assets/img/catalog/' + activeLook().image, checks = ['Pull ' + c.name + ' from the cloth book'];
-    if (!st.size) checks.push('No size chosen. Measure and find a starting size by try-on');
-    else if (st.level === 'Low') checks.push('Low confidence on ' + sizeText() + '. Measure before fitting');
+    if (!document.body.classList.contains('adv')) return;
+    var box = $('advisorView'), c = cloth(), shot = 'assets/img/catalog/' + activeLook().image, sg = suggest(), g = st.group || sg.group;
+    var ex = D.extras.filter(function (x) { return st.on[x.id]; }).map(function (x) { return x.name + (st.col[x.id] ? ' (' + cname(st.col[x.id]).toLowerCase() + ')' : ''); });
+    var checks = ['Pull ' + c.name + ' from the cloth book'];
+    if (!st.size) checks.push('No size chosen yet. Measure and find a starting size by try-on');
+    else if (st.level === 'Low') checks.push('Low confidence on ' + sizeText() + '. Measure before the fitting');
     else checks.push('Try on ' + sizeText() + ' (' + (st.level || 'medium').toLowerCase() + ' confidence)');
     D.adjustments.forEach(function (a) { var v = st.adj[a.key]; if (v) checks.push(a.label + ' ' + (v > 0 ? '+' : '') + v + ' cm requested'); });
-    var ex = D.extras.filter(function (x) { return st.on[x.id]; }).map(function (x) { return x.name.toLowerCase() + (st.col[x.id] ? ' (' + cname(st.col[x.id]).toLowerCase() + ')' : ''); });
-    if (ex.length) checks.push('Have ready: ' + ex.join(', '));
-    if (st.mono.trim()) checks.push('Embroider initials ' + st.mono.toUpperCase() + ' inside the jacket lining (+€15)');
-    var av = st.self ? '<div class="av" style="background-image:url(' + st.self + ')"></div>' : '<div class="av">' + (st.name ? st.name[0].toUpperCase() : '?') + '</div>';
+    if (ex.length) checks.push('Have ready: ' + ex.join(', ').toLowerCase());
+    if (st.mono.trim()) checks.push('Embroider initials ' + st.mono.toUpperCase() + ' inside the jacket lining');
+    var when = st.slot ? st.slot + ', ' + st.city : st.walk ? 'Walk-in' : 'No appointment yet';
+    var kv = function (k, v, wide) { return '<div' + (wide ? ' class="wide"' : '') + '><span>' + k + '</span>' + v + '</div>'; };
     box.innerHTML =
-      '<div class="adv-head">' + av + '<div><b>' + (st.name || 'Guest') + '</b><span class="muted">' + (st.slot ? st.slot + ', ' + st.city : st.walk ? 'Walk-in' : 'No appointment') + '</span></div>' +
-      ('<div class="look" style="background-image:url(' + advisorShot + ')"></div>') + '</div>' +
-      '<div class="adv-grid">' +
-      '<div><span>Cloth</span>' + c.name + '</div>' +
-      '<div><span>Style</span>' + styleText() + '</div>' +
-      '<div><span>Start size</span>' + (st.size ? sizeText() : 'Not chosen') + '</div>' +
-      '<div><span>Height, weight</span>' + st.h + ' cm, ' + st.w + ' kg</div>' +
-      '<div><span>Fit confidence</span>' + confLabel(confidence()) + '</div>' +
-      '<div><span>Total</span>' + money(total()) + '</div>' +
-      '</div>' +
-      '<div><span class="flabel">Check first</span><ul class="adv-list">' + checks.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+      '<div class="fitsheet">' +
+      '<div class="sheet-top"><div><h2>Fitting sheet</h2><p class="muted">' + (st.name || 'Guest') + ' · ' + when + '</p></div><span class="code-pill">' + (st.code || 'Preview') + '</span></div>' +
+      '<div class="sheet-look"><div class="look" style="background-image:url(' + shot + ')"></div><div class="kv">' +
+        kv('Cloth', c.name, true) + kv('Style', styleText(), true) + kv('Extras', ex.length ? ex.join(', ') : 'None', true) + kv('Total', money(total())) + kv('Ready in', '2–3 weeks') + '</div></div>' +
+      '<div><h3>Client</h3><div class="kv">' + kv('Height and weight', st.h + ' cm, ' + st.w + ' kg') + kv('Usual size', st.notSure ? 'Not sure' + (st.chest ? ', chest ' + st.chest + ' cm' : '') : String(st.usual)) + kv('Fit preference', st.pref) + kv('Photo', st.self ? 'Provided' : 'None') + '</div></div>' +
+      '<div><h3>Size</h3><div class="sug"><b>' + sizeLabel(sg.size, sg.group) + ' ' + cap(sg.group) + '</b><span class="pill ' + sg.level.toLowerCase() + '">' + sg.level + ' confidence</span><p>' + sg.text + '</p></div>' +
+        '<h3 style="margin-top:16px">Final size</h3><div class="chips" id="advSizes"></div><p class="cmp" id="advCmp"></p></div>' +
+      '<div><h3>Adjustments agreed</h3><div class="adjs" id="advAdjs"></div></div>' +
+      '<div><h3>Check first</h3><ul class="adv-list">' + checks.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>' +
+      '<div><h3>Notes</h3><textarea id="advNotes" placeholder="Shoulders, posture, anything for the workroom" aria-label="Fitting notes"></textarea></div>' +
+      '<div class="sheet-actions adv-noprint"><button type="button" class="btn" id="advSave">Save fitting</button><button type="button" class="btn ghost" id="advPrint">Print sheet</button></div>' +
+      '<p class="adv-log adv-noprint" id="advLog" aria-live="polite">' + fitStats() + '</p></div>';
+    fill('advSizes', D.sizes.map(function (x) { return chip(sizeLabel(x, g), st.finalSize === x, function () { st.finalSize = st.finalSize === x ? null : x; renderAdvisor(); }); }));
+    var cmp = $('advCmp');
+    if (st.finalSize) { var same = st.finalSize === sg.size; cmp.className = 'cmp ' + (same ? 'ok' : 'diff'); cmp.textContent = same ? 'Matches the suggestion.' : 'Differs from the suggestion (' + sizeLabel(sg.size, g) + ' suggested, ' + sizeLabel(st.finalSize, g) + ' final).'; }
+    buildAdjustments($('advAdjs'));
+    $('advNotes').value = st.notes || ''; $('advNotes').oninput = function () { st.notes = this.value; };
+    $('advPrint').onclick = function () { window.print(); };
+    $('advSave').onclick = function () {
+      if (!st.finalSize) { $('advLog').textContent = 'Choose the final size first.'; return; }
+      var log = load(FITLOG) || []; log.push({ sug: sg.size, final: st.finalSize, group: g, date: new Date().toISOString().slice(0, 10) }); store(FITLOG, log);
+      $('advLog').textContent = 'Saved. ' + fitStats();
+    };
   }
 
   /* ---------- stage: original catalog photography, never recoloured ---------- */
@@ -850,6 +876,8 @@
   $('storeBook').onclick = function () { st.book = !st.book; if (!st.book) st.slot = null; update(); };
   $('storeWalk').onclick = function () { st.walk = !st.walk; update(); };
 
+  $('modeClient').onclick = function () { setMode('client'); };
+  $('modeAdvisor').onclick = function () { setMode('advisor'); };
   buildAdjustments();
   resetOutfit();
   showTab(0);
@@ -858,7 +886,7 @@
   var q = new URLSearchParams(location.search);
   var resumable = null;
   if (q.get('d')) { try { var sh = decodeState(q.get('d')); applySaved(sh); st.fitMode = sh.size ? 'd' : 'a'; } catch (e) {} }
-  else if (!q.get('occ') && !q.get('tab') && !q.get('fit')) { resumable = load('cm-state-v2'); if (resumable) $('resumeBar').hidden = false; }
+  else if (!q.get('occ') && !q.get('tab') && !q.get('fit') && !q.get('mode')) { resumable = load('cm-state-v2'); if (resumable) $('resumeBar').hidden = false; }
   if (!resumable) canSave = true;
   if (q.get('occ') && D.occasions.some(function (o) { return o.id === q.get('occ'); })) applyOccasion(q.get('occ'));
   if (q.get('fit') === 'b') { if (q.get('weight')) { st.notSure = true; st.w = +q.get('weight'); } if (q.get('h')) st.h = +q.get('h'); st.sug = suggest(); st.fitMode = 'b'; }
@@ -866,6 +894,7 @@
   if (q.get('tab')) showTab(Math.max(0, Math.min(4, parseInt(q.get('tab'), 10) || 0)));
   update();
   if (q.get('brief')) ask(q.get('brief'));
+  if (q.get('mode') === 'advisor') setMode('advisor');
   if (q.get('measure')) { st.notSure = true; st.chest = 100; st.fitMode = 'a'; update(); $('measureHelp').open = true; }
   paintStage();
   if (st.tab === 4) renderReview(true);

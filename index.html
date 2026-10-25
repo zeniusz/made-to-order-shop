@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="css/style.css?v=27">
+<link rel="stylesheet" href="css/style.css?v=33">
 </head>
 <body>
 
@@ -17,6 +17,7 @@
     <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 5h16M2 10h16M2 15h16" stroke="currentColor" stroke-width="1.4"/></svg>
   </a>
   <a class="logo" href="#studio">CUSTOM MADE STUDIO</a>
+  <div class="mode" role="group" aria-label="Who is using this"><button type="button" id="modeClient" aria-pressed="true">Client</button><button type="button" id="modeAdvisor" aria-pressed="false">Advisor</button></div>
   <button class="icon bag" id="bag" type="button" aria-label="Review your look">
     <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 6.5h13v10h-13z M7 6.5V5a3 3 0 0 1 6 0v1.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
     <span id="bagCount">1</span>
@@ -48,6 +49,8 @@
   </div>
 
   <div class="panel">
+    <div class="advisor-view" id="advisorView" hidden></div>
+
     <div class="tabs" role="tablist" aria-label="Steps">
       <button role="tab" id="tab-0" aria-controls="p-0" class="tab">Cloth</button>
       <button role="tab" id="tab-1" aria-controls="p-1" class="tab">Style</button>
@@ -275,18 +278,7 @@
   </div>
 </section>
 
-<section class="store" id="store">
-  <div class="wrap store-grid">
-    <div class="store-text">
-      <h2 class="section-title">What your advisor sees</h2>
-      <p class="muted">Your look is ready before you arrive.</p>
-    </div>
-    <div class="tablet" aria-label="Style Advisor screen">
-      <div class="tablet-bar"><span>Style Advisor</span><span class="mono" id="advCode">No code yet</span></div>
-      <div class="tablet-body" id="advisor"></div>
-    </div>
-  </div>
-</section>
+
 </main>
 
 <footer class="footer">
@@ -339,9 +331,9 @@
   <p id="zoomCaption">High-resolution product image</p>
 </div>
 
-<script src="js/data.js?v=26"></script>
-<script src="js/config.js?v=26"></script>
-<script src="js/assistant.js?v=26"></script>
-<script src="js/app.js?v=26"></script>
+<script src="js/data.js?v=33"></script>
+<script src="js/config.js?v=33"></script>
+<script src="js/assistant.js?v=33"></script>
+<script src="js/app.js?v=33"></script>
 </body>
 </html>

@@ -18,7 +18,9 @@ Built as a learning project to explore how AI can help design and build a realis
 
 ![Cream linen wedding look](assets/img/catalog/wedding-linen.jpg)
 
-Updated screenshots for the occasion catalog, style presets, accessory colour catalog and monogram preview are included in `docs/screenshots/`.
+Screenshots for the occasion catalog, style presets, accessory colour catalog, monogram preview and the advisor's fitting sheet are in `docs/screenshots/`.
+
+![Advisor mode: the fitting sheet](docs/screenshots/advisor-mode-desktop.png)
 
 ## What I wanted to learn
 
@@ -26,7 +28,7 @@ Updated screenshots for the occasion catalog, style presets, accessory colour ca
 - **How colour changes the look.** What happens to a whole outfit when the cloth, shirt, tie and pocket square change together, and can the page suggest colours that go with each other?
 - **Guided choices instead of long lists.** Start from an occasion, a colour or a photo, rather than scrolling hundreds of fabrics.
 - **A size step that explains itself.** Three short screens: tell us about you, get one suggested size with a High / Medium / Low confidence label and a plain reason, and fall back to a store measurement when confidence is low. People who know their size can skip to a grid.
-- **Hand-off to a person.** A short code that fills a store-advisor screen with the look, the size and a "check first" list.
+- **Hand-off to a person.** A Client / Advisor switch that turns the page into a fitting sheet with the look, the size and a "check first" list.
 - **Working with AI on a real build.** Planning, researching, building, testing in a browser, fixing what looks wrong, and publishing.
 
 ## What it does
@@ -38,7 +40,8 @@ Updated screenshots for the occasion catalog, style presets, accessory colour ca
 - Four image-led style presets (Havana, Milano, Coastal and Formal evening) state which tailoring details they change, and incompatible combinations are disabled with an explanation.
 - **Find my size**: suggested size, High / Medium / Low confidence with a plain reason, store fallback (book appointment or walk-in), expert size grid with Regular / Short / Long.
 - Extras have their own product photographs. Shirts, ties, pocket squares and shoes switch to a matching catalog photo when a supported colour is selected; waistcoat and second-trouser cards show a style reference alongside a swatch of the selected cloth. The monogram is a visible embroidery-preview option in Extras and appears again in Review and the price list. Prices are itemised in euros.
-- Store code and a store-advisor screen.
+- **Client / Advisor switch.** The switch in the header turns the page into an advisor's fitting sheet: the look, the client's numbers, the suggested size with its confidence, the final size, agreed adjustments, a check-first list and notes. Saving a fitting keeps a local tally of how often the suggested size matched the final one, and the sheet can be printed.
+- Store code that identifies the saved look.
 - **Remembers you, on this device only.** Resume where you left off, a Size Passport for your saved size, and a link that reopens the exact design.
 - **Measure yourself.** A short illustrated guide and an optional chest field for a more accurate size.
 - **Add the fitting to your calendar** as a calendar file with the store code in it.
@@ -57,7 +60,7 @@ The built-in stylist uses a structured local style assistant for occasion, colou
 
 **Connecting a hosted Claude (optional, for the site owner).** A static page cannot keep a secret key, so visitors never see or enter one. Instead, deploy `worker/claude-proxy.js` (a small Cloudflare Worker that holds the key as a secret), then put its address in `js/config.js`. From then on each message is answered by Claude, and if the worker is down or unset the built-in reader answers. The worker is written to Anthropic's documented API but has not been tested against a live key.
 
-Shareable views: `?occ=wed` (int, off, wed, eve, trv, cas, sig, res), `?tab=4` (step 0–4), `?brief=...` (send that sentence to the stylist).
+Shareable views: `?mode=advisor` (open the advisor's fitting sheet), `?occ=wed` (int, off, wed, eve, trv, cas, sig, res), `?tab=4` (step 0–4), `?brief=...` (send that sentence to the stylist).
 
 ## Run it
 
