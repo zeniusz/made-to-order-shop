@@ -119,8 +119,8 @@ window.StyleEngine = (function () {
       if (id === ctx.occasion) s -= ctx.occasionExplicit ? 30 : 10;
       if (look.tags.some(function (tag) { return t.indexOf(tag) > -1; })) s -= 6;
       if (ctx.season && ctx.season !== 'any' && look.season !== 'all' && look.season !== ctx.season) s += 10;
-      if (ctx.darker && luminance(look.colour) > 0.18) s += 17;
-      if (ctx.lighter && luminance(look.colour) < 0.26) s += 17;
+      if (!ctx.occasionExplicit && ctx.darker && luminance(look.colour) > 0.18) s += 17;
+      if (!ctx.occasionExplicit && ctx.lighter && luminance(look.colour) < 0.26) s += 17;
       if (casual && (id === 'cas' || id === 'res' || id === 'trv')) s -= 9;
       return { id: id, s: s };
     }).sort(function (a, b) { return a.s - b.s; });

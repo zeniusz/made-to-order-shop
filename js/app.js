@@ -734,7 +734,7 @@
     if (!refine) st.budget = r.budget || null; else if (r.budget) st.budget = r.budget;
     var darker = /\b(darker|deeper|more formal)\b/i.test(message) || r.shade === 'dark', lighter = /\b(lighter|brighter|paler)\b/i.test(message) || r.shade === 'light';
     var cheaper = /\b(cheaper|lower price|less expensive|save money|affordable)\b/i.test(message), relaxed = /\b(more relaxed|relaxed|casual|less formal)\b/i.test(message);
-    var occ = r.occ || st.occ, explicit = !!r.occ;
+    var occ = r.occ || st.occ, explicit = !!r.occ || refine;
     var base = r.colour || (sm.file && sm.dominant) || (refine ? cur.c : null) || StyleEngine.LOOKS[occ].colour;
     var target = base, photoColour = !!(sm.file && sm.dominant);
     if (!r.colour && (darker || lighter)) {
