@@ -142,6 +142,7 @@ window.StyleEngine = (function () {
     var s = hasPhoto && ctx.sampled ? 'From your photo I took ' + closestName(ctx.sampled).toLowerCase() + ' as the main colour. ' : '';
     s += 'I would start with ' + look.title.toLowerCase() + ' in ' + cloth.name + ', ' + money(price(cloth)) + '.';
     if (ctx.budget) s += ' Everything is within ' + money(ctx.budget) + '.';
+    if (dist(cloth.c, look.colour) > 90) s += ' The photo shows the cut. Your cloth is in the swatches below and in Fabric sample.';
     return s;
   }
 
