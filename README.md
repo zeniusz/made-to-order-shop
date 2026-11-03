@@ -68,6 +68,10 @@ catalog-gallery.html  browse every image
 
 Style me works without it. To let Claude read the photo, deploy `worker/claude-vision-proxy.js` (a small Cloudflare Worker that holds the key as a secret) and put its address in `CUSTOM_STYLIST_AI_ENDPOINT` in `js/config.js`. Visitors never see a key. Answers are checked against the real catalogue, and if the service is down the page falls back to private matching. Not tested with a live key. The worker also contains image generation, which the page does not use.
 
+## Image library
+
+`assets/img/library` holds 97 concept images: 33 fabric swatches, 33 fabric textures, 13 suits, 9 jacket-only views and 9 shoe pairs. Textures are digitally made, not mill photographs, and shoe photos are crops from the suit pictures. Cloth names, compositions and prices for the library cloths are illustrative.
+
 ## Notes
 
 An independent concept, not an official product of any brand. Photos were generated for this prototype. Prices, appointment times, availability and size suggestions are illustrative, not real fit advice. The code is MIT licensed.
