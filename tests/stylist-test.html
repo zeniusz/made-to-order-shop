@@ -145,10 +145,12 @@
     record('Jacket only', 'jacket photo shown', $('suitFullImage').getAttribute('src'), /jackets\/brown-glen-plaid/.test($('suitFullImage').getAttribute('src')));
     occTiles[0].click(); await w(300);
     doc.querySelectorAll('#designs .design')[1].click(); await w(300);
-    record('pick Cream linen (no jacket photo)', 'Jacket only tab hidden', 'hidden: ' + $('viewJacket').hidden, $('viewJacket').hidden === true);
+    $('viewJacket').click(); await w(300);
+    record('pick Cream linen, then Jacket only', 'the tab is there and shows the jacket photo', 'hidden: ' + $('viewJacket').hidden + ', ' + $('suitFullImage').getAttribute('src'), $('viewJacket').hidden === false && /jackets\/cream-linen/.test($('suitFullImage').getAttribute('src')));
+    $('viewFull').click(); await w(200);
     $('tab-3').click(); await w(300);
     var shoeBtns = doc.querySelectorAll('.shoe-opt');
-    record('Extras shoe styles', 'nine styles offered', shoeBtns.length + ' styles', shoeBtns.length === 9);
+    record('Extras shoe styles', 'ten styles offered', shoeBtns.length + ' styles', shoeBtns.length === 10);
     shoeBtns[2].click(); await w(300);
     var shoeCard = Array.prototype.filter.call(doc.querySelectorAll('#extras .card'), function (c) { return /Leather shoes/.test(c.textContent); })[0];
     record('pick a shoe style', 'the card shows that photo and it is added', shoeCard.querySelector('img').getAttribute('src') + ', added: ' + shoeCard.classList.contains('on'), /library\/shoes\//.test(shoeCard.querySelector('img').getAttribute('src')) && shoeCard.classList.contains('on'));
