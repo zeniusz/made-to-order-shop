@@ -47,7 +47,7 @@ python -m http.server 8770
 
 Open http://localhost:8770. Use a local server rather than opening the file directly.
 
-Useful links: `?mode=advisor`, `?tab=2` (steps 0 to 4), `?occ=wed`, `?brief=summer wedding`, `?stylist=open`, `?intro=0`.
+Useful links: `?mode=advisor`, `?tab=2` (steps 0 to 4), `?occ=wed`, `?design=brown-glen-plaid`, `?cloth=rust_linen`, `?view=jacket`, `?brief=summer wedding`, `?stylist=open`, `?intro=0`.
 
 ## Files
 
