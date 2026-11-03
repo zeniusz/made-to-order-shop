@@ -8,23 +8,25 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 
 ## Screenshots
 
-| Fabric sample | Style |
+| Jacket only | Fabric sample |
 |---|---|
-| ![Fabric sample](docs/preview/02-fabric-sample.jpg) | ![Style](docs/preview/03-style.jpg) |
+| ![Jacket only](docs/preview/13-jacket-only.jpg) | ![Fabric sample](docs/preview/02-fabric-sample.jpg) |
 
-| Find my size | Size suggestion |
+| Style | Find my size |
 |---|---|
-| ![Find my size](docs/preview/04-find-my-size.jpg) | ![Size suggestion](docs/preview/05-size-suggestion.jpg) |
+| ![Style](docs/preview/03-style.jpg) | ![Find my size](docs/preview/04-find-my-size.jpg) |
 
-| Extras | Review |
+| Size suggestion | Extras |
 |---|---|
-| ![Extras](docs/preview/06-extras.jpg) | ![Review](docs/preview/07-review.jpg) |
+| ![Size suggestion](docs/preview/05-size-suggestion.jpg) | ![Extras](docs/preview/06-extras.jpg) |
 
-| Style me | Advisor mode |
+| Review | Style me |
 |---|---|
-| ![Style me](docs/preview/12-style-me-photo.png) | ![Advisor mode](docs/preview/09-advisor.jpg) |
+| ![Review](docs/preview/07-review.jpg) | ![Style me](docs/preview/12-style-me-photo.png) |
 
-<img src="docs/preview/10-phone.jpg" alt="On a phone" width="280">
+| Advisor mode | On a phone |
+|---|---|
+| ![Advisor mode](docs/preview/09-advisor.jpg) | <img src="docs/preview/10-phone.jpg" alt="On a phone" width="240"> |
 
 ## What it does
 

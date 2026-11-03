@@ -962,6 +962,8 @@
   else if (!q.get('occ') && !q.get('tab') && !q.get('fit') && !q.get('mode')) { resumable = load('cm-state-v2'); if (resumable) $('resumeBar').hidden = false; }
   if (!resumable) canSave = true;
   if (q.get('occ') && D.occasions.some(function (o) { return o.id === q.get('occ'); })) applyOccasion(q.get('occ'));
+  if (q.get('design') && D.designs.some(function (d) { return d.id === q.get('design'); })) { var qd = D.designs.filter(function (d) { return d.id === q.get('design'); })[0]; if (!q.get('occ')) applyOccasion(qd.occ); pickDesign(qd); }
+  if (q.get('cloth') && byId(q.get('cloth'))) { st.cloth = q.get('cloth'); st.target = byId(q.get('cloth')).c; resetOutfit(); }
   if (q.get('fit') === 'b') { if (q.get('weight')) { st.notSure = true; st.w = +q.get('weight'); } if (q.get('h')) st.h = +q.get('h'); st.sug = suggest(); st.fitMode = 'b'; }
   if (q.get('fit') === 'd') { st.sug = suggest(); st.size = st.sug.size; st.group = st.sug.group; st.level = st.sug.level; st.fitMode = 'd'; }
   if (q.get('tab')) showTab(Math.max(0, Math.min(4, parseInt(q.get('tab'), 10) || 0)));
@@ -970,6 +972,7 @@
   if (q.get('mode') === 'advisor') setMode('advisor');
   if (q.get('view') === 'sample') setGalleryView('live');
   if (q.get('view') === 'detail') setGalleryView('detail');
+  if (q.get('view') === 'jacket') setGalleryView('jacket');
   if (q.get('stylist') === 'open') $('goStyleMe').click();
   if (q.get('measure')) { st.notSure = true; st.chest = 100; st.fitMode = 'a'; update(); $('measureHelp').open = true; }
   paintStage();
