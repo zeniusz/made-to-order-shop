@@ -48,7 +48,7 @@
     await w(150);
   }
   var look = function () { return ($('photoCaption').textContent.split(' · ')[0] || '').trim(); };
-  var cloth = function () { return ($('photoCaption').textContent.split(' · ')[1] || '').trim(); };
+  var cloth = function () { var p = $('photoCaption').textContent.split(' · '); return (p[p.length - 1] || '').trim(); };
   var reply = function () { return $('smReply').textContent; };
   var cards = function () { return doc.querySelectorAll('#smResults .sm-card').length; };
   var applied = function () { var h = doc.querySelector('#smResults .sm-card.on h3'); return h ? h.textContent : ''; };
@@ -128,6 +128,38 @@
     $('tab-3').click(); await w(200);
     var shoes = Array.prototype.filter.call(doc.querySelectorAll('#extras .card'), function (c) { return /Leather shoes/.test(c.textContent); })[0];
     record('Extras after applying a look', 'accessory colours chosen to go with the look', shoes ? shoes.textContent.replace(/\s+/g, ' ').slice(0, 50) : 'no shoes card', !!shoes);
+
+    group('Designs, jacket view and shoe styles');
+    await load();
+    await lookCase('statement burgundy suit', 'Statement tailoring', /Burgundy/);
+    record('statement burgundy suit', 'the Burgundy design is chosen', $('photoCaption').textContent, /Statement tailoring · Burgundy · Burgundy/.test($('photoCaption').textContent));
+    await load();
+    if (!$('resumeBar').hidden) $('resumeNo').click();
+    var occTiles = doc.querySelectorAll('#occ .look-card');
+    occTiles[1].click(); await w(300);
+    var tiles = doc.querySelectorAll('#designs .design');
+    record('open Business', 'three designs offered', tiles.length + ' designs', tiles.length === 3);
+    tiles[1].click(); await w(300);
+    record('pick Brown glen plaid', 'photo and caption change', $('suitFullImage').getAttribute('src').split('/').pop() + ', ' + $('photoCaption').textContent, /brown-glen-plaid/.test($('suitFullImage').getAttribute('src')) && /Brown glen plaid/.test($('photoCaption').textContent));
+    $('viewJacket').click(); await w(300);
+    record('Jacket only', 'jacket photo shown', $('suitFullImage').getAttribute('src'), /jackets\/brown-glen-plaid/.test($('suitFullImage').getAttribute('src')));
+    occTiles[0].click(); await w(300);
+    doc.querySelectorAll('#designs .design')[1].click(); await w(300);
+    record('pick Cream linen (no jacket photo)', 'Jacket only tab hidden', 'hidden: ' + $('viewJacket').hidden, $('viewJacket').hidden === true);
+    $('tab-3').click(); await w(300);
+    var shoeBtns = doc.querySelectorAll('.shoe-opt');
+    record('Extras shoe styles', 'nine styles offered', shoeBtns.length + ' styles', shoeBtns.length === 9);
+    shoeBtns[2].click(); await w(300);
+    var shoeCard = Array.prototype.filter.call(doc.querySelectorAll('#extras .card'), function (c) { return /Leather shoes/.test(c.textContent); })[0];
+    record('pick a shoe style', 'the card shows that photo and it is added', shoeCard.querySelector('img').getAttribute('src') + ', added: ' + shoeCard.classList.contains('on'), /library\/shoes\//.test(shoeCard.querySelector('img').getAttribute('src')) && shoeCard.classList.contains('on'));
+    await w(700);
+    var saved = win.localStorage.getItem('cm-state-v2') || '';
+    record('state is saved', 'design and shoe style are stored', saved.slice(0, 0) + (/"design":"cream-linen"/.test(saved) ? 'design stored' : 'design missing') + ', ' + (/"shoe":"/.test(saved) ? 'shoe stored' : 'shoe missing'), /"design":"cream-linen"/.test(saved) && /"shoe":"/.test(saved));
+    var keep = saved;
+    await new Promise(function (resolve) { frame.onload = function () { win = frame.contentWindow; doc = frame.contentDocument; win.localStorage.setItem('cm-state-v2', keep); setTimeout(resolve, 1500); }; frame.src = '../index.html?intro=0&t=' + Date.now(); });
+    win.localStorage.setItem('cm-state-v2', keep); frame.contentWindow.location.reload(); await new Promise(function (r) { frame.onload = function () { win = frame.contentWindow; doc = frame.contentDocument; setTimeout(r, 1500); }; });
+    if (!$('resumeBar').hidden) { $('resumeYes').click(); await w(500); }
+    record('resume after reload', 'Cream linen design is back', $('photoCaption').textContent, /Cream linen/.test($('photoCaption').textContent));
 
     group('Bad or odd input');
     await load();

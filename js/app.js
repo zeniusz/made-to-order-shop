@@ -71,7 +71,7 @@
       shoes: sl > 55 ? ['#9a6a3c', '#4a2c1d', '#121212'] : sl > 32 ? ['#4a2c1d', '#121212', '#9a6a3c'] : ['#121212', '#4a2c1d', '#9a6a3c']
     };
   }
-  function resetOutfit() { st.shoe = null; var r = recs(); ['shirt', 'tie', 'square', 'shoes'].forEach(function (k) { st.col[k] = r[k][0]; }); }
+  function resetOutfit() { st.shoe = (curDesign() && curDesign().shoes) || null; var r = recs(); ['shirt', 'tie', 'square', 'shoes'].forEach(function (k) { st.col[k] = r[k][0]; }); }
 
   var KEY_TEST = {
     flannel: function (c) { return c.weave === 'flannel'; }, herring: function (c) { return c.weave === 'herring'; },
@@ -176,7 +176,7 @@
     if (st.style.canvas === 'full') out.push(['Full canvas', 150]);
     if (st.style.button === 'mop') out.push(['Mother-of-pearl buttons', 25]);
     if (st.mono.trim()) out.push(['Monogram ' + st.mono.toUpperCase(), 15]);
-    D.extras.forEach(function (x) { if (st.on[x.id]) out.push([x.name + (st.col[x.id] ? ', ' + cname(st.col[x.id]).toLowerCase() : ''), x.price]); });
+    D.extras.forEach(function (x) { if (st.on[x.id]) out.push([x.id === 'shoes' && st.shoe && shoeSel() ? x.name + ', ' + shoeSel().name.toLowerCase() : x.name + (st.col[x.id] ? ', ' + cname(st.col[x.id]).toLowerCase() : ''), x.price]); });
     return out;
   }
   function total() { return lines().reduce(function (s, l) { return s + l[1]; }, 0); }
@@ -226,6 +226,12 @@
   function curDesign() {
     var l = occDesigns();
     return l.filter(function (d) { return d.id === st.design; })[0] || l[0] || null;
+  }
+  function designColour(d) { var c = d.cloth && byId(d.cloth); return c ? c.c : (D.occasions.filter(function (o) { return o.id === d.occ; })[0] || {}).c || '#808080'; }
+  function bestDesign(occId, hex) {
+    var l = D.designs.filter(function (d) { return d.occ === occId; }), best = null, bd = 1e9;
+    l.forEach(function (d) { var x = StyleEngine.dist(hex, designColour(d)); if (x < bd) { bd = x; best = d; } });
+    return best;
   }
   function lookImage() { var d = curDesign(); return d ? 'assets/img/' + d.image : 'assets/img/catalog/' + activeLook().image; }
   function renderDesigns() {
@@ -422,7 +428,7 @@
   function renderReview(withShot) {
     var c = cloth();
     if (withShot) { lastShot = lookImage(); }
-    var items = [{ img: lastShot ? '<img src="' + lastShot + '" alt="">' : '<span class="sw" style="' + swatch(c, 120) + '"></span>', nm: activeLook().label + ' look', sub: c.name + '. ' + styleText(), pc: eur(c.usd) }];
+    var items = [{ img: lastShot ? '<img src="' + lastShot + '" alt="">' : '<span class="sw" style="' + swatch(c, 120) + '"></span>', nm: (st.design && curDesign() && occDesigns().length > 1 ? curDesign().name : activeLook().label) + ' look', sub: c.name + '. ' + styleText(), pc: eur(c.usd) }];
     D.extras.forEach(function (x) {
       if (st.on[x.id]) {
         var itemImage = x.variants && st.col[x.id] && x.variants[st.col[x.id]] ? x.variants[st.col[x.id]] : x.image;
@@ -508,7 +514,7 @@
   function renderAdvisor() {
     if (!document.body.classList.contains('adv')) return;
     var box = $('advisorView'), c = cloth(), shot = lookImage(), sg = suggest(), g = st.group || sg.group;
-    var ex = D.extras.filter(function (x) { return st.on[x.id]; }).map(function (x) { return x.name + (st.col[x.id] ? ' (' + cname(st.col[x.id]).toLowerCase() + ')' : ''); });
+    var ex = D.extras.filter(function (x) { return st.on[x.id]; }).map(function (x) { return x.id === 'shoes' && st.shoe && shoeSel() ? x.name + ' (' + shoeSel().name.toLowerCase() + ')' : x.name + (st.col[x.id] ? ' (' + cname(st.col[x.id]).toLowerCase() + ')' : ''); });
     var checks = ['Pull ' + c.name + ' from the cloth book'];
     if (!st.size) checks.push('No size chosen yet. Measure and find a starting size by try-on');
     else if (st.level === 'Low') checks.push('Low confidence on ' + sizeText() + '. Measure before the fitting');
@@ -567,7 +573,7 @@
     $('viewJacket').setAttribute('aria-pressed', String(view === 'jacket'));
     $('viewLive').setAttribute('aria-pressed', String(view === 'live'));
     $('viewDetail').setAttribute('aria-pressed', String(view === 'detail'));
-    $('photoCaption').textContent = view === 'live' ? cloth().name + ' · fabric sample' : (st.design && d && occDesigns().length > 1 ? d.name : o.label) + ' · ' + cloth().name + (view === 'detail' ? ' · detail' : view === 'jacket' ? ' · jacket only' : '');
+    $('photoCaption').textContent = view === 'live' ? cloth().name + ' · fabric sample' : o.label + (st.design && d && occDesigns().length > 1 ? ' · ' + d.name : '') + ' · ' + cloth().name + (view === 'detail' ? ' · detail' : view === 'jacket' ? ' · jacket only' : '');
     $('zoomBtn').hidden = view === 'live';
     $('zoomBtn').textContent = view === 'detail' ? 'View full-resolution image' : 'Inspect full-size photo';
     $('zoomBtn').setAttribute('aria-pressed', 'false');
@@ -814,7 +820,7 @@
       var look = lookOf(rec.look_id), meta = StyleEngine.LOOKS[rec.look_id], c = byId(rec.cloth_id);
       var on = sm.applied && sm.applied.look_id === rec.look_id && sm.applied.cloth_id === rec.cloth_id;
       var card = el('div', 'sm-card' + (on ? ' on' : ''));
-      var img = el('img', 'look'); img.src = 'assets/img/catalog/' + look.image; img.alt = meta.title; img.loading = 'lazy';
+      var img = el('img', 'look'); var bd = bestDesign(rec.look_id, c.c); img.src = bd ? 'assets/img/' + bd.image : 'assets/img/catalog/' + look.image; img.alt = meta.title; img.loading = 'lazy';
       var body = el('div', 'sm-body');
       body.appendChild(el('span', 'tag', i === 0 ? 'BEST MATCH' : 'ALTERNATIVE'));
       body.appendChild(el('h3', '', meta.title));
@@ -830,7 +836,8 @@
   function applyRec(rec, quiet) {
     if (!rec) return;
     var c = byId(rec.cloth_id); if (!c) return;
-    st.occ = rec.look_id; st.design = null; st.cloth = c.id; st.target = c.c; st.view = 'full';
+    var bd = bestDesign(rec.look_id, c.c);
+    st.occ = rec.look_id; st.design = bd ? bd.id : null; st.cloth = c.id; st.target = c.c; st.view = 'full'; st.shoe = bd && bd.shoes || null;
     var acc = StyleEngine.ACCESSORIES[rec.look_id] || {};
     Object.keys(acc).forEach(function (k) { st.col[k] = acc[k]; });
     sm.applied = rec; st.saved = false;
