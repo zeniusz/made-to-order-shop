@@ -63,7 +63,7 @@
   async function run() {
     await load();
     group('Occasion briefs (the quick ideas and everyday phrasing)');
-    await lookCase('light linen suit for a summer wedding', 'Wedding', /Sand/);
+    await lookCase('light linen suit for a summer wedding', 'Wedding', /Sand|Ivory|Linen|Cream/);
     await lookCase('modern charcoal or navy suit for work', 'Business', /Grey|Navy/);
     await lookCase('smart casual blue blazer and stone trousers without a tie', 'Smart casual');
     await lookCase('relaxed breathable linen suit for a warm holiday', 'Summer & resort');
@@ -165,6 +165,17 @@
     win.localStorage.setItem('cm-state-v2', keep); frame.contentWindow.location.reload(); await new Promise(function (r) { frame.onload = function () { win = frame.contentWindow; doc = frame.contentDocument; setTimeout(r, 1500); }; });
     if (!$('resumeBar').hidden) { $('resumeYes').click(); await w(500); }
     record('resume after reload', 'Cream linen design is back', $('photoCaption').textContent, /Cream linen/.test($('photoCaption').textContent));
+
+    group('New designs and cloths come up in the results');
+    await load();
+    await send('plum velvet evening suit');
+    var names = Array.prototype.map.call(doc.querySelectorAll('#smResults .sm-card'), function (c) { return c.querySelector('h3').textContent + ' / ' + c.querySelector('.sm-cloth').textContent; }).join(' | ');
+    record('plum velvet evening suit', 'a library cloth (Plum Evening Velvet) is offered', names, /Plum Evening Velvet/.test(names));
+    await send('brown tweed suit for autumn');
+    names = Array.prototype.map.call(doc.querySelectorAll('#smResults .sm-card h3'), function (c) { return c.textContent; }).join(' | ');
+    record('brown tweed suit for autumn', 'the Brown glen plaid design is offered', names, /Brown glen plaid/.test(names));
+    await send('burgundy velvet dinner jacket');
+    record('burgundy velvet dinner jacket', 'looks are offered, not only a glossary answer', 'cards ' + cards(), cards() === 3);
 
     group('Bad or odd input');
     await load();

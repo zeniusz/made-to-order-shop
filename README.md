@@ -35,7 +35,7 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 - **Style presets** that say what they change. Combinations that cannot be made are disabled with the reason.
 - **Find my size.** One suggested size with a High, Medium or Low confidence label and the reason. A low result offers a store fitting. A size grid is there for people who know theirs.
 - **Extras** in matching colours, each with its own photo, ten shoe styles with their own prices, or no shoes and a monogram preview. Prices are itemised in euros.
-- **Style me**, inside the Cloth step. It starts collapsed. Open it, type a line or add an inspiration photo and get three ranked looks. Pick one to apply it, or refine with Darker, Lighter, Cheaper, More relaxed or More formal. Questions get a short answer. It runs in the browser with no setup.
+- **Style me**, inside the Cloth step. It starts collapsed. Open it, type a line or add an inspiration photo and get three ranked looks. Looks are chosen from all 13 designs and 46 cloths. Pick one to apply it, or refine with Darker, Lighter, Cheaper, More relaxed or More formal. Questions get a short answer. It runs in the browser with no setup.
 - **Client / Advisor switch.** Advisor mode shows a fitting sheet: the look, contact details, a sample schedule, the suggested and final size, adjustments and notes. It can be printed.
 - **Remembers you on this device:** resume, a saved size, a link that reopens the design, and a calendar file for the fitting.
 
@@ -60,7 +60,7 @@ js/assistant.js       reads the line you type
 js/stylist.js         palette sampling and look ranking
 js/config.js          optional address of a hosted AI proxy
 worker/               optional proxy that keeps an AI key off the page
-tests/stylist-test.html  47 checks, open it on the local server
+tests/stylist-test.html  51 checks, open it on the local server
 assets/img/           photos and textures
 docs/preview/         screenshots
 catalog-gallery.html  browse every image

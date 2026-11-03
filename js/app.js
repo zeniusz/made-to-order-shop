@@ -774,7 +774,7 @@
     var message = refine ? (typed ? typed + '. ' : '') + text : text;
     /* questions are answered, not turned into a look */
     var gl = D.glossary.filter(function (g) { return g.rx.test(message); })[0];
-    if (text && !refine && ((Brief.isQuestion(text) && (gl || Brief.kb(text))) || (gl && text.split(' ').length <= 4))) {
+    if (text && !refine && ((Brief.isQuestion(text) && (gl || Brief.kb(text))) || (gl && text.split(' ').length <= 4 && !Brief.parse(text).colour && !Brief.parse(text).occ))) {
       smSay(gl ? gl.term + ': ' + gl.text : Brief.kb(text)); return;
     }
     if (!message) message = 'Use this inspiration photo to suggest a coordinated outfit and matching cloth.';
@@ -800,7 +800,7 @@
     }
     var budget = st.budget || null;
     if (cheaper && (refine || !budget)) budget = clothPrice(cur) - 1;
-    var ctx = { occasion: occ, occasionExplicit: explicit, colourExplicit: !!r.colour || photoColour || refine, season: st.season || 'any', budget: budget, colour: target, colourName: r.colourName || StyleEngine.closestName(target), sampled: sm.file && sm.dominant && !r.colour ? sm.dominant : null, message: message, darker: darker, lighter: lighter, relaxed: relaxed };
+    var ctx = { occasion: occ, occasionExplicit: explicit, colourExplicit: !!r.colour || photoColour || refine, season: st.season || 'any', budget: budget, colour: target, colourName: r.colourName || StyleEngine.closestName(target), sampled: sm.file && sm.dominant && !r.colour ? sm.dominant : null, designs: D.designs.map(function (d) { return { id: d.id, occ: d.occ, name: d.name, desc: d.desc, c: d.c }; }), curColour: refine ? cur.c : null, message: message, darker: darker, lighter: lighter, relaxed: relaxed };
     sm.busy = true; $('smGo').disabled = true; smSay('Styling your look…');
     var local = StyleEngine.recommend(ctx, D.cloths, clothPrice);
     var aiOn = !!String(window.CUSTOM_STYLIST_AI_ENDPOINT || '').trim();
@@ -818,16 +818,17 @@
     });
   }
 
+  function recDesign(rec) { return (rec.design_id && D.designs.filter(function (d) { return d.id === rec.design_id; })[0]) || bestDesign(rec.look_id, byId(rec.cloth_id).c); }
   function smCards() {
     var box = $('smResults'); box.hidden = !sm.recs.length; box.innerHTML = '';
     sm.recs.forEach(function (rec, i) {
-      var look = lookOf(rec.look_id), meta = StyleEngine.LOOKS[rec.look_id], c = byId(rec.cloth_id);
-      var on = sm.applied && sm.applied.look_id === rec.look_id && sm.applied.cloth_id === rec.cloth_id;
+      var look = lookOf(rec.look_id), meta = StyleEngine.LOOKS[rec.look_id], c = byId(rec.cloth_id), dz = recDesign(rec);
+      var on = sm.applied && sm.applied.look_id === rec.look_id && sm.applied.cloth_id === rec.cloth_id && (sm.applied.design_id || '') === (rec.design_id || '');
       var card = el('div', 'sm-card' + (on ? ' on' : ''));
-      var img = el('img', 'look'); var bd = bestDesign(rec.look_id, c.c); img.src = bd ? 'assets/img/' + bd.image : 'assets/img/catalog/' + look.image; img.alt = meta.title; img.loading = 'lazy';
+      var img = el('img', 'look'); img.src = dz ? 'assets/img/' + dz.image : 'assets/img/catalog/' + look.image; img.alt = dz ? dz.name : meta.title; img.loading = 'lazy';
       var body = el('div', 'sm-body');
       body.appendChild(el('span', 'tag', i === 0 ? 'BEST MATCH' : 'ALTERNATIVE'));
-      body.appendChild(el('h3', '', meta.title));
+      body.appendChild(el('h3', '', dz ? dz.name : meta.title));
       var cl = el('div', 'sm-cloth'); var dot = el('i'); dot.style.background = c.c; cl.appendChild(dot); cl.appendChild(document.createTextNode(c.name + ' · ' + money(clothPrice(c)))); body.appendChild(cl);
       body.appendChild(el('span', 'sm-why', rec.reason));
       var btn = el('button', 'sm-use', on ? 'Applied ✓' : 'Use this look'); btn.type = 'button';
@@ -840,7 +841,7 @@
   function applyRec(rec, quiet) {
     if (!rec) return;
     var c = byId(rec.cloth_id); if (!c) return;
-    var bd = bestDesign(rec.look_id, c.c);
+    var bd = recDesign(rec);
     st.occ = rec.look_id; st.design = bd ? bd.id : null; st.cloth = c.id; st.target = c.c; st.view = 'full'; st.shoe = bd && bd.shoes || null;
     var acc = StyleEngine.ACCESSORIES[rec.look_id] || {};
     Object.keys(acc).forEach(function (k) { st.col[k] = acc[k]; });

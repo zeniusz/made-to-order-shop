@@ -92,12 +92,16 @@ window.StyleEngine = (function () {
   }
 
   /* ---- ranking ---- */
-  function bestCloth(target, ctx, used, cloths, price) {
+  function bestCloth(target, ctx, used, cloths, price, occId) {
     var t = String(ctx.message || '').toLowerCase();
     var texture = /texture|herringbone|check|pattern|flannel|stripe|woven/.test(t), linen = /linen|summer|breathable|warm weather|resort/.test(t) || ctx.season === 'summer', travel = /travel|commute|wrinkle/.test(t);
     var pool = ctx.budget ? cloths.filter(function (c) { return price(c) <= ctx.budget; }) : cloths;
     if (!pool.length) pool = cloths;
-    var occ = LOOKS[ctx.occasion];
+    if (ctx.curColour && (ctx.darker || ctx.lighter)) {
+      var lc = luminance(ctx.curColour), step = pool.filter(function (c) { return ctx.darker ? luminance(c.c) < lc * 0.9 : luminance(c.c) > lc * 1.1; });
+      if (step.length) pool = step;
+    }
+    var occ = LOOKS[occId || ctx.occasion], GENERIC = /^(pure|wool|blend|washed|cotton|weave|super|check|fine|dark|mid|light|grey|blue|green|brown)$/;
     return pool.map(function (c) {
       var s = dist(target, c.c);
       if (ctx.season && ctx.season !== 'any' && c.season !== 'all' && c.season !== ctx.season) s += 30;
@@ -106,12 +110,48 @@ window.StyleEngine = (function () {
       if (linen && c.season === 'summer') s -= 12;
       if (travel && c.id === 'nwf') s -= 18;
       if (occ && (CLOTH_TAGS[c.id] || []).some(function (tag) { return occ.tags.indexOf(tag) > -1; })) s -= 7;
-      if (used.indexOf(c.id) > -1) s += 35;
+      if (c.occ && c.occ.indexOf(occId || ctx.occasion) > -1) s -= 5;
+      if (c.lib && String(c.name).toLowerCase().split(/[^a-z]+/).some(function (w) { return w.length > 4 && !GENERIC.test(w) && t.indexOf(w) > -1; })) s -= 16;
+      if (used.indexOf(c.id) > -1) s += 60;
       return { c: c, s: s };
     }).sort(function (a, b) { return a.s - b.s; })[0].c;
   }
   /* ctx: { occasion, occasionExplicit, season, budget, colour, colourName, sampled, message, darker, lighter, relaxed } */
+  /* every design in the library is a candidate; its photo colour is compared with the colour asked for */
+  function recommendDesigns(ctx, cloths, price) {
+    var t = String(ctx.message || '').toLowerCase(), target = ctx.colour || '#1d2a44';
+    var casual = ctx.relaxed || /casual|relaxed|less formal|no tie/.test(t);
+    var scored = ctx.designs.map(function (d) {
+      var look = LOOKS[d.occ], s = ctx.colourExplicit ? Math.min(dist(target, d.c) * 0.24, ctx.occasionExplicit ? 20 : 60) : 0;
+      if (d.occ === ctx.occasion) s -= ctx.occasionExplicit ? 40 : 10;
+      if (look.tags.some(function (tag) { return t.indexOf(tag) > -1; })) s -= 6;
+      s -= 10 * Math.min(2, String(d.name + ' ' + d.desc).toLowerCase().split(/[^a-z]+/).filter(function (w, i, arr) { return w.length > 3 && arr.indexOf(w) === i && !/^(suit|with|light|tailored|relaxed|colour|work|that|your|easy|warm|dark)$/.test(w) && t.indexOf(w) > -1; }).length);
+      if (ctx.colourExplicit && dist(target, d.c) < 60) s -= 12;
+      if (ctx.season && ctx.season !== 'any' && look.season !== 'all' && look.season !== ctx.season) s += 10;
+      if (!ctx.occasionExplicit && ctx.darker && luminance(d.c) > 0.18) s += 17;
+      if (!ctx.occasionExplicit && ctx.lighter && luminance(d.c) < 0.26) s += 17;
+      if (casual && (d.occ === 'cas' || d.occ === 'res' || d.occ === 'trv')) s -= 9;
+      return { d: d, s: s };
+    }).sort(function (a, b) { return a.s - b.s; });
+    var out = [], per = {};
+    var near = ctx.colourExplicit ? scored.filter(function (e) { return e.d.occ === ctx.occasion || dist(target, e.d.c) <= 170; }) : scored;
+    if (near.length >= 3) scored = near;
+    scored.forEach(function (e) {
+      if (out.length >= 3 || (per[e.d.occ] || 0) >= 2) return;
+      per[e.d.occ] = (per[e.d.occ] || 0) + 1;
+      var d = e.d, look = LOOKS[d.occ], base = ctx.colourExplicit || ctx.darker || ctx.lighter ? target : d.c, why = [];
+      var cloth = bestCloth(base, ctx, out.map(function (r) { return r.cloth_id; }), cloths, price, d.occ);
+      why.push(d.occ === ctx.occasion ? 'made for ' + look.title.toLowerCase().replace(/ (suit|linen|evening|check)$/, '') : 'a strong alternative');
+      if (ctx.sampled) why.push('echoes the colour in your photo');
+      else if (ctx.colourName) why.push('keeps your ' + ctx.colourName.toLowerCase() + ' direction');
+      if (ctx.season === 'summer' || look.season === 'summer') why.push('works for warmer weather');
+      if (casual) why.push('more relaxed');
+      out.push({ look_id: d.occ, design_id: d.id, cloth_id: cloth.id, reason: title(why.slice(0, 2).join(' · ')), score: e.s });
+    });
+    return out;
+  }
   function recommend(ctx, cloths, price) {
+    if (ctx.designs && ctx.designs.length) return recommendDesigns(ctx, cloths, price);
     var t = String(ctx.message || '').toLowerCase(), target = ctx.colour || '#1d2a44', ids = Object.keys(LOOKS);
     var casual = ctx.relaxed || /casual|relaxed|less formal|no tie/.test(t);
     var scored = ids.map(function (id) {
@@ -138,9 +178,10 @@ window.StyleEngine = (function () {
     return out;
   }
   function describe(ctx, recs, cloths, price, hasPhoto, money) {
+    var dn = ctx.designs && recs[0].design_id ? ctx.designs.filter(function (d) { return d.id === recs[0].design_id; })[0] : null;
     var look = LOOKS[recs[0].look_id], cloth = cloths.filter(function (c) { return c.id === recs[0].cloth_id; })[0];
     var s = hasPhoto && ctx.sampled ? 'From your photo I took ' + closestName(ctx.sampled).toLowerCase() + ' as the main colour. ' : '';
-    s += 'I would start with ' + look.title.toLowerCase() + ' in ' + cloth.name + ', ' + money(price(cloth)) + '.';
+    s += 'I would start with ' + (dn ? dn.name : look.title).toLowerCase() + ' in ' + cloth.name + ', ' + money(price(cloth)) + '.';
     if (ctx.budget) s += ' Everything is within ' + money(ctx.budget) + '.';
     if (dist(cloth.c, look.colour) > 90) s += ' The photo shows the cut. Your cloth is in the swatches below and in Fabric sample.';
     return s;
