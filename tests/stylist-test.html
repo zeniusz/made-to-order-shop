@@ -149,12 +149,15 @@
     record('pick Cream linen, then Jacket only', 'the tab is there and shows the jacket photo', 'hidden: ' + $('viewJacket').hidden + ', ' + $('suitFullImage').getAttribute('src'), $('viewJacket').hidden === false && /jackets\/cream-linen/.test($('suitFullImage').getAttribute('src')));
     $('viewFull').click(); await w(200);
     $('tab-3').click(); await w(300);
-    var shoeBtns = doc.querySelectorAll('.shoe-opt');
+    var shoeBtns = doc.querySelectorAll('.shoe-opt:not(.none)');
     record('Extras shoe styles', 'ten styles offered', shoeBtns.length + ' styles', shoeBtns.length === 10);
     shoeBtns[2].click(); await w(300);
     var shoeCard = Array.prototype.filter.call(doc.querySelectorAll('#extras .card'), function (c) { return /Leather shoes/.test(c.textContent); })[0];
     record('pick a shoe style', 'the card shows that photo and it is added', shoeCard.querySelector('img').getAttribute('src') + ', added: ' + shoeCard.classList.contains('on'), /library\/shoes\//.test(shoeCard.querySelector('img').getAttribute('src')) && shoeCard.classList.contains('on'));
-    await w(700);
+    var noBtn = doc.querySelector('.shoe-opt.none'); noBtn.click(); await w(300);
+    shoeCard = Array.prototype.filter.call(doc.querySelectorAll('#extras .card'), function (c) { return /Leather shoes/.test(c.textContent); })[0];
+    record('choose No shoes', 'shoes are removed from the order', 'added: ' + shoeCard.classList.contains('on'), !shoeCard.classList.contains('on'));
+    doc.querySelectorAll('.shoe-opt:not(.none)')[2].click(); await w(700);
     var saved = win.localStorage.getItem('cm-state-v2') || '';
     record('state is saved', 'design and shoe style are stored', saved.slice(0, 0) + (/"design":"cream-linen"/.test(saved) ? 'design stored' : 'design missing') + ', ' + (/"shoe":"/.test(saved) ? 'shoe stored' : 'shoe missing'), /"design":"cream-linen"/.test(saved) && /"shoe":"/.test(saved));
     var keep = saved;

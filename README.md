@@ -34,7 +34,7 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 - **Colour and photo matching.** Any colour, hex code or uploaded photo is matched to the closest of 46 cloths.
 - **Style presets** that say what they change. Combinations that cannot be made are disabled with the reason.
 - **Find my size.** One suggested size with a High, Medium or Low confidence label and the reason. A low result offers a store fitting. A size grid is there for people who know theirs.
-- **Extras** in matching colours, each with its own photo, ten shoe styles and a monogram preview. Prices are itemised in euros.
+- **Extras** in matching colours, each with its own photo, ten shoe styles with their own prices, or no shoes and a monogram preview. Prices are itemised in euros.
 - **Style me**, inside the Cloth step. It starts collapsed. Open it, type a line or add an inspiration photo and get three ranked looks. Pick one to apply it, or refine with Darker, Lighter, Cheaper, More relaxed or More formal. Questions get a short answer. It runs in the browser with no setup.
 - **Client / Advisor switch.** Advisor mode shows a fitting sheet: the look, contact details, a sample schedule, the suggested and final size, adjustments and notes. It can be printed.
 - **Remembers you on this device:** resume, a saved size, a link that reopens the design, and a calendar file for the fitting.
@@ -72,7 +72,7 @@ Style me works without it. To let Claude read the photo, deploy `worker/claude-v
 
 ## Image library
 
-`assets/img/library` holds the 97 concept images from the supplied pack (33 fabric swatches, 33 fabric textures, 13 suits, 9 jacket-only views, 9 shoe pairs) plus 5 crops made from the suit photos: jacket-only views for four designs and a shoe photo for the charcoal pinstripe. Textures are digitally made, not mill photographs, and shoe photos are crops from the suit pictures. Cloth names and compositions for the library cloths are illustrative, and their prices are estimates, marked "est." in the app.
+`assets/img/library` holds 102 concept images: 33 fabric swatches, 33 fabric textures, 13 suits, 13 jacket-only views and 10 standalone shoe styles. Textures are synthetic illustrations, not mill photographs. The shoe photos are crops from one generated studio board and have limited detail. Cloth names, compositions and all prices for the library items are fictional demo values, not retail prices.
 
 ## Notes
 

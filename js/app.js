@@ -176,7 +176,7 @@
     if (st.style.canvas === 'full') out.push(['Full canvas', 150]);
     if (st.style.button === 'mop') out.push(['Mother-of-pearl buttons', 25]);
     if (st.mono.trim()) out.push(['Monogram ' + st.mono.toUpperCase(), 15]);
-    D.extras.forEach(function (x) { if (st.on[x.id]) out.push([x.id === 'shoes' && st.shoe && shoeSel() ? x.name + ', ' + shoeSel().name.toLowerCase() : x.name + (st.col[x.id] ? ', ' + cname(st.col[x.id]).toLowerCase() : ''), x.price]); });
+    D.extras.forEach(function (x) { if (st.on[x.id]) out.push([x.id === 'shoes' ? shoeSel().name : x.name + (st.col[x.id] ? ', ' + cname(st.col[x.id]).toLowerCase() : ''), extraPrice(x)]); });
     return out;
   }
   function total() { return lines().reduce(function (s, l) { return s + l[1]; }, 0); }
@@ -217,7 +217,7 @@
       var b = el('button', 'card'); b.type = 'button'; b.setAttribute('aria-pressed', String(x.c.id === st.cloth));
       b.innerHTML = '<span class="img"><span class="sw" style="' + swatch(x.c, 130) + '"></span>' +
         (i === 0 && !st.all ? '<span class="badge">Best match</span>' : '') + '<span class="pct">' + x.pct + '%</span></span>' +
-        '<span class="nm">' + x.c.name + '</span><span class="sub">' + x.c.wear + '</span><span class="pc">' + money(eur(x.c.usd)) + (x.c.est ? ' <small title="Estimated price for this concept cloth">est.</small>' : '') + '</span>';
+        '<span class="nm">' + x.c.name + '</span><span class="sub">' + x.c.wear + '</span><span class="pc">' + money(eur(x.c.usd)) + '</span>';
       b.onclick = function () { st.cloth = x.c.id; st.view = 'full'; resetOutfit(); update(); };
       return b;
     }));
@@ -367,13 +367,14 @@
   /* ---------- extras ---------- */
   function shoeSel() {
     var id = st.shoe || (curDesign() && curDesign().shoes) || null;
-    return id ? D.shoeStyles.filter(function (s) { return s.id === id; })[0] || null : null;
+    return D.shoeStyles.filter(function (s) { return s.id === id; })[0] || D.shoeStyles[0];
   }
+  function extraPrice(x) { return x.id === 'shoes' ? shoeSel().price : x.price; }
   function renderExtras() {
     var r = recs();
     fill('extras', D.extras.map(function (x) {
       var on = !!st.on[x.id], card = el('div', 'card extra' + (on ? ' on' : ''));
-      var shoeS = x.id === 'shoes' && st.shoe ? shoeSel() : null;
+      var shoeS = x.id === 'shoes' ? shoeSel() : null;
       var selectedImage = x.variants && st.col[x.id] && x.variants[st.col[x.id]] ? x.variants[st.col[x.id]] : x.image;
       var img = el('button', 'img'); img.type = 'button'; img.setAttribute('aria-pressed', String(on)); img.setAttribute('aria-label', (on ? 'Remove ' : 'Add ') + x.name);
       img.style.border = '0'; img.style.padding = '0'; img.style.cursor = 'pointer';
@@ -381,11 +382,11 @@
       img.onclick = function () { st.on[x.id] = !on; update(); };
       card.appendChild(img);
       card.appendChild(el('span', 'nm', x.name));
-      var detail = shoeS ? shoeS.name + ' · style reference' : st.col[x.id] ? cname(st.col[x.id]) + (st.col[x.id] === (r[x.id] || [])[0] ? ' · recommended colour' : '') : (x.detail || 'Pairs with your selected look');
+      var detail = shoeS ? shoeS.name + ' · ' + shoeS.material : st.col[x.id] ? cname(st.col[x.id]) + (st.col[x.id] === (r[x.id] || [])[0] ? ' · recommended colour' : '') : (x.detail || 'Pairs with your selected look');
       if (x.id === 'vest' || x.id === 'trs2') detail = (x.detail || 'Style reference') + ' · cut from ' + cloth().name;
       card.appendChild(el('span', 'sub', detail));
-      card.appendChild(el('span', 'pc', money(x.price)));
-      if (r[x.id]) {
+      card.appendChild(el('span', 'pc', money(extraPrice(x))));
+      if (r[x.id] && x.id !== 'shoes') {
         var o = el('div', 'opts');
         r[x.id].forEach(function (c) { o.appendChild(dot(c, st.col[x.id] === c, x.name + ' in ' + cname(c), function () { st.col[x.id] = c; if (x.id === 'shoes') st.shoe = null; st.on[x.id] = true; update(); }, true)); });
         card.appendChild(o);
@@ -393,11 +394,14 @@
       if (x.id === 'shoes') {
         var so = el('div', 'shoe-opts'); so.setAttribute('role', 'group'); so.setAttribute('aria-label', 'Shoe style');
         D.shoeStyles.forEach(function (s) {
-          var bt = el('button', 'shoe-opt'); bt.type = 'button'; bt.title = s.name; bt.setAttribute('aria-label', s.name); bt.setAttribute('aria-pressed', String(st.shoe === s.id));
+          var bt = el('button', 'shoe-opt'); bt.type = 'button'; bt.title = s.name + ' · ' + money(s.price); bt.setAttribute('aria-label', s.name + ', ' + money(s.price)); bt.setAttribute('aria-pressed', String(!!st.on.shoes && shoeSel().id === s.id));
           bt.innerHTML = '<img loading="lazy" src="assets/img/' + s.image + '" alt="">';
-          bt.onclick = function () { st.shoe = st.shoe === s.id ? null : s.id; st.on.shoes = true; update(); };
+          bt.onclick = function () { st.shoe = s.id; st.on.shoes = true; update(); };
           so.appendChild(bt);
         });
+        var nb = el('button', 'shoe-opt none', 'No shoes'); nb.type = 'button'; nb.setAttribute('aria-pressed', String(!st.on.shoes));
+        nb.onclick = function () { st.on.shoes = false; update(); };
+        so.appendChild(nb);
         card.appendChild(so);
       }
       return card;
@@ -432,10 +436,10 @@
     D.extras.forEach(function (x) {
       if (st.on[x.id]) {
         var itemImage = x.variants && st.col[x.id] && x.variants[st.col[x.id]] ? x.variants[st.col[x.id]] : x.image;
-        var shoeR = x.id === 'shoes' && st.shoe ? shoeSel() : null;
-        var itemSub = shoeR ? shoeR.name : st.col[x.id] ? cname(st.col[x.id]) : (x.detail || 'Selected extra');
+        var shoeR = x.id === 'shoes' ? shoeSel() : null;
+        var itemSub = shoeR ? shoeR.name + ' · ' + shoeR.material : st.col[x.id] ? cname(st.col[x.id]) : (x.detail || 'Selected extra');
         if (x.id === 'vest' || x.id === 'trs2') itemSub = (x.detail || 'Style reference') + ' · cut from ' + c.name;
-        items.push({ img: '<img class="review-product-photo" src="' + (shoeR ? 'assets/img/' + shoeR.image : 'assets/img/extras/' + itemImage) + '" alt="">', nm: x.name, sub: itemSub, pc: x.price });
+        items.push({ img: '<img class="review-product-photo" src="' + (shoeR ? 'assets/img/' + shoeR.image : 'assets/img/extras/' + itemImage) + '" alt="">', nm: x.name, sub: itemSub, pc: extraPrice(x) });
       }
     });
     if (st.mono.trim()) items.push({ img: '<div class=\"review-monogram\"><span>' + st.mono.toUpperCase() + '</span></div>', nm: 'Embroidered monogram', sub: 'Inside jacket lining · ' + st.mono.toUpperCase(), pc: 15 });
@@ -514,7 +518,7 @@
   function renderAdvisor() {
     if (!document.body.classList.contains('adv')) return;
     var box = $('advisorView'), c = cloth(), shot = lookImage(), sg = suggest(), g = st.group || sg.group;
-    var ex = D.extras.filter(function (x) { return st.on[x.id]; }).map(function (x) { return x.id === 'shoes' && st.shoe && shoeSel() ? x.name + ' (' + shoeSel().name.toLowerCase() + ')' : x.name + (st.col[x.id] ? ' (' + cname(st.col[x.id]).toLowerCase() + ')' : ''); });
+    var ex = D.extras.filter(function (x) { return st.on[x.id]; }).map(function (x) { return x.id === 'shoes' ? x.name + ' (' + shoeSel().name.toLowerCase() + ')' : x.name + (st.col[x.id] ? ' (' + cname(st.col[x.id]).toLowerCase() + ')' : ''); });
     var checks = ['Pull ' + c.name + ' from the cloth book'];
     if (!st.size) checks.push('No size chosen yet. Measure and find a starting size by try-on');
     else if (st.level === 'Low') checks.push('Low confidence on ' + sizeText() + '. Measure before the fitting');
