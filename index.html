@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="css/style.css?v=70">
+<link rel="stylesheet" href="css/style.css?v=73">
 </head>
 <body>
 
@@ -30,6 +30,7 @@
     <div class="stage-in">
       <div class="visual-switch" role="group" aria-label="Product views">
         <button type="button" class="visual-tab" id="viewFull" aria-pressed="true">Full outfit</button>
+        <button type="button" class="visual-tab" id="viewJacket" aria-pressed="false" hidden>Jacket only</button>
         <button type="button" class="visual-tab" id="viewLive" aria-pressed="false">Fabric sample</button>
         <button type="button" class="visual-tab" id="viewDetail" aria-pressed="false">Tailoring detail</button>
       </div>
@@ -84,6 +85,7 @@
           <div class="sm-results" id="smResults" hidden></div>
           </div>
         </section>
+        <div class="designs" id="designsBox" hidden><h3 id="designsHead">Designs</h3><div class="design-row" id="designs" role="group" aria-labelledby="designsHead"></div></div>
         <div class="cloth-heading"><div><h2>Or start with an occasion</h2></div></div>
         <div class="look-grid" id="occ" aria-label="Choose a style or occasion"></div>
         <div class="field">
@@ -315,10 +317,10 @@
   <p id="zoomCaption">High-resolution product image</p>
 </div>
 
-<script src="js/data.js?v=70"></script>
-<script src="js/config.js?v=70"></script>
-<script src="js/assistant.js?v=70"></script>
-<script src="js/stylist.js?v=70"></script>
-<script src="js/app.js?v=70"></script>
+<script src="js/data.js?v=73"></script>
+<script src="js/config.js?v=73"></script>
+<script src="js/assistant.js?v=73"></script>
+<script src="js/stylist.js?v=73"></script>
+<script src="js/app.js?v=73"></script>
 </body>
 </html>

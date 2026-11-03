@@ -28,11 +28,11 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 
 ## What it does
 
-- **Eight occasion looks**, each with its own full-outfit photo, plus a fabric sample and a detail view.
-- **Colour and photo matching.** Any colour, hex code or uploaded photo is matched to the closest of 16 cloths.
+- **Eight occasions and 13 designs.** Pick an occasion, then a design for it, each with a full-outfit photo. A jacket-only view, a fabric sample and a detail view show it closer.
+- **Colour and photo matching.** Any colour, hex code or uploaded photo is matched to the closest of 46 cloths.
 - **Style presets** that say what they change. Combinations that cannot be made are disabled with the reason.
 - **Find my size.** One suggested size with a High, Medium or Low confidence label and the reason. A low result offers a store fitting. A size grid is there for people who know theirs.
-- **Extras** in matching colours, each with its own photo, plus a monogram preview. Prices are itemised in euros.
+- **Extras** in matching colours, each with its own photo, nine shoe styles and a monogram preview. Prices are itemised in euros.
 - **Style me**, inside the Cloth step. It starts collapsed. Open it, type a line or add an inspiration photo and get three ranked looks. Pick one to apply it, or refine with Darker, Lighter, Cheaper, More relaxed or More formal. Questions get a short answer. It runs in the browser with no setup.
 - **Client / Advisor switch.** Advisor mode shows a fitting sheet: the look, contact details, a sample schedule, the suggested and final size, adjustments and notes. It can be printed.
 - **Remembers you on this device:** resume, a saved size, a link that reopens the design, and a calendar file for the fitting.
