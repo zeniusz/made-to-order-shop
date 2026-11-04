@@ -807,8 +807,9 @@
       else target = StyleEngine.SHADES[darker ? 'dark' : 'light'][occ] || base;           /* "dark suit for a wedding" */
     }
     var budget = st.budget || null;
-    if (cheaper && (refine || !budget)) budget = clothPrice(cur) - 1;
-    var ctx = { occasion: occ, occasionExplicit: explicit, colourExplicit: !!r.colour || photoColour || refine, season: st.season || 'any', budget: budget, colour: target, colourName: r.colourName || StyleEngine.closestName(target), sampled: sm.file && sm.dominant && !r.colour ? sm.dominant : null, designs: D.designs.map(function (d) { return { id: d.id, occ: d.occ, name: d.name, desc: d.desc, c: d.c }; }), curColour: refine ? cur.c : null, message: message, darker: darker, lighter: lighter, relaxed: relaxed };
+    var cheaperFrom = cheaper && (refine || !budget) ? clothPrice(cur) : null; /* "Cheaper": the reply says how much less, not the internal limit */
+    if (cheaperFrom) budget = cheaperFrom - 1;
+    var ctx = { occasion: occ, occasionExplicit: explicit, colourExplicit: !!r.colour || photoColour || refine, season: st.season || 'any', budget: budget, colour: target, colourName: r.colourName || StyleEngine.closestName(target), sampled: sm.file && sm.dominant && !r.colour ? sm.dominant : null, designs: D.designs.map(function (d) { return { id: d.id, occ: d.occ, name: d.name, desc: d.desc, c: d.c }; }), curColour: refine ? cur.c : null, cheaperFrom: cheaperFrom, message: message, darker: darker, lighter: lighter, relaxed: relaxed };
     sm.busy = true; $('smGo').disabled = true; smSay('Styling your look…');
     var local = StyleEngine.recommend(ctx, D.cloths, clothPrice);
     var aiOn = !!String(window.CUSTOM_STYLIST_AI_ENDPOINT || '').trim();

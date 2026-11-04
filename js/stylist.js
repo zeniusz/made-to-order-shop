@@ -182,7 +182,8 @@ window.StyleEngine = (function () {
     var look = LOOKS[recs[0].look_id], cloth = cloths.filter(function (c) { return c.id === recs[0].cloth_id; })[0];
     var s = hasPhoto && ctx.sampled ? 'From your photo I took ' + closestName(ctx.sampled).toLowerCase() + ' as the main colour. ' : '';
     s += 'I would start with ' + (dn ? dn.name : look.title).toLowerCase() + ' in ' + cloth.name + ', ' + money(price(cloth)) + '.';
-    if (ctx.budget) s += ' Everything is within ' + money(ctx.budget) + '.';
+    if (ctx.cheaperFrom && price(cloth) < ctx.cheaperFrom) s += ' That is ' + money(ctx.cheaperFrom - price(cloth)) + ' less.';
+    else if (ctx.budget && !ctx.cheaperFrom) s += ' Everything is within ' + money(ctx.budget) + '.';
     if (dist(cloth.c, look.colour) > 90) s += ' The photo shows the cut. Your cloth is in the swatches below and in Fabric sample.';
     return s;
   }
