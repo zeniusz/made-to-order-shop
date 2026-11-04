@@ -4,29 +4,29 @@ A made-to-measure suit configurator concept. Pick an occasion, match cloth to an
 
 A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, no build step.
 
-![Custom Made Studio: choosing an occasion](docs/preview/01-occasions.jpg)
+![Custom Made Studio: choosing an occasion](docs/preview/01-occasions-v2.jpg)
 
 ## Screenshots
 
 | Jacket only | Fabric sample |
 |---|---|
-| ![Jacket only](docs/preview/13-jacket-only.jpg) | ![Fabric sample](docs/preview/02-fabric-sample.jpg) |
+| ![Jacket only](docs/preview/13-jacket-only-v2.jpg) | ![Fabric sample](docs/preview/02-fabric-sample-v2.jpg) |
 
 | Style | Find my size |
 |---|---|
-| ![Style](docs/preview/03-style.jpg) | ![Find my size](docs/preview/04-find-my-size.jpg) |
+| ![Style](docs/preview/03-style-v2.jpg) | ![Find my size](docs/preview/04-find-my-size-v2.jpg) |
 
 | Size suggestion | Extras |
 |---|---|
-| ![Size suggestion](docs/preview/05-size-suggestion.jpg) | ![Extras](docs/preview/06-extras-prices.jpg) |
+| ![Size suggestion](docs/preview/05-size-suggestion-v2.jpg) | ![Extras](docs/preview/06-extras-prices.jpg) |
 
 | Review | Style me |
 |---|---|
-| ![Review](docs/preview/07-review.jpg) | ![Style me](docs/preview/12-style-me-photo.png) |
+| ![Review](docs/preview/07-review-v2.jpg) | ![Style me](docs/preview/12-style-me-photo-v2.png) |
 
 | Advisor mode | On a phone |
 |---|---|
-| ![Advisor mode](docs/preview/09-advisor.jpg) | <img src="docs/preview/10-phone.jpg" alt="On a phone" width="240"> |
+| ![Advisor mode](docs/preview/09-advisor-v2.jpg) | <img src="docs/preview/10-phone-v2.jpg" alt="On a phone" width="240"> |
 
 ## What it does
 
