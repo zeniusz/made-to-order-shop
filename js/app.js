@@ -31,8 +31,8 @@
   };
   var byId = function (id) { return D.cloths.filter(function (c) { return c.id === id; })[0]; };
   var cloth = function () { return byId(st.cloth); };
-  /* euro price: anchored on the three Austrian prices seen live (623, 523, 1,223), interpolated between them */
-  var EUR_PTS = [[673, 523], [823, 623], [1523, 1223]];
+  /* euro price for a made-to-measure suit: three anchor cloths (entry, standard, finest), interpolated between them */
+  var EUR_PTS = [[673, 795], [823, 945], [1523, 1795]];
   var eur = function (usd) {
     var p = EUR_PTS, a = usd <= p[1][0] ? p[0] : p[1], b = usd <= p[1][0] ? p[1] : p[2];
     return Math.round((a[1] + (usd - a[0]) * (b[1] - a[1]) / (b[0] - a[0])) / 5) * 5;

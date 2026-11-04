@@ -18,7 +18,7 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 
 | Size suggestion | Extras |
 |---|---|
-| ![Size suggestion](docs/preview/05-size-suggestion.jpg) | ![Extras](docs/preview/06-extras-no-shoes.jpg) |
+| ![Size suggestion](docs/preview/05-size-suggestion.jpg) | ![Extras](docs/preview/06-extras-prices.jpg) |
 
 | Review | Style me |
 |---|---|

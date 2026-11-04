@@ -84,16 +84,16 @@ window.CM = {
   ],
 
   shoeStyles: [
-    { id: 'black_cap_toe_oxfords', name: "Black Cap-Toe Oxfords", color: "black", type: "oxford", material: "calf leather", price: 420, image: 'library/shoes/black_cap_toe_oxfords.jpg' },
-    { id: 'cognac_plain_toe_oxfords', name: "Cognac Plain-Toe Oxfords", color: "cognac", type: "oxford", material: "calf leather", price: 395, image: 'library/shoes/cognac_plain_toe_oxfords.jpg' },
-    { id: 'black_wingtip_brogues', name: "Black Wingtip Brogues", color: "black", type: "brogue", material: "calf leather", price: 450, image: 'library/shoes/black_wingtip_brogues.jpg' },
-    { id: 'brown_double_monk_straps', name: "Brown Double Monk Straps", color: "brown", type: "monk strap", material: "calf leather", price: 440, image: 'library/shoes/brown_double_monk_straps.jpg' },
-    { id: 'dark_brown_tassel_loafers', name: "Dark Brown Tassel Loafers", color: "dark brown", type: "tassel loafer", material: "calf leather", price: 385, image: 'library/shoes/dark_brown_tassel_loafers.jpg' },
-    { id: 'black_penny_loafers', name: "Black Penny Loafers", color: "black", type: "penny loafer", material: "calf leather", price: 360, image: 'library/shoes/black_penny_loafers.jpg' },
-    { id: 'tobacco_suede_penny_loafers', name: "Tobacco Suede Penny Loafers", color: "tobacco", type: "suede loafer", material: "suede", price: 320, image: 'library/shoes/tobacco_suede_penny_loafers.jpg' },
-    { id: 'dark_brown_chelsea_boots', name: "Dark Brown Chelsea Boots", color: "dark brown", type: "chelsea boot", material: "calf leather", price: 480, image: 'library/shoes/dark_brown_chelsea_boots.jpg' },
-    { id: 'sand_suede_chukka_boots', name: "Sand Suede Chukka Boots", color: "sand", type: "chukka boot", material: "suede", price: 425, image: 'library/shoes/sand_suede_chukka_boots.jpg' },
-    { id: 'white_minimal_leather_sneakers', name: "White Minimal Leather Sneakers", color: "white", type: "sneaker", material: "leather", price: 295, image: 'library/shoes/white_minimal_leather_sneakers.jpg' }
+    { id: 'black_cap_toe_oxfords', name: "Black Cap-Toe Oxfords", color: "black", type: "oxford", material: "calf leather", price: 250, image: 'library/shoes/black_cap_toe_oxfords.jpg' },
+    { id: 'cognac_plain_toe_oxfords', name: "Cognac Plain-Toe Oxfords", color: "cognac", type: "oxford", material: "calf leather", price: 240, image: 'library/shoes/cognac_plain_toe_oxfords.jpg' },
+    { id: 'black_wingtip_brogues', name: "Black Wingtip Brogues", color: "black", type: "brogue", material: "calf leather", price: 270, image: 'library/shoes/black_wingtip_brogues.jpg' },
+    { id: 'brown_double_monk_straps', name: "Brown Double Monk Straps", color: "brown", type: "monk strap", material: "calf leather", price: 265, image: 'library/shoes/brown_double_monk_straps.jpg' },
+    { id: 'dark_brown_tassel_loafers', name: "Dark Brown Tassel Loafers", color: "dark brown", type: "tassel loafer", material: "calf leather", price: 230, image: 'library/shoes/dark_brown_tassel_loafers.jpg' },
+    { id: 'black_penny_loafers', name: "Black Penny Loafers", color: "black", type: "penny loafer", material: "calf leather", price: 220, image: 'library/shoes/black_penny_loafers.jpg' },
+    { id: 'tobacco_suede_penny_loafers', name: "Tobacco Suede Penny Loafers", color: "tobacco", type: "suede loafer", material: "suede", price: 210, image: 'library/shoes/tobacco_suede_penny_loafers.jpg' },
+    { id: 'dark_brown_chelsea_boots', name: "Dark Brown Chelsea Boots", color: "dark brown", type: "chelsea boot", material: "calf leather", price: 290, image: 'library/shoes/dark_brown_chelsea_boots.jpg' },
+    { id: 'sand_suede_chukka_boots', name: "Sand Suede Chukka Boots", color: "sand", type: "chukka boot", material: "suede", price: 255, image: 'library/shoes/sand_suede_chukka_boots.jpg' },
+    { id: 'white_minimal_leather_sneakers', name: "White Minimal Leather Sneakers", color: "white", type: "sneaker", material: "leather", price: 180, image: 'library/shoes/white_minimal_leather_sneakers.jpg' }
   ],
 
   occasions: [
@@ -169,8 +169,8 @@ window.CM = {
     { id: 'shirt',  name: 'Shirt',                  price: 89,  photo: true, image: 'shirt-white.jpg', detail: 'Cotton poplin', variants: { '#f3f3ef': 'variants/shirt-white.jpg', '#c9dcef': 'variants/shirt-sky-blue.jpg', '#f2e6e4': 'variants/shirt-pale-pink.jpg', '#dfe2e6': 'variants/shirt-pale-grey.jpg' } },
     { id: 'tie',    name: 'Silk tie',               price: 59,  photo: true, image: 'tie-burgundy.jpg', detail: 'Textured silk twill', variants: { '#6b1d2b': 'variants/tie-burgundy.jpg', '#7e93b5': 'variants/tie-steel-blue.jpg', '#24473a': 'variants/tie-forest-green.jpg', '#1f2d4d': 'variants/tie-navy.jpg', '#34373d': 'variants/tie-charcoal.jpg', '#b88a1e': 'variants/tie-mustard.jpg', '#9a4a2a': 'variants/tie-rust.jpg' } },
     { id: 'square', name: 'Pocket square',          price: 25,  photo: true, image: 'pocket-square-ivory.jpg', detail: 'Linen pocket square', variants: { '#f6f6f3': 'variants/pocket-square-ivory.jpg', '#6b1d2b': 'variants/pocket-square-burgundy.jpg', '#c9dcef': 'variants/pocket-square-sky-blue.jpg' } },
-    { id: 'vest',   name: 'Waistcoat, same cloth',  price: 129, image: 'waistcoat-navy.jpg', detail: 'Five-button waistcoat' },
-    { id: 'trs2',   name: 'Second trousers',        price: 199, image: 'trousers-navy.jpg', detail: 'Matching tailored trousers' },
+    { id: 'vest',   name: 'Waistcoat, same cloth',  price: 179, image: 'waistcoat-navy.jpg', detail: 'Five-button waistcoat' },
+    { id: 'trs2',   name: 'Second trousers',        price: 249, image: 'trousers-navy.jpg', detail: 'Matching tailored trousers' },
     { id: 'shoes',  name: 'Leather shoes',          price: 249, colours: true, image: 'oxford-black.jpg', detail: 'Polished leather Oxfords', variants: { '#9a6a3c': 'variants/shoes-tan.jpg', '#4a2c1d': 'variants/shoes-brown.jpg', '#121212': 'variants/shoes-black.jpg' } }
   ],
 
