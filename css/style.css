@@ -559,5 +559,8 @@ body.adv .studio{min-height:0}
 /* shoe options read like the colour dots of the other items: a round crop of each shoe's leather */
 .shoe-dot{overflow:hidden;background:var(--ground)}
 .shoe-dot img{display:block;width:100%;height:100%;object-fit:cover;transform:scale(1.8)}
+/* "No shoes": an empty dot with a diagonal stroke */
+.shoe-dot.none{position:relative;background:var(--bg,#fff)}
+.shoe-dot.none::after{content:"";position:absolute;left:50%;top:3px;bottom:3px;width:1.5px;background:var(--muted,#8a8a8a);transform:translateX(-50%) rotate(45deg)}
 .pc small{font-size:.72rem;color:var(--muted);font-weight:400}
 .pc small{display:none}

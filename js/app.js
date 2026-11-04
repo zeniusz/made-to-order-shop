@@ -235,7 +235,7 @@
   }
   /* a photo of this design in the chosen cloth (and tie, when one is added), if the library has one */
   function designVariant(d) {
-    return (d.variants || []).filter(function (v) { return v.cloth === st.cloth && (!v.tie || (st.on.tie && st.col.tie === v.tie)); })[0] || null;
+    return (d.variants || []).filter(function (v) { return v.cloth === st.cloth && (!v.tie || (st.on.tie && st.col.tie === v.tie)) && !!v.noShoes === !!st.noShoes; })[0] || null;
   }
   function lookImage() { var d = curDesign(); if (!d) return 'assets/img/catalog/' + activeLook().image; var v = designVariant(d); return 'assets/img/' + (v ? v.image : d.image); }
   function renderDesigns() {
@@ -383,7 +383,7 @@
       var img = el('button', 'img'); img.type = 'button'; img.setAttribute('aria-pressed', String(on)); img.setAttribute('aria-label', (on ? 'Remove ' : 'Add ') + x.name);
       img.style.border = '0'; img.style.padding = '0'; img.style.cursor = 'pointer';
       img.innerHTML = '<img class="extra-product-photo" src="' + (shoeS ? 'assets/img/' + shoeS.image : 'assets/img/extras/' + selectedImage) + '" alt="' + x.name + (st.col[x.id] ? ' in ' + cname(st.col[x.id]) : ' product reference') + '" loading="lazy">' + ((x.id === 'vest' || x.id === 'trs2') ? '<span class="cloth-reference-swatch" style="' + swatch(cloth(), 75) + '"></span>' : '') + '<span class="check">' + (on ? '✓' : '+') + '</span>';
-      img.onclick = function () { st.on[x.id] = !on; update(); };
+      img.onclick = function () { st.on[x.id] = !on; if (x.id === 'shoes' && !on) st.noShoes = false; update(); };
       card.appendChild(img);
       card.appendChild(el('span', 'nm', x.name));
       var detail = shoeS ? shoeS.name + ' · ' + shoeS.material : st.col[x.id] ? cname(st.col[x.id]) + (st.col[x.id] === (r[x.id] || [])[0] ? ' · recommended colour' : '') : (x.detail || 'Pairs with your selected look');
@@ -400,10 +400,14 @@
         D.shoeStyles.forEach(function (s) {
           var bt = el('button', 'dot sm shoe-dot'); bt.type = 'button'; bt.title = s.name + ' · ' + money(s.price); bt.setAttribute('aria-label', s.name + ', ' + money(s.price)); bt.setAttribute('aria-pressed', String(!!st.on.shoes && shoeSel().id === s.id));
           bt.innerHTML = '<img loading="lazy" src="assets/img/' + s.image + '" alt="">';
-          bt.onclick = function () { st.shoe = s.id; st.on.shoes = true; update(); };
+          bt.onclick = function () { st.shoe = s.id; st.on.shoes = true; st.noShoes = false; update(); };
           so.appendChild(bt);
         });
-        /* shoes are added and removed with the photo's +/✓ like every other item, so there is no separate "No shoes" option */
+        /* No shoes: the shoes leave the price and, where the library has one, the suit photo switches to a version without shoes */
+        var nb = el('button', 'dot sm shoe-dot none'); nb.type = 'button'; nb.title = 'No shoes'; nb.setAttribute('aria-label', 'No shoes');
+        nb.setAttribute('aria-pressed', String(!!st.noShoes));
+        nb.onclick = function () { st.noShoes = true; st.on.shoes = false; update(); };
+        so.appendChild(nb);
         card.appendChild(so);
       }
       return card;
@@ -473,7 +477,7 @@
   function renderChange() { $('changeNote').textContent = st.change || ''; }
 
   /* ---------- Size Passport and resume (this device only) ---------- */
-  var KEEP = ['chest', 'occ', 'target', 'cloth', 'season', 'budget', 'boost', 'style', 'lining', 'mono', 'h', 'w', 'pref', 'usual', 'notSure', 'size', 'group', 'level', 'adj', 'book', 'walk', 'slot', 'city', 'on', 'col', 'design', 'shoe'];
+  var KEEP = ['chest', 'occ', 'target', 'cloth', 'season', 'budget', 'boost', 'style', 'lining', 'mono', 'h', 'w', 'pref', 'usual', 'notSure', 'size', 'group', 'level', 'adj', 'book', 'walk', 'slot', 'city', 'on', 'col', 'design', 'shoe', 'noShoes'];
   function snap(keys) { var o = {}; keys.forEach(function (k) { o[k] = st[k]; }); return JSON.parse(JSON.stringify(o)); }
   function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   function load(k) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
