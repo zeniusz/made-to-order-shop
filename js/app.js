@@ -779,7 +779,8 @@
     var refine = REFINE_RX.test(text);
     if (!text && !sm.file) { smSay('Type a line first, or add a photo.'); return; }
     if (sm.busy) return;
-    var message = refine ? (typed ? typed + '. ' : '') + text : text;
+    /* a chip refines the typed brief, but not a question left in the box ("Half canvas or full canvas?" is not an instruction) */
+    var message = refine ? (typed && !Brief.isQuestion(typed) ? typed + '. ' : '') + text : text;
     /* questions are answered, not turned into a look */
     var gl = D.glossary.filter(function (g) { return g.rx.test(message); })[0];
     if (text && !refine && ((Brief.isQuestion(text) && (gl || Brief.kb(text))) || (gl && text.split(' ').length <= 4 && !Brief.parse(text).colour && !Brief.parse(text).occ))) {
@@ -800,8 +801,9 @@
     var darker = /\b(darker|deeper|more formal)\b/i.test(message) || r.shade === 'dark', lighter = /\b(lighter|brighter|paler)\b/i.test(message) || r.shade === 'light';
     var cheaper = /\b(cheaper|lower price|less expensive|save money|affordable)\b/i.test(message), relaxed = /\b(more relaxed|relaxed|casual|less formal)\b/i.test(message);
     var occ = r.occ || st.occ, explicit = !!r.occ || refine;
-    var base = r.colour || (sm.file && sm.dominant) || (refine ? cur.c : null) || StyleEngine.LOOKS[occ].colour;
-    var target = base, photoColour = !!(sm.file && sm.dominant);
+    /* a refine chip (Darker, Cheaper, ...) works from the look on screen, not from an earlier inspiration photo */
+    var base = r.colour || (refine ? cur.c : null) || (sm.file && sm.dominant) || StyleEngine.LOOKS[occ].colour;
+    var target = base, photoColour = !!(sm.file && sm.dominant) && !refine;
     if (!r.colour && (darker || lighter)) {
       if (refine || photoColour) target = shifted(base, darker ? -1 : 1);                 /* relative to what is on screen */
       else target = StyleEngine.SHADES[darker ? 'dark' : 'light'][occ] || base;           /* "dark suit for a wedding" */
@@ -809,7 +811,7 @@
     var budget = st.budget || null;
     var cheaperFrom = cheaper && (refine || !budget) ? clothPrice(cur) : null; /* "Cheaper": the reply says how much less, not the internal limit */
     if (cheaperFrom) budget = cheaperFrom - 1;
-    var ctx = { occasion: occ, occasionExplicit: explicit, colourExplicit: !!r.colour || photoColour || refine, season: st.season || 'any', budget: budget, colour: target, colourName: r.colourName || StyleEngine.closestName(target), sampled: sm.file && sm.dominant && !r.colour ? sm.dominant : null, designs: D.designs.map(function (d) { return { id: d.id, occ: d.occ, name: d.name, desc: d.desc, c: d.c }; }), curColour: refine ? cur.c : null, cheaperFrom: cheaperFrom, message: message, darker: darker, lighter: lighter, relaxed: relaxed };
+    var ctx = { occasion: occ, occasionExplicit: explicit, colourExplicit: !!r.colour || photoColour || refine, season: st.season || 'any', budget: budget, colour: target, colourName: r.colourName || StyleEngine.closestName(target), sampled: sm.file && sm.dominant && !r.colour && !refine ? sm.dominant : null, designs: D.designs.map(function (d) { return { id: d.id, occ: d.occ, name: d.name, desc: d.desc, c: d.c }; }), curColour: refine ? cur.c : null, cheaperFrom: cheaperFrom, message: message, darker: darker, lighter: lighter, relaxed: relaxed };
     sm.busy = true; $('smGo').disabled = true; smSay('Styling your look…');
     var local = StyleEngine.recommend(ctx, D.cloths, clothPrice);
     var aiOn = !!String(window.CUSTOM_STYLIST_AI_ENDPOINT || '').trim();
