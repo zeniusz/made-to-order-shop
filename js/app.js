@@ -814,6 +814,12 @@
     var ctx = { occasion: occ, occasionExplicit: explicit, colourExplicit: !!r.colour || photoColour || refine, season: st.season || 'any', budget: budget, colour: target, colourName: r.colourName || StyleEngine.closestName(target), sampled: sm.file && sm.dominant && !r.colour && !refine ? sm.dominant : null, designs: D.designs.map(function (d) { return { id: d.id, occ: d.occ, name: d.name, desc: d.desc, c: d.c }; }), curColour: refine ? cur.c : null, cheaperFrom: cheaperFrom, message: message, darker: darker, lighter: lighter, relaxed: relaxed };
     sm.busy = true; $('smGo').disabled = true; smSay('Styling your look…');
     var local = StyleEngine.recommend(ctx, D.cloths, clothPrice);
+    /* "Cheaper" keeps the colour: if the only cheaper cloths are a different colour, keep the look and say so */
+    if (cheaperFrom && local[0] && StyleEngine.dist(byId(local[0].cloth_id).c, cur.c) > 90) {
+      sm.busy = false; $('smGo').disabled = false;
+      smSay('This is already the best price in this colour. For less, try a different colour.');
+      return;
+    }
     var aiOn = !!String(window.CUSTOM_STYLIST_AI_ENDPOINT || '').trim();
     var aiCtx = { occasion: occ, season: ctx.season, budget_eur: budget, desired_colour_hex: target, sampled_hex: ctx.sampled, user_message: message.slice(0, 1000), catalog: { looks: StyleEngine.catalogForAI().looks, fabrics: D.cloths.map(function (c) { return { id: c.id, name: c.name, hex: c.c, weave: c.weave, season: c.season, price_eur: clothPrice(c), tags: StyleEngine.CLOTH_TAGS[c.id] || [] }; }) } };
     var run = aiOn ? sm.ready.then(function (img) { return StyleEngine.callAI(message, aiCtx, img, sm.history.slice(-8), D.cloths); }) : Promise.resolve(null);

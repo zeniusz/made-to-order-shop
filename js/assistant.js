@@ -70,7 +70,8 @@ window.Brief = (function () {
     if (/\b(slim|tailored|close fit|fitted|skinny)\b/.test(t)) out.pref = 'Slim';
     else if (/\b(relaxed|loose|roomy|comfortable|baggy)\b/.test(t)) out.pref = 'Relaxed';
     else if (/\b(regular fit|classic fit)\b/.test(t)) out.pref = 'Regular';
-    if ((m = t.match(/\b(?:under|below|max|up to|less than|budget(?: of)?|around)\s*€?\s*(\d{3,4})\b/)) || (m = t.match(/€\s*(\d{3,4})\b/))) out.budget = +m[1];
+    /* amounts with a thousands separator count too: €1,100 / €1.100 / 1 100 */
+    if ((m = t.match(/\b(?:under|below|max|up to|less than|budget(?: of)?|around)\s*€?\s*(\d[.,\s]\d{3}|\d{3,4})\b/)) || (m = t.match(/€\s*(\d[.,\s]\d{3}|\d{3,4})\b/))) out.budget = +m[1].replace(/\D/g, '');
     for (i = 0; i < WEAVES.length; i++) if (WEAVES[i][1].test(t)) out.weaves.push(WEAVES[i][0]);
     STYLE.forEach(function (s) { if (!out.style[s[0]] && s[2].test(t)) out.style[s[0]] = s[1]; });
     return out;
