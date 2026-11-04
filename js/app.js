@@ -233,7 +233,11 @@
     l.forEach(function (d) { var x = StyleEngine.dist(hex, designColour(d)); if (x < bd) { bd = x; best = d; } });
     return best;
   }
-  function lookImage() { var d = curDesign(); return d ? 'assets/img/' + d.image : 'assets/img/catalog/' + activeLook().image; }
+  /* a photo of this design in the chosen cloth (and tie, when one is added), if the library has one */
+  function designVariant(d) {
+    return (d.variants || []).filter(function (v) { return v.cloth === st.cloth && (!v.tie || (st.on.tie && st.col.tie === v.tie)); })[0] || null;
+  }
+  function lookImage() { var d = curDesign(); if (!d) return 'assets/img/catalog/' + activeLook().image; var v = designVariant(d); return 'assets/img/' + (v ? v.image : d.image); }
   function renderDesigns() {
     var l = occDesigns(), cur = curDesign();
     $('designsBox').hidden = l.length < 2;
@@ -394,14 +398,12 @@
       if (x.id === 'shoes') {
         var so = el('div', 'shoe-opts'); so.setAttribute('role', 'group'); so.setAttribute('aria-label', 'Shoe style');
         D.shoeStyles.forEach(function (s) {
-          var bt = el('button', 'shoe-opt'); bt.type = 'button'; bt.title = s.name + ' · ' + money(s.price); bt.setAttribute('aria-label', s.name + ', ' + money(s.price)); bt.setAttribute('aria-pressed', String(!!st.on.shoes && shoeSel().id === s.id));
+          var bt = el('button', 'dot sm shoe-dot'); bt.type = 'button'; bt.title = s.name + ' · ' + money(s.price); bt.setAttribute('aria-label', s.name + ', ' + money(s.price)); bt.setAttribute('aria-pressed', String(!!st.on.shoes && shoeSel().id === s.id));
           bt.innerHTML = '<img loading="lazy" src="assets/img/' + s.image + '" alt="">';
           bt.onclick = function () { st.shoe = s.id; st.on.shoes = true; update(); };
           so.appendChild(bt);
         });
-        var nb = el('button', 'shoe-opt none', 'No shoes'); nb.type = 'button'; nb.setAttribute('aria-pressed', String(!st.on.shoes));
-        nb.onclick = function () { st.on.shoes = false; update(); };
-        so.appendChild(nb);
+        /* shoes are added and removed with the photo's +/✓ like every other item, so there is no separate "No shoes" option */
         card.appendChild(so);
       }
       return card;
@@ -561,9 +563,11 @@
   }
   function paintGallery() {
     var d = curDesign(), view = st.view || 'full', o = activeLook(), image = lookImage();
-    if (view === 'jacket' && !(d && d.jacket)) view = st.view = 'full';
-    if (view === 'jacket') image = 'assets/img/' + d.jacket;
-    $('viewJacket').hidden = !(d && d.jacket);
+    /* a cloth/tie variant needs its own jacket photo; without one, Jacket only would show the original cloth, so it is hidden */
+    var v = d && designVariant(d), jacket = v ? v.jacket : d && d.jacket;
+    if (view === 'jacket' && !jacket) view = st.view = 'full';
+    if (view === 'jacket') image = 'assets/img/' + jacket;
+    $('viewJacket').hidden = !jacket;
     $('suitPhoto').setAttribute('data-view', view);
     var hero = $('suitFullImage');
     if (!hero.src || hero.getAttribute('src') !== image) hero.setAttribute('src', image);

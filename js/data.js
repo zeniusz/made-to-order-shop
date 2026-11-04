@@ -65,7 +65,13 @@ window.CM = {
     { id: 'summer-resort-taupe', c: '#7d6d56', occ: 'res', name: "Sand linen", desc: "Light and easy for warm weather", image: 'library/suits/summer-resort-taupe.jpg', jacket: 'library/jackets/summer-resort-taupe.jpg', shoes: 'sand_suede_chukka_boots' },
     { id: 'rust-linen', c: '#6e3e20', occ: 'res', name: "Rust linen", desc: "A warm, washed linen colour", image: 'library/suits/rust-linen.jpg', cloth: 'rust_linen', jacket: 'library/jackets/rust-linen.jpg', shoes: 'dark_brown_chelsea_boots' },
     { id: 'black-tie', c: '#1f1e1f', occ: 'eve', name: "Black tie", desc: "Tuxedo with a peak lapel", image: 'library/suits/black-tie.jpg', jacket: 'library/jackets/black-tie.jpg', shoes: 'black_cap_toe_oxfords' },
-    { id: 'business-navy', c: '#222431', occ: 'int', name: "Navy business", desc: "A polished navy wool suit", image: 'library/suits/business-navy.jpg', jacket: 'library/jackets/business-navy.jpg', shoes: 'black_cap_toe_oxfords' },
+    { id: 'business-navy', c: '#222431', occ: 'int', name: "Navy business", desc: "A polished navy wool suit", image: 'library/suits/business-navy.jpg', jacket: 'library/jackets/business-navy.jpg', shoes: 'black_cap_toe_oxfords',
+      /* photos of this suit in another cloth or with another tie; the first match wins (tie needs the tie added in Extras) */
+      variants: [
+        { cloth: 'dbtro', tie: '#6b1d2b', image: 'library/suits/business-navy--dbtro--tie-burgundy.jpg' },
+        { cloth: 'dbtro', image: 'library/suits/business-navy--dbtro.jpg' },
+        { cloth: 'n110', tie: '#6b1d2b', image: 'library/suits/business-navy--tie-burgundy.jpg' }
+      ] },
     { id: 'travel-blue-grey', c: '#353b4a', occ: 'trv', name: "Blue-grey casual", desc: "Soft tailoring with sneakers", image: 'library/suits/travel-blue-grey.jpg', jacket: 'library/jackets/travel-blue-grey.jpg', shoes: 'white_minimal_leather_sneakers' },
     { id: 'statement-forest', c: '#2c3027', occ: 'sig', name: "Forest double-breasted", desc: "A textured green double-breasted suit", image: 'library/suits/statement-forest.jpg', jacket: 'library/jackets/statement-forest.jpg', shoes: 'brown_double_monk_straps' },
     { id: 'burgundy-modern', c: '#36131a', occ: 'sig', name: "Burgundy", desc: "A deep wine suit with a dark polo", image: 'library/suits/burgundy-modern.jpg', cloth: 'burgundy_wool_twill', jacket: 'library/jackets/burgundy-modern.jpg', shoes: 'black_wingtip_brogues' }
