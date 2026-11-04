@@ -66,9 +66,10 @@ window.CM = {
     { id: 'rust-linen', c: '#6e3e20', occ: 'res', name: "Rust linen", desc: "A warm, washed linen colour", image: 'library/suits/rust-linen.jpg', cloth: 'rust_linen', jacket: 'library/jackets/rust-linen.jpg', shoes: 'dark_brown_chelsea_boots' },
     { id: 'black-tie', c: '#1f1e1f', occ: 'eve', name: "Black tie", desc: "Tuxedo with a peak lapel", image: 'library/suits/black-tie.jpg', jacket: 'library/jackets/black-tie.jpg', shoes: 'black_cap_toe_oxfords' },
     { id: 'business-navy', c: '#222431', occ: 'int', name: "Navy business", desc: "A polished navy wool suit", image: 'library/suits/business-navy.jpg', jacket: 'library/jackets/business-navy.jpg', shoes: 'black_cap_toe_oxfords',
-      /* photos of this suit in another cloth, with another tie, or without shoes; the first match wins
-         (tie needs the tie added in Extras; noShoes needs "No shoes" chosen) */
+      /* photos of this suit in another cloth, with another tie, other shoes or without shoes; the first match wins
+         (tie needs the tie added in Extras; shoe needs that shoe chosen; noShoes needs "No shoes" chosen) */
       variants: [
+        { cloth: 'dbtro', tie: '#6b1d2b', shoe: 'cognac_plain_toe_oxfords', image: 'library/suits/business-navy--dbtro--tie-burgundy--shoe-cognac.jpg' },
         { cloth: 'dbtro', tie: '#6b1d2b', image: 'library/suits/business-navy--dbtro--tie-burgundy.jpg' },
         { cloth: 'dbtro', image: 'library/suits/business-navy--dbtro.jpg' },
         { cloth: 'n110', tie: '#6b1d2b', image: 'library/suits/business-navy--tie-burgundy.jpg' },

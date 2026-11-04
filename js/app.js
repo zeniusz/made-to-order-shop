@@ -235,7 +235,7 @@
   }
   /* a photo of this design in the chosen cloth (and tie, when one is added), if the library has one */
   function designVariant(d) {
-    return (d.variants || []).filter(function (v) { return v.cloth === st.cloth && (!v.tie || (st.on.tie && st.col.tie === v.tie)) && !!v.noShoes === !!st.noShoes; })[0] || null;
+    return (d.variants || []).filter(function (v) { return v.cloth === st.cloth && (!v.tie || (st.on.tie && st.col.tie === v.tie)) && (!v.shoe || (st.on.shoes && shoeSel().id === v.shoe)) && !!v.noShoes === !!st.noShoes; })[0] || null;
   }
   function lookImage() { var d = curDesign(); if (!d) return 'assets/img/catalog/' + activeLook().image; var v = designVariant(d); return 'assets/img/' + (v ? v.image : d.image); }
   function renderDesigns() {
