@@ -779,13 +779,15 @@
     var refine = REFINE_RX.test(text);
     if (!text && !sm.file) { smSay('Type a line first, or add a photo.'); return; }
     if (sm.busy) return;
-    /* a chip refines the typed brief, but not a question left in the box ("Half canvas or full canvas?" is not an instruction) */
-    var message = refine ? (typed && !Brief.isQuestion(typed) ? typed + '. ' : '') + text : text;
+    /* a chip refines the last brief (not a question left in the box: "Half canvas or full canvas?" is not an instruction) */
+    var brief = typed && !Brief.isQuestion(typed) ? typed : (sm.lastBrief || '');
+    var message = refine ? (brief ? brief + '. ' : '') + text : text;
     /* questions are answered, not turned into a look */
     var gl = D.glossary.filter(function (g) { return g.rx.test(message); })[0];
     if (text && !refine && ((Brief.isQuestion(text) && (gl || Brief.kb(text))) || (gl && text.split(' ').length <= 4 && !Brief.parse(text).colour && !Brief.parse(text).occ))) {
       smSay(gl ? gl.term + ': ' + gl.text : Brief.kb(text)); return;
     }
+    if (!refine && text) sm.lastBrief = text;
     if (!message) message = 'Use this inspiration photo to suggest a coordinated outfit and matching cloth.';
     var r = Brief.parse(message), cur = cloth();
     if (!refine && !sm.file && !Brief.summary(r, D).length) { smSay('I could not tell what you need. Try an occasion, a colour or a budget, for example “navy suit for a wedding under €900”.'); return; }
