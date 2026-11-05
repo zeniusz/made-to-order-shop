@@ -9,8 +9,9 @@ def maxw(rel):
     if '/library/textures/' in rel: return 640
     if '/textures/macro/' in rel: return 400
     return 360
+NOIMG = len(sys.argv) > 3 and sys.argv[3] == '--no-images'
 assets = {}
-for dp, dn, fn in os.walk(os.path.join(ROOT, 'assets', 'img')):
+for dp, dn, fn in ([] if NOIMG else os.walk(os.path.join(ROOT, 'assets', 'img'))):
     for f in fn:
         if not f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')): continue
         p = os.path.join(dp, f); rel = os.path.relpath(p, ROOT).replace(os.sep, '/')
