@@ -755,3 +755,14 @@ details.adv-card.adv-fabric,#advFabric{padding:0}
 .adv-photo-dlg img{display:block;max-width:100%;max-height:70vh;margin:0 auto 12px;object-fit:contain}
 .adv-photo-dlg form{text-align:right}
 @media (max-width:767px){.adv-head-side{width:100%;justify-content:space-between}}
+
+/* assistant: suggested fabric option cards */
+.adv-options{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.adv-option{display:grid;grid-template-columns:44px minmax(0,1fr);gap:4px 12px;align-items:start;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:#fff}
+.adv-option-text{display:grid;gap:2px;font-size:.88rem;min-width:0}
+.adv-option-text b{font-weight:600;overflow-wrap:anywhere}
+.adv-option-weave{color:var(--muted);font-size:.8rem}
+.adv-option-price.is-less{color:var(--good)}
+.adv-option-tag{justify-self:start;margin-top:4px;font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--ground)}
+.adv-option .btn{grid-column:1/-1;min-height:40px}
+.adv-alt-text .is-less{color:var(--good)}

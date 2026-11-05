@@ -578,6 +578,7 @@
       var price = fullPrice + eur(item.usd) - eur(current.usd);
       return item.id !== current.id && price < fullPrice && (!limit || price <= limit) && StyleEngine.dist(item.c, current.c) <= 90; /* same colour family */
     });
+    var weaveLabel = { plain: 'plain weave', herring: 'herringbone', flannel: 'flannel', check: 'check', stripe: 'stripe', textured: 'textured weave' };
     var connected = !!String(window.CUSTOM_STYLIST_AI_ENDPOINT || '').trim();
     var input = $('stylistQuestion');
     input.value = advUi.question;
@@ -593,6 +594,7 @@
       box.textContent = a ? a.text : 'Choose a suggestion or ask a question. Answers come from this fitting and the catalogue.';
       var alt = a && a.alt;
       altBox.hidden = !alt;
+      paintOptions(a && a.options);
       if (alt) {
         if (!a.seen) { a.seen = true; advUi.fabric = true; if ($('advFabric')) $('advFabric').open = true; }
         var now = eur(cloth().usd), diff = eur(alt.usd) - now;
@@ -603,7 +605,34 @@
         $('stylistAltDiff').className = diff < 0 ? 'is-less' : '';
       }
     }
-    function say(text, alt) { advUi.answer = { state: 'ok', text: text, alt: alt || null }; paint(); }
+    function say(text, alt, options) { advUi.answer = { state: 'ok', text: text, alt: alt || null, options: options || null }; paint(); }
+    /* put one fabric into the side-by-side comparison and bring the advisor to it */
+    function openCompare(c) {
+      var select = $('altCloth'); select.value = c.id; $('altSearch').value = c.name; advUi.search = c.name; $('altResults').hidden = true;
+      advUi.fabric = true; $('advFabric').open = true; select.onchange();
+      $('advFabric').scrollIntoView({ block: 'center' }); $('applyAlt').focus({ preventScroll: true });
+    }
+    /* up to three option cards, one per suggested fabric, each with its own Compare button */
+    function paintOptions(ids) {
+      var list = $('stylistOptions'); if (!list) return;
+      list.innerHTML = '';
+      var picks = (ids || []).map(byId).filter(Boolean);
+      list.hidden = !picks.length;
+      var seen = sm.shown || [], now = eur(cloth().usd);
+      picks.forEach(function (c) {
+        var d = eur(c.usd) - now, li = el('li', 'adv-option');
+        var sw = el('i', 'adv-swatch is-small'); sw.setAttribute('style', swatch(c, 60));
+        var body = el('div', 'adv-option-text');
+        body.appendChild(el('b', '', c.name));
+        body.appendChild(el('span', 'adv-option-weave', weaveLabel[c.weave] || c.weave));
+        var price = el('span', 'adv-option-price' + (d < 0 ? ' is-less' : ''), 'Full look ' + money(total() + d) + ' · ' + (d === 0 ? 'same price' : (d > 0 ? '+' : '−') + money(Math.abs(d))));
+        body.appendChild(price);
+        if (seen.indexOf(c.id) > -1) body.appendChild(el('span', 'adv-option-tag', 'Shown online'));
+        var go = el('button', 'btn ghost', 'Compare'); go.type = 'button'; go.setAttribute('aria-label', 'Compare ' + c.name);
+        go.onclick = function () { openCompare(c); };
+        li.appendChild(sw); li.appendChild(body); li.appendChild(go); list.appendChild(li);
+      });
+    }
     /* answers from the fitting and catalogue facts on this device, so it works without any cloud service */
     function localAnswer(q) {
       var t = q.toLowerCase(), sg = suggest(), bits = [];
@@ -635,18 +664,14 @@
     /* three different directions to show next: varied weaves, suit price within the customer's budget, closest to the chosen colour first;
        options the customer already saw in Style me are marked, so the advisor can build on them */
     function alternatives() {
-      var seen = sm.shown || [], now = eur(current.usd), picked = [], weaves = {};
-      var label = { plain: 'plain weave', herring: 'herringbone', flannel: 'flannel', check: 'check', stripe: 'stripe', textured: 'textured weave' };
+      var now = eur(current.usd), picked = [], weaves = {};
       cloths.forEach(function (c) {
         if (picked.length >= 3 || c.id === current.id || weaves[c.weave] || (limit && eur(c.usd) > limit)) return;
         weaves[c.weave] = 1; picked.push(c);
       });
       if (!picked.length) return { text: 'No other fabric is within the recorded budget. Confirm how flexible the budget is first.' };
-      var lines = picked.map(function (c, i) {
-        var d = eur(c.usd) - now;
-        return (i + 1) + '. ' + c.name + ' · ' + (label[c.weave] || c.weave) + ' · suit ' + money(eur(c.usd)) + ' (' + (d === 0 ? 'same price' : (d > 0 ? '+' : '−') + money(Math.abs(d))) + ')' + (seen.indexOf(c.id) > -1 ? ' · shown online' : '');
-      });
-      return { text: 'Three directions to show next' + (limit ? ', all within ' + money(limit) : '') + ':\n' + lines.join('\n') + '\nAsk what they liked about ' + current.name + ' before pulling swatches.', alt: picked[0] };
+      var count = ['', 'One direction', 'Two directions', 'Three directions'][picked.length];
+      return { text: count + ' to show next' + (limit ? ', all within ' + money(limit) : '') + '. Ask what they liked about ' + current.name + ' before pulling swatches.', options: picked.map(function (c) { return c.id; }) };
     }
     $('stylistPrep').onclick = function () {
       var opening = st.brief ? 'Start with their brief: “' + st.brief + '”. Ask which detail matters most.'
@@ -669,14 +694,13 @@
     };
     $('stylistCompare').onclick = function () {
       var alt = advUi.answer && advUi.answer.alt; if (!alt) return;
-      var select = $('altCloth'); select.value = alt.id; $('altSearch').value = alt.name; advUi.search = alt.name; $('altResults').hidden = true; select.onchange();
-      $('advFabric').scrollIntoView({ block: 'center' }); $('applyAlt').focus({ preventScroll: true });
+      openCompare(alt);
     };
     $('stylistFree').onsubmit = async function (event) {
       event.preventDefault();
       var question = input.value.trim(); advUi.question = input.value;
       if (!question) { advUi.answer = { state: 'empty', text: 'Type a question first, or choose a suggestion above.', alt: null }; paint(); return; }
-      if (!connected) { var local = localAnswer(question); say(local.text, local.alt); return; }
+      if (!connected) { var local = localAnswer(question); say(local.text, local.alt, local.options); return; }
       advUi.answer = { state: 'loading', text: 'Preparing a suggestion…', alt: null }; paint();
       var out = null;
       try {
@@ -685,7 +709,7 @@
           alternative:candidate ? {name:candidate.name,total_eur:fullPrice+eur(candidate.usd)-eur(current.usd)} : null},null,[],D.cloths);
         if (result && result.reply) out = { state: 'ok', text: result.reply, alt: candidate && result.reply.indexOf(candidate.name) > -1 ? candidate : null };
       } catch (e) { out = null; }
-      if (!out) { var fallback = localAnswer(question); out = { state: 'error', text: 'Live advice is unavailable, so this guidance comes from this device. ' + fallback.text, alt: fallback.alt || null }; }
+      if (!out) { var fallback = localAnswer(question); out = { state: 'error', text: 'Live advice is unavailable, so this guidance comes from this device. ' + fallback.text, alt: fallback.alt || null, options: fallback.options || null }; }
       advUi.answer = out; paint();
     };
     paint();
@@ -825,7 +849,7 @@
       var alt = byId(select.value); if (!alt) return;
       var from = cloth().name;
       st.alternative = st.cloth; st.cloth = alt.id; st.target = alt.c;
-      if (advUi.answer) advUi.answer.alt = null;
+      if (advUi.answer) { advUi.answer.alt = null; advUi.answer.options = null; }
       advUi.search = from;
       renderAdvisor();
       flash('Fabric changed to ' + alt.name + '. Sizes, alterations and notes are unchanged.');
@@ -995,7 +1019,7 @@
           '<details class="adv-card adv-assist adv-noprint" id="advAssist" open><summary>Stylist assistant</summary><div class="adv-assist-body">' +
             '<div class="adv-suggest" id="stylistChips" role="group" aria-label="Suggestions"><button type="button" class="chip" id="stylistPrep">Prepare fitting</button><button type="button" class="chip" id="stylistFabric">Lower-priced fabric</button><button type="button" class="chip" id="stylistExplain">Explain cloth</button></div>' +
             '<form id="stylistFree" class="adv-ask"><label for="stylistQuestion">Ask a question</label><div class="ask-row"><input id="stylistQuestion" type="text" maxlength="700" placeholder="For example: is the size right?" autocomplete="off"><button class="btn" id="stylistSend">Ask</button></div></form>' +
-            '<div id="stylistReply" aria-live="polite" aria-busy="false"><p id="stylistAnswer" class="adv-answer is-empty"></p>' +
+            '<div id="stylistReply" aria-live="polite" aria-busy="false"><p id="stylistAnswer" class="adv-answer is-empty"></p><ul id="stylistOptions" class="adv-options" aria-label="Suggested fabrics" hidden></ul>' +
               '<div id="stylistAlt" class="adv-alt" hidden><i id="stylistAltSwatch" class="adv-swatch is-small"></i><div class="adv-alt-text"><b id="stylistAltName"></b><span id="stylistAltTotal"></span><span id="stylistAltDiff"></span></div><button type="button" class="btn ghost" id="stylistCompare">Compare fabrics</button></div>' +
             '</div>' +
           '</div></details>' +

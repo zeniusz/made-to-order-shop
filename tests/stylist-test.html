@@ -271,6 +271,17 @@
     await findCloth('velvet'); var vi = doc.querySelector('#altResults .alt-item'); if (vi) vi.click(); await w(250);
     record('shortlisting a fabric', 'marks unsaved changes', doc.getElementById('advDirty').hidden ? 'hidden' : 'shown', !doc.getElementById('advDirty').hidden);
 
+    group('Advisor assistant: alternatives as option cards');
+    var altAns = await ask('What else could we show them?');
+    var optCards = doc.querySelectorAll('#stylistOptions .adv-option');
+    record('alternatives answer', 'a short line, no numbered list, one card per option (1 to 3)', altAns.slice(0, 70) + ' / ' + optCards.length + ' cards', optCards.length >= 1 && optCards.length <= 3 && !/\n\s*1\./.test(altAns) && !doc.getElementById('stylistOptions').hidden && doc.getElementById('stylistAlt').hidden);
+    record('option cards', 'each has a weave, a full-look price with the difference and a labelled Compare button', optCards.length + ' cards', optCards.length > 0 && Array.prototype.every.call(optCards, function (c) { return /Full look €[\d.,]+ · (same price|[+−]€)/.test(c.textContent) && /^Compare /.test(c.querySelector('button').getAttribute('aria-label')) && c.querySelector('.adv-option-weave').textContent.length > 0; }) && doc.getElementById('stylistOptions').getAttribute('aria-label') === 'Suggested fabrics');
+    var lastCard = optCards[optCards.length - 1], lastName = lastCard.querySelector('b').textContent;
+    lastCard.querySelector('button').click(); await w(300);
+    record('Compare on an option card', 'opens the comparison with that fabric against the current one', lastName + ' / ' + doc.getElementById('secondName').textContent, !doc.getElementById('clothPair').hidden && doc.getElementById('secondName').textContent === lastName && doc.getElementById('advFabric').open);
+    var chipCount = doc.querySelectorAll('#stylistChips .chip').length;
+    record('assistant shortcuts', 'still three', String(chipCount), chipCount === 3);
+
     group('More Style me requests: new designs and cloths');
     await load();
     var briefs = [
