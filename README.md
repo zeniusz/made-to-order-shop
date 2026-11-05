@@ -66,6 +66,8 @@ The same page has two views, switched at the top right. The customer builds the 
 
 ![Sizing and alterations](docs/preview/18-advisor-sizing.jpg)
 
+![A completed, saved fitting](docs/preview/20-advisor-saved-fitting.jpg)
+
 ## Get it and run it
 
 Nothing to install except Python (or any static web server). It is plain HTML, CSS and JavaScript with no build step.
@@ -96,6 +98,8 @@ Tests: open `tests/stylist-test.html` through the local server for the 144 in-br
 ## One-file version
 
 `python tools/build_standalone.py . Custom-Made-Studio-standalone.html` writes a single HTML file with the styles, scripts and all images inside (about 4 MB). It opens straight from a file and can be sent by email. Images are shrunk for size.
+
+A ready-made copy is in the repository: [dist/Custom-Made-Studio-standalone.html](dist/Custom-Made-Studio-standalone.html). Open that file on GitHub and press **Download raw file** (the download icon), then double-click it. No server, no install.
 
 ## Files
 
