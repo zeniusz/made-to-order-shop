@@ -866,8 +866,8 @@
       $('clothPair').hidden = !alt;
       if (!alt) return;
       var current = cloth(), price = total(), delta = eur(alt.usd) - eur(current.usd);
-      $('firstSwatch').setAttribute('style', swatch(current, 120));
-      $('secondSwatch').setAttribute('style', swatch(alt, 120));
+      $('firstSwatch').setAttribute('style', swatch(current, 400));
+      $('secondSwatch').setAttribute('style', swatch(alt, 400));
       $('firstName').textContent = current.name; $('secondName').textContent = alt.name;
       $('firstPrice').textContent = 'Full look ' + money(price); $('secondPrice').textContent = 'Full look ' + money(price + delta);
       $('priceChange').textContent = delta === 0 ? 'Same total price' : money(Math.abs(delta)) + (delta > 0 ? ' more' : ' less') + ' for the full look';
@@ -880,7 +880,7 @@
       var alt = byId(select.value); if (!alt) return;
       var from = cloth().name;
       st.alternative = st.cloth; st.cloth = alt.id; st.target = alt.c;
-      if (advUi.answer) { advUi.answer.alt = null; advUi.answer.options = null; }
+      advUi.answer = null; /* the old answer talked about the old fabric */
       advUi.search = from;
       renderAdvisor();
       flash('Fabric changed to ' + alt.name + '. Sizes, alterations and notes are unchanged.');
