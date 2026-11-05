@@ -579,7 +579,7 @@
   function paintStatus() {
     var box = $('advStatus'), stateBox = $('advSaveState'); if (!box || !stateBox) return;
     var s = advUi.status, dirty = advDirty();
-    var state = advUi.saveFail ? 'Save failed. Retry' : dirty ? 'Unsaved changes' : advUi.savedAt ? 'Saved at ' + advUi.savedAt + ' in this browser' : st.code ? 'Saved in this browser' : 'Not saved';
+    var state = advUi.saveFail ? 'Save failed. Retry' : dirty ? 'Unsaved changes' : advUi.savedAt ? 'Saved at ' + advUi.savedAt + ' · this browser only' : st.code ? 'Saved in this browser only' : 'Not saved';
     stateBox.className = 'adv-save-state' + (advUi.saveFail ? ' is-error' : dirty ? ' is-dirty' : '');
     stateBox.textContent = state;
     if (s && (s.kind === 'error' || !dirty)) {
@@ -869,7 +869,7 @@
       $('firstSwatch').setAttribute('style', swatch(current, 120));
       $('secondSwatch').setAttribute('style', swatch(alt, 120));
       $('firstName').textContent = current.name; $('secondName').textContent = alt.name;
-      $('firstPrice').textContent = money(price); $('secondPrice').textContent = money(price + delta);
+      $('firstPrice').textContent = 'Full look ' + money(price); $('secondPrice').textContent = 'Full look ' + money(price + delta);
       $('priceChange').textContent = delta === 0 ? 'Same total price' : money(Math.abs(delta)) + (delta > 0 ? ' more' : ' less') + ' for the full look';
       $('priceChange').className = 'adv-diff' + (delta < 0 ? ' is-less' : delta > 0 ? ' is-more' : '');
     }
@@ -998,7 +998,7 @@
         '<div class="adv-bar-tools">' +
           '<button type="button" class="btn ghost" id="advLookupToggle" aria-expanded="' + (advUi.lookup ? 'true' : 'false') + '" aria-controls="openFitting">Open fitting</button>' +
           '<button type="button" class="btn ghost" id="advWalkToggle" aria-expanded="false" aria-controls="walkPanel">New walk-in</button>' +
-          '<details class="adv-more" id="advBarMore"><summary class="adv-quiet">More</summary><div class="adv-more-menu"><button type="button" class="adv-quiet" id="advFollowToggle" aria-expanded="false" aria-controls="followPanel"><span id="followCount">Follow-ups</span></button><button type="button" class="adv-quiet" id="advPrint">Print sheet</button><button type="button" class="adv-quiet" id="advEmail">Email summary</button><button type="button" class="adv-quiet" id="advCsv">Export log</button></div></details>' +
+          '<details class="adv-more" id="advBarMore"><summary class="adv-quiet">More</summary><div class="adv-more-menu"><button type="button" class="adv-quiet" id="advFollowToggle" aria-expanded="false" aria-controls="followPanel"><span id="followCount">Follow-ups</span></button><button type="button" class="adv-quiet" id="advPrint">Print sheet</button><button type="button" class="adv-quiet" id="advEmail" title="Opens your email app. Nothing is sent automatically.">Draft email summary</button><button type="button" class="adv-quiet" id="advCsv" title="Downloads the fittings saved on this device">Export local fitting log</button></div></details>' +
         '</div>' +
         '<form id="openFitting" class="adv-open adv-panel"' + (advUi.lookup ? '' : ' hidden') + '><label for="lookupCode">Fitting code</label><input id="lookupCode" type="text" placeholder="CM-XXXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16"><button type="submit" class="btn">Open fitting</button></form>' +
         '<p id="lookupStatus" class="adv-bar-note" role="status"></p>' +
@@ -1025,7 +1025,7 @@
                   advRows([['Selected fabric', escapeName(c.name) + '<button type="button" class="adv-link adv-noprint adv-compare-link" id="advCompareToggle" aria-expanded="' + (advUi.fabric ? 'true' : 'false') + '" aria-controls="advFabric">' + (advUi.fabric ? 'Hide fabric comparison' : 'Compare another fabric') + '</button>']]) +
                   '<div class="adv-print-only adv-specs">' + advRows([['Occasion', escapeName(activeLook().label)], dz ? ['Base look', escapeName(dz.name)] : null, ['Style', escapeName(styleText())], ex.length ? ['Extras', escapeName(ex.join(', '))] : null, st.consultBudget ? ['Budget', money(Number(st.consultBudget))] : null]) + '</div>' +
                   '<details class="adv-detail-rows adv-screen-only" id="advLookRows"><summary>Design details</summary>' + advRows([dz ? ['Base look', escapeName(dz.name)] : null, ['Style', escapeName(styleText())], ex.length ? ['Extras', escapeName(ex.join(', '))] : null, st.consultBudget ? ['Budget', money(Number(st.consultBudget))] : null]) + '</details>' +
-                  '<div class="adv-total"><div><span class="adv-total-label">Total</span><b class="adv-total-value">' + money(total()) + '</b></div><span class="adv-delivery">Ready in 2–3 weeks</span></div>' +
+                  '<div class="adv-total"><div><span class="adv-total-label">Total</span><b class="adv-total-value">' + money(total()) + '</b></div><span class="adv-delivery">Estimated lead time: 2–3 weeks</span></div>' +
                 '</div></div>' +
             '</div>' +
           '</section>' +
@@ -1117,7 +1117,7 @@
       if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { msg.textContent = 'That email address looks incomplete.'; msg.hidden = false; return; }
       st.email = mail; st.phone = tel; advUi.cust = true; renderAdvisor();
     };
-    function fillPrintHead() { var h = $('advPrintHead'); if (h) h.textContent = 'Fitting sheet · ' + (st.code || 'not saved') + ' · printed ' + localDay() + ((st.outcome || deciding) === orderReview ? '' : ' · DRAFT, not completed'); }
+    function fillPrintHead() { var h = $('advPrintHead'); if (h) h.textContent = 'Consultation summary, no order placed · ' + (st.code || 'not saved') + ' · printed ' + localDay() + ((st.outcome || deciding) === orderReview ? '' : ' · DRAFT, not completed'); }
     fillPrintHead();
     window.onbeforeprint = function () { fillPrintHead(); [].forEach.call(box.querySelectorAll('details'), function (d) { d.dataset.was = d.open ? '1' : '0'; d.open = true; }); };
     window.onafterprint = function () { [].forEach.call(box.querySelectorAll('details'), function (d) { if (d.dataset.was) d.open = d.dataset.was === '1'; }); };
@@ -1155,7 +1155,7 @@
       var lines = ['Hello' + (st.name ? ' ' + st.name : '') + ',', '', 'Your fitting summary' + (st.code ? ' (' + st.code + ')' : '') + ':', 'Occasion: ' + activeLook().label, 'Fabric: ' + c.name, 'Total: ' + money(total()), 'Jacket size: ' + (st.finalSize ? sizeLabel(st.finalSize, g) : 'to be confirmed'), 'Trouser size: ' + (st.finalPants || 'to be confirmed'), 'Alterations: ' + (alts.length ? alts.join(', ') : 'none agreed yet')];
       if (st.nextStep) lines.push('Next step: ' + st.nextStep);
       if (st.followDate) lines.push('Follow-up date: ' + st.followDate);
-      lines.push('', 'Ready in 2 to 3 weeks after the order is confirmed.', '', 'Kind regards', 'Custom Made Studio');
+      lines.push('', 'Estimated lead time: 2 to 3 weeks after an order is confirmed.', 'This is a consultation summary. No order has been placed.', '', 'Kind regards', 'Custom Made Studio');
       window.location.href = 'mailto:' + encodeURIComponent(st.email || '') + '?subject=' + encodeURIComponent('Your fitting summary' + (st.code ? ' ' + st.code : '')) + '&body=' + encodeURIComponent(lines.join('\n'));
     };
     renderConsultation();

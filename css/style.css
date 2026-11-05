@@ -1059,3 +1059,7 @@ body.adv #bag{display:none}
   .adv-print-cust{margin-top:10pt}
   .adv-print-cust h4{font-size:11pt;margin-bottom:4pt;color:#000}
 }
+
+.adv-opt .adv-swatch{background-size:cover!important;background-position:center!important;height:72px}
+.adv-try{margin-bottom:8px}
+.adv-save-help{font-size:12px;color:var(--muted)}

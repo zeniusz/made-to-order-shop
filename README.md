@@ -51,7 +51,7 @@ The same page has two views, switched at the top right. The customer builds the 
 - **Appointment outcome and saving:** status, next step and follow-up date. A status line beside the buttons always says where things stand: Not saved, Unsaved changes, Saved at 14:32 in this browser, or Save failed. "Complete fitting" needs both final sizes and confirmed alterations; if something is missing the bar says "3 items need attention" (tap it to jump to the first), and a short message appears under each missing item.
 - **Trust in what is on screen:** a walk-in shows "Not provided" for measurements until the customer gives them, and its starting size is labelled provisional. Opening another fitting or starting a walk-in with unsaved changes offers Save and switch, Discard changes or Keep editing. A customer photo opens with View customer photo, and contact details can be added during the appointment.
 - **On a phone:** one slim bottom bar (Save progress, Complete fitting), Print sheet and Export log inside More in the top toolbar, a small suit thumbnail you can tap to enlarge, and alterations stacked so Requested and Agreed both stay visible.
-- **Share with the customer:** More → Email summary opens a draft in the advisor's own mail app (addressed to the customer's email if known) with the look, total, final sizes, agreed alterations and next step. Nothing is sent until the advisor presses send, and internal workroom notes are never included. Print sheet gives a clean page that can also be saved as a PDF.
+- **Share with the customer:** More → Draft email summary opens a draft in the advisor's own mail app (addressed to the customer's email if known) with the look, total, final sizes, agreed alterations and next step. Nothing is sent until the advisor presses send, and internal workroom notes are never included. Print sheet gives a clean page headed "Consultation summary, no order placed" that can also be saved as a PDF.
 - **Printing:** a plain sheet headed with the fitting code and print date, marked DRAFT until the fitting is completed, with unreviewed alterations printed as "Not reviewed".
 - **Stylist assistant:** three shortcuts (Prepare fitting, Lower-priced fabric, Explain cloth) and a question box that sits beside a small Ask button, with the other questions folded away once it has answered. When it suggests another fabric it shows the name, new total and difference with a Compare fabrics button. Ask "What else could we show them?" and it answers with up to three option cards, the strongest first and the rest behind "Show 2 more" (different weaves, within budget, tagged "Shown online" if the customer already saw them), each with its own Compare button. It answers on the device without any cloud service; an optional hosted AI can be connected (see below).
 - **Measure what works:** each saved fitting records suggested against final size, exported as CSV with a version tag for the sizing rules.
@@ -66,15 +66,30 @@ The same page has two views, switched at the top right. The customer builds the 
 
 ![Sizing and alterations](docs/preview/18-advisor-sizing.jpg)
 
-## Run it
+## Get it and run it
+
+Nothing to install except Python (or any static web server). It is plain HTML, CSS and JavaScript with no build step.
+
+1. Download it: on the GitHub page press the green **Code** button, then **Download ZIP**, and unzip it. Or clone it:
+
+```bash
+git clone https://github.com/zeniusz/made-to-order-shop.git
+cd made-to-order-shop
+```
+
+2. Start a local server inside that folder:
 
 ```bash
 python -m http.server 8770
 ```
 
-Open http://localhost:8770. Use a local server rather than opening the file directly.
+3. Open http://localhost:8770 in your browser. Use a local server rather than opening `index.html` directly, because the page loads its scripts and images by path.
 
-Useful links: `?mode=advisor`, `?tab=2` (steps 0 to 4), `?occ=wed`, `?design=brown-glen-plaid`, `?cloth=rust_linen`, `?view=jacket`, `?brief=summer wedding`, `?stylist=open`, `?intro=0`.
+Prefer not to run anything? Open the live version at https://zeniusz.github.io/made-to-order-shop/, or use the one-file version below, which opens straight from a file.
+
+Useful links: `?mode=advisor` (opens the Style Advisor), `?tab=2` (steps 0 to 4), `?occ=wed`, `?design=brown-glen-plaid`, `?cloth=rust_linen`, `?view=jacket`, `?brief=summer wedding`, `?stylist=open`, `?intro=0`.
+
+Everything you do is saved only in your own browser on that device. Prices, cloth names and availability are fictional demo values.
 
 ## One-file version
 
