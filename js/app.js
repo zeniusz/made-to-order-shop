@@ -576,7 +576,7 @@
     var cloths = ranked(current.c, st.occ).map(function (item) { return item.c; });
     var candidate = cloths.find(function (item) {
       var price = fullPrice + eur(item.usd) - eur(current.usd);
-      return item.id !== current.id && price < fullPrice && (!limit || price <= limit);
+      return item.id !== current.id && price < fullPrice && (!limit || price <= limit) && StyleEngine.dist(item.c, current.c) <= 90; /* same colour family */
     });
     var connected = !!String(window.CUSTOM_STYLIST_AI_ENDPOINT || '').trim();
     var input = $('stylistQuestion');
@@ -1339,7 +1339,7 @@
         thumbnail.getContext('2d').drawImage(sm.image, 0, 0, thumbnail.width, thumbnail.height);
         reference = thumbnail.toDataURL('image/jpeg', 0.8);
       }
-      sm.brief = text ? message : ''; sm.reference = reference;
+      sm.brief = text ? (refine ? sm.lastBrief || message : message) : ''; sm.reference = reference; /* the customer's own words, not the chip */
       sm.recs = recs; sm.busy = false; $('smGo').disabled = false;
       smSay(reply);
       applyRec(recs[0], true);
