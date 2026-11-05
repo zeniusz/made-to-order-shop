@@ -256,6 +256,11 @@
     doc.getElementById('advSave').click(); await w(200);
     record('complete fitting without a final size', 'asks for the final jacket size', doc.getElementById('advStatus').textContent, /final jacket size/i.test(doc.getElementById('advStatus').textContent));
     doc.querySelector('#advSizes .chip').click(); await w(150);
+    var onP = doc.querySelector('#advPants .chip[aria-pressed=true]'); if (onP) { onP.click(); await w(150); }
+    doc.getElementById('advSave').click(); await w(200);
+    record('complete fitting without a trouser size', 'asks for the final trouser size', doc.getElementById('advStatus').textContent, /trouser size/i.test(doc.getElementById('advStatus').textContent));
+    doc.querySelector('#advPants .chip').click(); await w(150);
+    record('unsaved changes', 'indicator shows after choosing sizes', doc.getElementById('advDirty').hidden ? 'hidden' : 'shown', !doc.getElementById('advDirty').hidden);
     doc.getElementById('advSave').click(); await w(250);
     record('complete fitting', 'status becomes Ready for order review', doc.querySelector('.adv-state').textContent, /Ready for order review/.test(doc.querySelector('.adv-state').textContent) && /completed/i.test(doc.getElementById('advStatus').textContent));
 

@@ -699,8 +699,12 @@ details.adv-card[open] > summary{border-bottom:1px solid var(--line)}
 }
 @media (max-width:420px){
   .adv-open{grid-template-columns:minmax(0,1fr)}
-  .adv-alt-head,.adv-ws .adj{grid-template-columns:minmax(0,1fr) 150px}
-  .adv-alt-head span:nth-child(2),.adv-ws .adj .adj-req{display:none}
+  .adv-alt-head{display:none}
+  .adv-ws .adj{grid-template-columns:minmax(0,1fr) 150px;grid-template-areas:'lab step' 'req step';row-gap:0}
+  .adv-ws .adj > span:first-child{grid-area:lab}
+  .adv-ws .adj .adj-req{grid-area:req;font-size:.78rem}
+  .adv-ws .adj .adj-req::before{content:'Requested '}
+  .adv-ws .adj .stepper{grid-area:step}
 }
 @media print{
   body *{visibility:hidden}
@@ -739,3 +743,15 @@ details.adv-card.adv-fabric,#advFabric{padding:0}
 .adv-more-menu{position:absolute;bottom:100%;left:0;margin-bottom:4px;background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:0 8px 24px rgba(0,0,0,.1);padding:4px;min-width:140px;z-index:5}
 .adv-more-menu .adv-quiet{display:block;width:100%;text-align:left}
 @media (max-width:767px){.adv-fab-act{white-space:normal;text-align:right;max-width:9em}}
+
+/* trust: unsaved state, switching, photo */
+.adv-head-side{display:flex;align-items:center;gap:12px;flex:none}
+.adv-dirty{font-size:.8rem;font-weight:600;color:var(--warn)}
+.adv-switch{background:#faf6ee;border:1px solid #e8dcc4;border-radius:var(--r);padding:12px 16px;margin-bottom:var(--gap)}
+.adv-switch-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.adv-link{border:0;background:none;padding:0;font:inherit;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:32px}
+.adv-photo-dlg{border:0;border-radius:var(--r);padding:16px;max-width:min(92vw,520px)}
+.adv-photo-dlg::backdrop{background:rgba(0,0,0,.5)}
+.adv-photo-dlg img{display:block;max-width:100%;max-height:70vh;margin:0 auto 12px;object-fit:contain}
+.adv-photo-dlg form{text-align:right}
+@media (max-width:767px){.adv-head-side{width:100%;justify-content:space-between}}
