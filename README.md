@@ -85,7 +85,7 @@ js/assistant.js       reads the line you type
 js/stylist.js         palette sampling and look ranking
 js/config.js          optional address of a hosted AI proxy
 worker/               optional proxy that keeps an AI key off the page
-tests/stylist-test.html  58 checks, open it on the local server
+tests/stylist-test.html  87 checks, open it on the local server
 assets/img/           photos and textures
 docs/preview/         screenshots
 catalog-gallery.html  browse every image

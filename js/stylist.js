@@ -120,7 +120,7 @@ window.StyleEngine = (function () {
       if (travel && c.id === 'nwf') s -= 18;
       if (occ && (CLOTH_TAGS[c.id] || []).some(function (tag) { return occ.tags.indexOf(tag) > -1; })) s -= 7;
       if (c.occ && c.occ.indexOf(occId || ctx.occasion) > -1) s -= 5;
-      if (c.lib && String(c.name).toLowerCase().split(/[^a-z]+/).some(function (w) { return w.length > 4 && !GENERIC.test(w) && t.indexOf(w) > -1; })) s -= 16;
+      if (c.lib && String(c.name).toLowerCase().split(/[^a-z]+/).some(function (w) { return w.length > 4 && !GENERIC.test(w) && t.indexOf(w) > -1; })) s -= 110;
       if (used.indexOf(c.id) > -1) s += 60;
       return { c: c, s: s };
     }).sort(function (a, b) { return a.s - b.s; })[0].c;
@@ -160,6 +160,11 @@ window.StyleEngine = (function () {
     return out;
   }
   function recommend(ctx, cloths, price) {
+    /* a budget below the lowest price in the catalogue cannot be met: offer the cheapest cloths and say so */
+    if (ctx.budget && !ctx.budgetFloor) {
+      var lo = Math.min.apply(null, cloths.map(price));
+      if (ctx.budget < lo) { ctx.budgetAsked = ctx.budget; ctx.budgetFloor = lo; ctx.budget = lo + 60; }
+    }
     if (ctx.designs && ctx.designs.length) return recommendDesigns(ctx, cloths, price);
     var t = String(ctx.message || '').toLowerCase(), target = ctx.colour || '#1d2a44', ids = Object.keys(LOOKS);
     var casual = ctx.relaxed || /casual|relaxed|less formal|no tie/.test(t);
@@ -192,6 +197,7 @@ window.StyleEngine = (function () {
     var s = hasPhoto && ctx.sampled ? 'From your photo I took ' + closestName(ctx.sampled).toLowerCase() + ' as the main colour. ' : '';
     s += 'I would start with ' + (dn ? dn.name : look.title).toLowerCase() + ' in ' + cloth.name + ', ' + money(price(cloth)) + '.';
     if (ctx.cheaperFrom && price(cloth) < ctx.cheaperFrom) s += ' That is ' + money(ctx.cheaperFrom - price(cloth)) + ' less.';
+    else if (ctx.budgetFloor) s += ' Nothing is listed under ' + money(ctx.budgetAsked) + '. The lowest price is ' + money(ctx.budgetFloor) + ', so these are the closest.';
     else if (ctx.budget && !ctx.cheaperFrom) s += ' Everything is within ' + money(ctx.budget) + '.';
     if (dist(cloth.c, look.colour) > 90) s += ' The photo shows the cut. Your cloth is in the swatches below and in Fabric sample.';
     return s;

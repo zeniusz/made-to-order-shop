@@ -64,7 +64,7 @@
     await load();
     group('Occasion briefs (the quick ideas and everyday phrasing)');
     await lookCase('light linen suit for a summer wedding', 'Wedding', /Sand|Ivory|Linen|Cream/);
-    await lookCase('modern charcoal or navy suit for work', 'Business', /Grey|Navy/);
+    await lookCase('modern charcoal or navy suit for work', 'Business', /Grey|Navy|Charcoal/);
     await lookCase('smart casual blue blazer and stone trousers without a tie', 'Smart casual');
     await lookCase('relaxed breathable linen suit for a warm holiday', 'Summer & resort');
     await lookCase('black tuxedo for a formal evening', 'Formal evening', /Black/);
@@ -201,6 +201,67 @@
     var recKey = Object.keys(win.localStorage).filter(function (k) { return k.indexOf('cm-fitting-v1-') === 0; })[0], fl = (recKey && win.localStorage.getItem(recKey)) || '', logTxt = doc.getElementById('advLog').textContent;
     record('save a fitting with pants size and a reason', 'the log keeps confidence, pants sizes, reason and version', fl.slice(0, 90), /"level":"/.test(fl) && /"pFinal":46/.test(fl) && /"why":\["Shoulders"\]/.test(fl) && /"rev":"sizing-v2-pants"/.test(fl));
     record('stats after saving', 'jacket match, pants match, by confidence and the top reason', logTxt.replace(/\n/g, ' | ').slice(0, 160), /Jacket size matched/.test(logTxt) && /Pants size matched/.test(logTxt) && /By confidence/.test(logTxt) && /shoulders/.test(logTxt));
+
+    group('Advisor assistant and fabric search (works on the device, no cloud service)');
+    async function ask(question) {
+      doc.getElementById('stylistQuestion').value = question;
+      doc.getElementById('stylistFree').dispatchEvent(new win.Event('submit', { cancelable: true, bubbles: true }));
+      await w(250);
+      return doc.getElementById('stylistAnswer').textContent;
+    }
+    var asks = [
+      ['What should I ask first?', 'Ask where', 'opening questions'],
+      ['Is the size right?', 'Suggested jacket', 'the suggested size with the reason'],
+      ['The budget is tight', 'look is', 'price and an alternative'],
+      ['What can I add?', 'Not added yet', 'extras not yet added'],
+      ['what does flannel mean', 'Flannel:', 'a plain-language cloth answer'],
+      ['how long does delivery take?', '2 to 3 weeks', 'delivery time'],
+      ['can I return it?', '30 days', 'return window'],
+      ['asdf qwerty', 'I can help with', 'a helpful fallback, not silence']
+    ];
+    for (var ai = 0; ai < asks.length; ai++) {
+      var ans = await ask(asks[ai][0]);
+      record('advisor asks: ' + asks[ai][0], asks[ai][2], ans.slice(0, 80), ans.indexOf(asks[ai][1]) > -1);
+    }
+    async function findCloth(word) {
+      var box = doc.getElementById('altSearch'); box.value = word; box.dispatchEvent(new win.Event('input')); await w(200);
+      return Array.prototype.map.call(doc.querySelectorAll('#altResults .alt-item b'), function (b) { return b.textContent; });
+    }
+    var finds = [['grey', 'Grey'], ['velvet', 'Velvet'], ['tartan', 'Tartan'], ['navy pinstripe', 'Navy Chalk Pinstripe'], ['cashmere', 'Cashmere']];
+    for (var fi = 0; fi < finds.length; fi++) {
+      var got = await findCloth(finds[fi][0]);
+      record('fabric search: ' + finds[fi][0], 'a matching fabric is suggested', got.slice(0, 3).join(', '), got.some(function (n) { return n.indexOf(finds[fi][1]) > -1; }));
+    }
+    var cheap = await findCloth('cheaper');
+    record('fabric search: cheaper', 'only fabrics cheaper than the current one', cheap.length + ' results', cheap.length > 0 && doc.querySelectorAll('#altResults .alt-item small').length === cheap.length && Array.prototype.every.call(doc.querySelectorAll('#altResults .alt-item small'), function (s) { return /less/.test(s.textContent); }));
+    var none = await findCloth('zzzz');
+    record('fabric search: zzzz', 'says nothing matches', doc.getElementById('altResults').textContent.slice(0, 40), none.length === 0 && /No fabric matches/.test(doc.getElementById('altResults').textContent));
+
+    group('More Style me requests: new designs and cloths');
+    await load();
+    var briefs = [
+      ['plum velvet evening suit', 'cloth', 'Plum Evening Velvet'],
+      ['brown tweed suit for autumn', 'design', 'Brown glen plaid'],
+      ['olive corduroy casual suit', 'cloth', 'Olive Needlecord'],
+      ['forest tartan statement suit', 'cloth', 'Blackwatch Tartan'],
+      ['seersucker for a hot summer day', 'cloth', 'Seersucker'],
+      ['camel cashmere suit', 'cloth', 'Camel Cashmere'],
+      ['navy pinstripe suit for work', 'cloth', 'Pinstripe'],
+      ['rust linen suit for a beach wedding', 'cloth', 'Rust Washed Linen'],
+      ['sage green summer suit', 'cloth', 'Sage Green'],
+      ['burgundy suit for a statement look', 'design', 'Burgundy'],
+      ['charcoal three piece suit for the office', 'design', 'Charcoal pinstripe']
+    ];
+    for (var bi = 0; bi < briefs.length; bi++) {
+      await send(briefs[bi][0]);
+      var shown = Array.prototype.map.call(doc.querySelectorAll('#smResults .sm-card'), function (c) { return c.querySelector('h3').textContent + ' / ' + c.querySelector('.sm-cloth').textContent; }).join(' | ');
+      record(briefs[bi][0], 'offers ' + briefs[bi][2] + ' (' + briefs[bi][1] + ') among three looks', shown.slice(0, 150), cards() === 3 && shown.indexOf(briefs[bi][2]) > -1);
+    }
+    await send('cream summer suit under 1000');
+    var prices = Array.prototype.map.call(doc.querySelectorAll('#smResults .sm-cloth'), function (c) { return parseInt(c.textContent.split('€')[1].replace('.', ''), 10); });
+    record('cream summer suit under 1000', 'every look is within the budget', prices.join(', '), prices.length === 3 && prices.every(function (p) { return p <= 1000; }));
+    await send('cream summer suit under 400');
+    record('cream summer suit under 400 (below the lowest price)', 'says nothing is listed that low and shows the closest three', reply().slice(0, 110), cards() === 3 && /Nothing is listed under/.test(reply()));
 
     group('Bad or odd input');
     await load();
