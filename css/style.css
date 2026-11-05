@@ -879,3 +879,19 @@ details.adv-card.adv-fabric,#advFabric{padding:0}
   .adv-ws .adj .stepper input{text-align:right!important}
   .adv-note,.adj-note,.adv-confirmed,#advConfirmAlts{display:none!important}
 }
+
+/* ===== assistant: roomier ===== */
+.adv-grid{grid-template-columns:minmax(0,1fr) 368px}
+.adv-assist-body{padding:20px;gap:16px;max-height:calc(100vh - var(--bar) - 130px)}
+.adv-suggest{gap:8px}
+.adv-suggest .chip{min-height:38px;padding:0 14px;font-size:.88rem}
+.adv-ask{display:grid;gap:8px}
+.adv-ask .ask-row{grid-template-columns:minmax(0,1fr);gap:8px}
+.adv-ask textarea{min-height:84px;padding:12px 14px;font-size:.95rem}
+.adv-ask .btn{justify-self:end;min-width:96px}
+.adv-answer{padding:14px 16px;line-height:1.7;font-size:.95rem}
+.adv-answer.is-empty{padding:0;font-size:.88rem;line-height:1.5}
+.adv-options{margin-top:14px;gap:10px}
+.adv-option{padding:12px 14px}
+.adv-alt{margin-top:14px;padding:14px}
+@media (max-width:1023px){.adv-grid{grid-template-columns:minmax(0,1fr)}}
