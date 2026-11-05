@@ -340,6 +340,17 @@
     record('contact', 'sits in Customer details, not as a separate accordion', !!doc.getElementById('advCust').querySelector('#advContact') ? 'inside' : 'outside', !!doc.getElementById('advCust').querySelector('#advContact'));
     record('alteration rows', 'show a status beside the agreed value', doc.querySelector('#advAdjs .adj-state').textContent, /Not reviewed|Confirmed/.test(doc.querySelector('#advAdjs .adj-state').textContent));
 
+    group('Advisor round 6: print specs, customer details, fabric panel, one More menu, email summary');
+    record('print sheet', 'carries the design specifications and customer details even when the screen folds them away', 'print blocks', !!doc.querySelector('.adv-specs') && /Style/.test(doc.querySelector('.adv-specs').textContent) && !!doc.querySelector('.adv-print-cust') && /Customer details/.test(doc.querySelector('.adv-print-cust').textContent));
+    record('customer details', 'a button beside the customer name opens Measurements and contact', doc.getElementById('advOpenCust').textContent, /Customer details/.test(doc.getElementById('advOpenCust').textContent) && /Measurements and contact/.test(doc.getElementById('advCust').textContent));
+    doc.getElementById('advCust').open = false; doc.getElementById('advOpenCust').click(); await w(150);
+    record('open customer details', 'the folded section opens', doc.getElementById('advCust').open ? 'open' : 'closed', doc.getElementById('advCust').open);
+    var fabEl = doc.getElementById('advFabric'); fabEl.open = false; doc.getElementById('advCompareToggle').click(); await w(150);
+    record('fabric panel', 'opens with a Compare fabrics header, Close, and the link says Hide fabric comparison', doc.getElementById('advCompareToggle').textContent, fabEl.open && /Hide fabric comparison/.test(doc.getElementById('advCompareToggle').textContent) && !!doc.getElementById('advFabClose'));
+    doc.getElementById('advFabClose').click(); await w(150);
+    record('Close fabric panel', 'closes it and the link says Compare another fabric again', fabEl.open ? 'open' : 'closed', !fabEl.open && /Compare another fabric/.test(doc.getElementById('advCompareToggle').textContent));
+    record('More menu', 'Print sheet, Email summary and Export log live in the toolbar menu only', doc.querySelectorAll('.adv-more').length + ' menus', doc.querySelectorAll('.adv-more').length === 1 && !!doc.querySelector('#advBarMore #advPrint') && !!doc.querySelector('#advBarMore #advEmail') && !!doc.querySelector('#advBarMore #advCsv'));
+
     group('More Style me requests: new designs and cloths');
     await load();
     var briefs = [
