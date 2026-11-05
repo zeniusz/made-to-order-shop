@@ -263,6 +263,20 @@
     await send('cream summer suit under 400');
     record('cream summer suit under 400 (below the lowest price)', 'says nothing is listed that low and shows the closest three', reply().slice(0, 110), cards() === 3 && /Nothing is listed under/.test(reply()));
 
+    group('The suit photo follows the chosen fabric');
+    await load();
+    if (!$('resumeBar').hidden) $('resumeNo').click();
+    var fabrics = [['Grey Glen Plaid', 'grey_glen_plaid'], ['Rust Washed Linen', 'rust_linen'], ['Midnight Blue Cotton Velvet', 'midnight_blue_velvet'], ['Forest Blackwatch Tartan', 'forest_blackwatch_tartan'], ['Sky Blue Seersucker', 'sky_blue_seersucker'], ['Camel Cashmere Wool', 'camel_cashmere_wool'], ['Plum Evening Velvet', 'plum_dinner_velvet'], ['Moss Basketweave', 'moss_basketweave']];
+    for (var fb = 0; fb < fabrics.length; fb++) {
+      if (!/fewer/.test($('more').textContent)) $('more').click();
+      await w(150);
+      var fcard = Array.prototype.filter.call(doc.querySelectorAll('#cloths .card'), function (c) { return c.querySelector('.nm').textContent.indexOf(fabrics[fb][0]) === 0; })[0];
+      fcard.click(); await w(250);
+      record('Wedding design, choose ' + fabrics[fb][0], 'the suit photo shows that fabric', $('suitFullImage').getAttribute('src').split('/').slice(-2).join('/'), $('suitFullImage').getAttribute('src').indexOf('cloths/' + fabrics[fb][1]) > -1 && $('viewJacket').hidden === true);
+    }
+    var allMapped = Object.keys(win.CM.clothPhotos).length;
+    record('every cloth has a photo', 'one photo mapped for each cloth in the catalogue', allMapped + ' mapped, ' + win.CM.cloths.length + ' cloths', win.CM.cloths.every(function (c) { return !!win.CM.clothPhotos[c.id]; }));
+
     group('Bad or odd input');
     await load();
     await send('');

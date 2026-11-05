@@ -36,6 +36,7 @@ The same page has two views, switched at the top right. The customer builds the 
 
 - **Eight occasions and 13 designs.** Pick an occasion, then a design for it, each with a full-outfit photo. A jacket-only view, a fabric sample and a detail view show it closer.
 - **Style me**, inside the Cloth step. It starts collapsed. Open it, type a line or add an inspiration photo and get three ranked looks, chosen from all 13 designs and 46 cloths. Tap a colour found in the photo to re-rank around it. Pick a look to apply it, or refine with Darker, Lighter, Cheaper, More relaxed or More formal. Questions get a short answer. It runs in the browser with no setup.
+- **The suit photo follows the fabric.** Choose any of the 46 fabrics and the suit photo changes to that fabric. Every fabric has its own photo of the same classic suit.
 - **Colour and photo matching.** Any colour, hex code or uploaded photo is matched to the closest cloths.
 - **Style presets** that say what they change. Combinations that cannot be made are disabled with the reason.
 - **Find my size.** A suggested jacket size and pants size, with a High, Medium or Low confidence label and the reason. A low result offers a store fitting. A size grid is there for people who know theirs.
@@ -85,7 +86,7 @@ js/assistant.js       reads the line you type
 js/stylist.js         palette sampling and look ranking
 js/config.js          optional address of a hosted AI proxy
 worker/               optional proxy that keeps an AI key off the page
-tests/stylist-test.html  87 checks, open it on the local server
+tests/stylist-test.html  96 checks, open it on the local server
 assets/img/           photos and textures
 docs/preview/         screenshots
 catalog-gallery.html  browse every image
@@ -97,7 +98,7 @@ Style me works without it. To let Claude read the photo, deploy `worker/claude-v
 
 ## Image library
 
-`assets/img/library` holds 102 concept images: 33 fabric swatches, 33 fabric textures, 13 suits, 13 jacket-only views and 10 standalone shoe styles. Textures are synthetic illustrations, not mill photographs. The shoe photos are crops from one generated studio board and have limited detail. Cloth names, compositions and all prices for the library items are fictional demo values, not retail prices.
+`assets/img/library` holds the concept images: 33 fabric swatches, 33 fabric textures, 13 suits, 13 jacket-only views and 10 standalone shoe styles from the supplied pack, plus 41 photos of the classic suit in each fabric (`cloths`). The fabric photos were made with an image generator from the classic navy suit photo and each fabric's swatch, three at a time on one sheet, then cut apart, so they are illustrations and the weave detail is approximate. Textures are synthetic. The shoe photos are crops from one generated board. Cloth names, compositions and all prices are fictional demo values, not retail prices.
 
 ## Notes
 
