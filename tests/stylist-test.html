@@ -197,6 +197,7 @@
     doc.querySelectorAll('#advSizes .chip')[3].click(); await w(250);
     doc.querySelectorAll('#advPants .chip')[4].click(); await w(250);
     doc.querySelectorAll('#advWhy .chip')[0].click(); await w(250);
+    var ca0 = doc.getElementById('advConfirmAlts'); if (ca0 && !ca0.hidden) { ca0.click(); await w(250); }
     doc.getElementById('advSave').click(); await w(300);
     var recKey = Object.keys(win.localStorage).filter(function (k) { return k.indexOf('cm-fitting-v1-') === 0; })[0], fl = (recKey && win.localStorage.getItem(recKey)) || '', logTxt = doc.getElementById('advLog').textContent;
     record('save a fitting with pants size and a reason', 'the log keeps confidence, pants sizes, reason and version', fl.slice(0, 90), /"level":"/.test(fl) && /"pFinal":46/.test(fl) && /"why":\["Shoulders"\]/.test(fl) && /"rev":"sizing-v2-pants"/.test(fl));
@@ -261,6 +262,7 @@
     record('complete fitting without a trouser size', 'asks for the final trouser size', doc.getElementById('advStatus').textContent, /trouser size/i.test(doc.getElementById('advStatus').textContent));
     doc.querySelector('#advPants .chip').click(); await w(150);
     record('unsaved changes', 'indicator shows after choosing sizes', doc.getElementById('advDirty').hidden ? 'hidden' : 'shown', !doc.getElementById('advDirty').hidden);
+    var ca1 = doc.getElementById('advConfirmAlts'); if (ca1 && !ca1.hidden) { ca1.click(); await w(250); }
     doc.getElementById('advSave').click(); await w(250);
     record('complete fitting', 'status becomes Ready for order review', doc.querySelector('.adv-state').textContent, /Ready for order review/.test(doc.querySelector('.adv-state').textContent) && /completed/i.test(doc.getElementById('advStatus').textContent));
     var pOn = doc.querySelector('#advPants .chip[aria-pressed=true]'); if (pOn) { pOn.click(); await w(150); }
@@ -275,7 +277,7 @@
     var altAns = await ask('What else could we show them?');
     var optCards = doc.querySelectorAll('#stylistOptions .adv-option');
     record('alternatives answer', 'a short line, no numbered list, one card per option (1 to 3)', altAns.slice(0, 70) + ' / ' + optCards.length + ' cards', optCards.length >= 1 && optCards.length <= 3 && !/\n\s*1\./.test(altAns) && !doc.getElementById('stylistOptions').hidden && doc.getElementById('stylistAlt').hidden);
-    record('option cards', 'each has a weave, a full-look price with the difference and a labelled Compare button', optCards.length + ' cards', optCards.length > 0 && Array.prototype.every.call(optCards, function (c) { return /Full look €[\d.,]+ · (same price|[+−]€)/.test(c.textContent) && /^Compare /.test(c.querySelector('button').getAttribute('aria-label')) && c.querySelector('.adv-option-weave').textContent.length > 0; }) && doc.getElementById('stylistOptions').getAttribute('aria-label') === 'Suggested fabrics');
+    record('option cards', 'each has a weave, a full-look price, the difference on its own line and a labelled Compare button', optCards.length + ' cards', optCards.length > 0 && Array.prototype.every.call(optCards, function (c) { return /Full look €[\d.,]+/.test(c.querySelector('.adv-option-price').textContent) && /(Same price|€[\d.,]+ (more|less))/.test(c.querySelector('.adv-option-diff').textContent) && /^Compare /.test(c.querySelector('button').getAttribute('aria-label')) && c.querySelector('.adv-option-weave').textContent.length > 0; }) && doc.getElementById('stylistOptions').getAttribute('aria-label') === 'Suggested fabrics');
     var lastCard = optCards[optCards.length - 1], lastName = lastCard.querySelector('b').textContent;
     lastCard.querySelector('button').click(); await w(300);
     record('Compare on an option card', 'opens the comparison with that fabric against the current one', lastName + ' / ' + doc.getElementById('secondName').textContent, !doc.getElementById('clothPair').hidden && doc.getElementById('secondName').textContent === lastName && doc.getElementById('advFabric').open);
@@ -290,11 +292,11 @@
     doc.querySelector('#advSizes .chip').click(); await w(150);
     record('choosing the missing size', 'clears the inline error', doc.getElementById('advSizeError').hidden ? 'cleared' : 'still shown', doc.getElementById('advSizeError').hidden);
     var nt = doc.getElementById('advNotes'); nt.value = 'status check'; nt.dispatchEvent(new win.Event('input', { bubbles: true })); await w(100);
-    record('save state after an edit', 'says Unsaved changes', doc.getElementById('advStatus').textContent, /Unsaved changes/.test(doc.getElementById('advStatus').textContent));
+    record('save state after an edit', 'says Unsaved changes', doc.getElementById('advSaveState').textContent, /Unsaved changes/.test(doc.getElementById('advSaveState').textContent));
     doc.getElementById('advDraft').click(); await w(250);
-    record('save state after saving', 'confirms the save', doc.getElementById('advStatus').textContent, /Progress saved|Saved at/.test(doc.getElementById('advStatus').textContent));
+    record('save state after saving', 'confirms the save', doc.getElementById('advSaveState').textContent, /Saved at/.test(doc.getElementById('advSaveState').textContent));
     nt = doc.getElementById('advNotes'); nt.value = 'status check 2'; nt.dispatchEvent(new win.Event('input', { bubbles: true })); await w(100);
-    record('save state after a later edit', 'replaces the saved message at once', doc.getElementById('advStatus').textContent, /Unsaved changes/.test(doc.getElementById('advStatus').textContent));
+    record('save state after a later edit', 'replaces the saved message at once', doc.getElementById('advSaveState').textContent, /Unsaved changes/.test(doc.getElementById('advSaveState').textContent));
     var lookTxt = doc.getElementById('advLook').textContent, fitTxt = doc.getElementById('advFit').textContent;
     record('wording', 'Selected fabric, Base look and Estimated starting size', 'look/fit labels', /Selected fabric/.test(lookTxt) && /Base look/.test(lookTxt) && !/Design\b/.test(doc.getElementById('advLookRows').textContent.replace(/Design details/, '')) && /Estimated starting size|Provisional starting size/.test(fitTxt) && /Confirm during try-on/.test(fitTxt));
     record('size options control', 'is named Choose sizes, Change sizes or Close size options', doc.getElementById('advSizeToggle').textContent, /^(Choose sizes|Change sizes|Close size options)$/.test(doc.getElementById('advSizeToggle').textContent));
@@ -309,6 +311,23 @@
     record('walk-in panel', 'has a New walk-in heading and a Cancel button', doc.getElementById('walkPanel').querySelector('h4').textContent, !doc.getElementById('walkPanel').hidden && /New walk-in/.test(doc.getElementById('walkPanel').textContent) && !!doc.getElementById('walkCancel'));
     doc.getElementById('walkCancel').click(); await w(100);
     record('Cancel walk-in', 'closes the panel', doc.getElementById('walkPanel').hidden ? 'closed' : 'open', doc.getElementById('walkPanel').hidden);
+
+    group('Advisor round 4: alterations review, all missing items, no confidence badge');
+    var fresh = doc.getElementById('advSizes'); 
+    record('sizing block', 'no confidence badge, the estimate says to confirm during try-on', doc.getElementById('advFit').querySelector('.adv-start').textContent.slice(0, 60), !/High confidence|Medium confidence|Low confidence/.test(doc.getElementById('advFit').querySelector('.adv-start').textContent) && /Confirm during try-on/.test(doc.getElementById('advFit').querySelector('.adv-start').textContent));
+    var unrev = doc.querySelectorAll('#advAdjs .adj.is-unreviewed').length, confirmed0 = doc.getElementById('advAltsDone') && !doc.getElementById('advAltsDone').hidden;
+    record('alterations', 'unreviewed rows say Not reviewed until confirmed (or all are confirmed)', unrev + ' unreviewed', (unrev > 0 && /Not reviewed/.test(doc.getElementById('advAdjs').textContent)) || confirmed0);
+
+    await load();
+    var advB2 = Array.prototype.filter.call(doc.querySelectorAll('button'), function (b) { return /^Advisor$/.test(b.textContent.trim()); })[0]; advB2.click(); await w(500);
+    doc.getElementById('advSave').click(); await w(400);
+    var e1 = doc.getElementById('advSizeError'), e2 = doc.getElementById('advPantsError'), e3 = doc.getElementById('advAltError');
+    record('completing with nothing done', 'every missing item is flagged at once, each under its own group', [!e1.hidden, !e2.hidden, !e3.hidden].join('/'), !e1.hidden && !e2.hidden && !e3.hidden && doc.getElementById('advSizes').contains(doc.activeElement) && /jacket/.test(doc.getElementById('advStatus').textContent) && /trouser/.test(doc.getElementById('advStatus').textContent) && /alterations/.test(doc.getElementById('advStatus').textContent));
+    record('save state while an error shows', 'is still visible and separate from the error', doc.getElementById('advSaveState').textContent + ' / ' + doc.getElementById('advStatus').textContent.slice(0, 40), doc.getElementById('advSaveState').textContent.length > 0 && !doc.getElementById('advSaveState').contains(doc.getElementById('advStatus')));
+    doc.getElementById('advConfirmAlts').click(); await w(300);
+    record('Confirm no alterations', 'marks every row reviewed and clears that error', doc.getElementById('advAltsDone').hidden ? 'not confirmed' : 'all confirmed', !doc.getElementById('advAltsDone').hidden && doc.getElementById('advAltError').hidden && doc.querySelectorAll('#advAdjs .adj.is-unreviewed').length === 0);
+    doc.querySelector('#advSizes .chip').click(); await w(150);
+    record('choosing the jacket size', 'clears only its own error', doc.getElementById('advSizeError').hidden + '/' + doc.getElementById('advPantsError').hidden, doc.getElementById('advSizeError').hidden && !doc.getElementById('advPantsError').hidden);
 
     group('More Style me requests: new designs and cloths');
     await load();
