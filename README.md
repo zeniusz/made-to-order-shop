@@ -91,6 +91,8 @@ Useful links: `?mode=advisor` (opens the Style Advisor), `?tab=2` (steps 0 to 4)
 
 Everything you do is saved only in your own browser on that device. Prices, cloth names and availability are fictional demo values.
 
+Tests: open `tests/stylist-test.html` through the local server for the 144 in-browser checks. `tests/walkthrough.py` (needs Playwright) runs one full fitting on a phone-sized screen: walk-in, brief and contact, fabric change, sizes, a -1.5 cm alteration, completion, reload and reopen by code, the unsaved-changes guard, the email draft and an A4 print.
+
 ## One-file version
 
 `python tools/build_standalone.py . Custom-Made-Studio-standalone.html` writes a single HTML file with the styles, scripts and all images inside (about 4 MB). It opens straight from a file and can be sent by email. Images are shrunk for size.

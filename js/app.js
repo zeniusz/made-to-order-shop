@@ -1156,7 +1156,7 @@
       if (st.nextStep) lines.push('Next step: ' + st.nextStep);
       if (st.followDate) lines.push('Follow-up date: ' + st.followDate);
       lines.push('', 'Estimated lead time: 2 to 3 weeks after an order is confirmed.', 'This is a consultation summary. No order has been placed.', '', 'Kind regards', 'Custom Made Studio');
-      window.location.href = 'mailto:' + encodeURIComponent(st.email || '') + '?subject=' + encodeURIComponent('Your fitting summary' + (st.code ? ' ' + st.code : '')) + '&body=' + encodeURIComponent(lines.join('\n'));
+      var mail = document.createElement('a'); mail.href = 'mailto:' + encodeURIComponent(st.email || '') + '?subject=' + encodeURIComponent('Your fitting summary' + (st.code ? ' ' + st.code : '')) + '&body=' + encodeURIComponent(lines.join('\n')); mail.rel = 'noopener'; document.body.appendChild(mail); mail.click(); document.body.removeChild(mail);
     };
     renderConsultation();
     /* the assistant stays open beside the fitting on wide screens, and folds away on narrow ones */

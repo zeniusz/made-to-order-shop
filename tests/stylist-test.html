@@ -351,6 +351,9 @@
     record('Close fabric panel', 'closes it and the link says Compare another fabric again', fabEl.open ? 'open' : 'closed', !fabEl.open && /Compare another fabric/.test(doc.getElementById('advCompareToggle').textContent));
     record('More menu', 'Print sheet, Email summary and Export log live in the toolbar menu only', doc.querySelectorAll('.adv-more').length + ' menus', doc.querySelectorAll('.adv-more').length === 1 && !!doc.querySelector('#advBarMore #advPrint') && !!doc.querySelector('#advBarMore #advEmail') && !!doc.querySelector('#advBarMore #advCsv'));
 
+    doc.getElementById('advLookupToggle').click(); await w(200);
+    record('Open fitting', 'shows the code form when asked for, at any screen width', win.getComputedStyle(doc.getElementById('openFitting')).display, !doc.getElementById('openFitting').hidden && win.getComputedStyle(doc.getElementById('openFitting')).display !== 'none');
+
     group('More Style me requests: new designs and cloths');
     await load();
     var briefs = [

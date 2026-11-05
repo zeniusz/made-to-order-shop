@@ -811,7 +811,6 @@ details.adv-card.adv-fabric,#advFabric{padding:0}
 @media (max-width:767px){
   .adv-mobile-only{display:revert}
   .adv-desktop-only{display:none}
-  .adv-bar:not(.is-lookup) .adv-open{display:none}
   .adv-bar-tools{width:100%}
   .adv-bar-tools .btn{flex:1 1 auto}
   .adv-summary{grid-template-columns:104px minmax(0,1fr);gap:12px}
@@ -1063,3 +1062,4 @@ body.adv #bag{display:none}
 .adv-opt .adv-swatch{background-size:cover!important;background-position:center!important;height:72px}
 .adv-try{margin-bottom:8px}
 .adv-save-help{font-size:12px;color:var(--muted)}
+html:has(body.adv){scroll-padding-top:72px;scroll-padding-bottom:110px}
