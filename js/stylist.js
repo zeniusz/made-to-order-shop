@@ -57,6 +57,13 @@ window.StyleEngine = (function () {
     return '';
   }
   /* dominant cloth colour and a small palette from the central garment area, ignoring studio white and deep shadow */
+  /* studio shading makes saturated dark cloths (burgundy) read nearly black: lift lightness a little, only for red and plum hues with clear colour (navy and green photos read fine) */
+  function liftDark(hex) {
+    var c = rgb(hex), mx = Math.max(c[0], c[1], c[2]) / 255, mn = Math.min(c[0], c[1], c[2]) / 255, l = (mx + mn) / 2, d = mx - mn, sat = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+    var hue = d === 0 ? 0 : (mx === c[0] / 255 ? ((c[1] - c[2]) / 255 / d + 6) % 6 : mx === c[1] / 255 ? (c[2] - c[0]) / 255 / d + 2 : (c[0] - c[1]) / 255 / d + 4) * 60;
+    if (sat > 0.35 && l < 0.2 && (hue < 25 || hue > 300)) { var k = Math.min(0.3, l * 1.7) / l; return hexOf([c[0] * k, c[1] * k, c[2] * k]); }
+    return hex;
+  }
   function palette(img) {
     var c = document.createElement('canvas'), size = 72;
     c.width = c.height = size;
@@ -74,12 +81,7 @@ window.StyleEngine = (function () {
     }
     var list = Object.keys(bins).map(function (k) { return bins[k]; }).sort(function (a, b) { return b.w - a.w; });
     var dominant = list.length ? hexOf([list[0].r / list[0].w, list[0].g / list[0].w, list[0].b / list[0].w]) : hexOf(fb.map(function (v) { return v / Math.max(1, n); }));
-    /* studio shading makes saturated dark cloths (burgundy, deep green) read nearly black: lift lightness a little, only for red and plum hues with clear colour (navy and green photos read fine) */
-    (function () {
-      var c = rgb(dominant), mx = Math.max(c[0], c[1], c[2]) / 255, mn = Math.min(c[0], c[1], c[2]) / 255, l = (mx + mn) / 2, d = mx - mn, sat = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
-      var hue = d === 0 ? 0 : (mx === c[0] / 255 ? ((c[1] - c[2]) / 255 / d + 6) % 6 : mx === c[1] / 255 ? (c[2] - c[0]) / 255 / d + 2 : (c[0] - c[1]) / 255 / d + 4) * 60;
-      if (sat > 0.35 && l < 0.2 && (hue < 25 || hue > 300)) { var k = Math.min(0.3, l * 1.7) / l; dominant = hexOf([c[0] * k, c[1] * k, c[2] * k]); }
-    })();
+    dominant = liftDark(dominant);
     var pal = [];
     list.forEach(function (e2) { var h = hexOf([e2.r / e2.w, e2.g / e2.w, e2.b / e2.w]); if (pal.length < 4 && pal.every(function (p) { return dist(p, h) > 42; })) pal.push(h); });
     if (!pal.length) pal.push(dominant);
@@ -212,12 +214,13 @@ window.StyleEngine = (function () {
     var ctl = new AbortController(), timer = setTimeout(function () { ctl.abort(); }, 25000);
     return fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ message: String(message || '').slice(0, 1000), context: context, history: history || [], image: image || null }), signal: ctl.signal })
       .then(function (r) { if (!r.ok) throw new Error('status ' + r.status); return r.json(); })
-      .then(function (j) { clearTimeout(timer); return safeRemote(j, cloths); })
+      .then(function (j) { clearTimeout(timer); if (context.audience === 'store_advisor') return j && typeof j.reply === 'string' && j.reply.trim() ? {reply:j.reply.trim().slice(0,1600)} : null;
+        return safeRemote(j, cloths); })
       .catch(function () { clearTimeout(timer); return null; });
   }
   function catalogForAI() {
     return { looks: Object.keys(LOOKS).map(function (id) { var l = LOOKS[id]; return { id: id, title: l.title, colour: l.colour, summary: l.summary, tags: l.tags }; }) };
   }
 
-  return { SHADES: SHADES, LOOKS: LOOKS, ACCESSORIES: ACCESSORIES, CLOTH_TAGS: CLOTH_TAGS, dist: dist, closestName: closestName, checkFile: checkFile, palette: palette, compress: compress, recommend: recommend, describe: describe, callAI: callAI, catalogForAI: catalogForAI, luminance: luminance };
+  return { SHADES: SHADES, LOOKS: LOOKS, ACCESSORIES: ACCESSORIES, CLOTH_TAGS: CLOTH_TAGS, dist: dist, closestName: closestName, checkFile: checkFile, palette: palette, compress: compress, recommend: recommend, liftDark: liftDark, describe: describe, callAI: callAI, catalogForAI: catalogForAI, luminance: luminance };
 })();

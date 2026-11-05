@@ -193,12 +193,12 @@
     record('advisor fitting sheet', 'shows the pants size', /Pants size 54/.test(advText) ? 'Pants size 54' : 'missing', /Pants size 54/.test(advText));
 
     group('Advisor: observe, decide, measure');
-    win.localStorage.removeItem('cm-fitlog-v1');
+    Object.keys(win.localStorage).forEach(function (k) { if (k.indexOf('cm-fitting-v1-') === 0 || k === 'cm-fitlog-v1') win.localStorage.removeItem(k); });
     doc.querySelectorAll('#advSizes .chip')[3].click(); await w(250);
     doc.querySelectorAll('#advPants .chip')[4].click(); await w(250);
     doc.querySelectorAll('#advWhy .chip')[0].click(); await w(250);
     doc.getElementById('advSave').click(); await w(300);
-    var fl = win.localStorage.getItem('cm-fitlog-v1') || '', logTxt = doc.getElementById('advLog').textContent;
+    var recKey = Object.keys(win.localStorage).filter(function (k) { return k.indexOf('cm-fitting-v1-') === 0; })[0], fl = (recKey && win.localStorage.getItem(recKey)) || '', logTxt = doc.getElementById('advLog').textContent;
     record('save a fitting with pants size and a reason', 'the log keeps confidence, pants sizes, reason and version', fl.slice(0, 90), /"level":"/.test(fl) && /"pFinal":46/.test(fl) && /"why":\["Shoulders"\]/.test(fl) && /"rev":"sizing-v2-pants"/.test(fl));
     record('stats after saving', 'jacket match, pants match, by confidence and the top reason', logTxt.replace(/\n/g, ' | ').slice(0, 160), /Jacket size matched/.test(logTxt) && /Pants size matched/.test(logTxt) && /By confidence/.test(logTxt) && /shoulders/.test(logTxt));
 
@@ -228,8 +228,13 @@
     }
     var navy = await makeFile(function (x) { x.fillStyle = '#e8e8e6'; x.fillRect(0, 0, 400, 600); x.fillStyle = '#1d2a44'; x.fillRect(90, 80, 220, 420); x.fillStyle = '#f3f3ef'; x.fillRect(170, 80, 60, 200); }, 'image/png', 'navy-look.png');
     await upload(navy);
-    record('upload a navy jacket photo', 'photo shown, colours found, three looks, "From your photo" in the reply', 'photo ' + !$('smPhotoRow').hidden + ', ' + doc.querySelectorAll('#smColours span').length + ' colours, cards ' + cards() + ', ' + reply().slice(0, 40),
-      !$('smPhotoRow').hidden && doc.querySelectorAll('#smColours span').length >= 1 && cards() === 3 && /From your photo/.test(reply()) && /Navy|Dark Blue/.test(cloth()));
+    record('upload a navy jacket photo', 'photo shown, colours found, three looks, "From your photo" in the reply', 'photo ' + !$('smPhotoRow').hidden + ', ' + doc.querySelectorAll('#smColours .sm-dot').length + ' colours, cards ' + cards() + ', ' + reply().slice(0, 40),
+      !$('smPhotoRow').hidden && doc.querySelectorAll('#smColours .sm-dot').length >= 1 && cards() === 3 && /From your photo/.test(reply()) && /Navy|Dark Blue/.test(cloth()));
+    var multi = await makeFile(function (x) { x.fillStyle = '#e8e8e6'; x.fillRect(0, 0, 400, 600); x.fillStyle = '#2b3d63'; x.fillRect(90, 80, 220, 220); x.fillStyle = '#6b1d2b'; x.fillRect(90, 300, 220, 110); x.fillStyle = '#8d97a6'; x.fillRect(90, 410, 220, 90); }, 'image/png', 'multi-look.png');
+    await upload(multi);
+    var dotsN = doc.querySelectorAll('#smColours .sm-dot').length, beforeReply = reply();
+    if (dotsN > 1) { doc.querySelectorAll('#smColours .sm-dot')[dotsN - 1].click(); await w(2200); }
+    record('tap another colour found in the photo', 'dots are buttons, the tapped one is selected and the looks are re-ranked', dotsN + ' dots, selected ' + (doc.querySelector('#smColours .sm-dot[aria-pressed=true]') === doc.querySelectorAll('#smColours .sm-dot')[dotsN - 1]) + ', ' + reply().slice(0, 50), dotsN > 1 && doc.querySelector('#smColours .sm-dot[aria-pressed=true]') === doc.querySelectorAll('#smColours .sm-dot')[dotsN - 1] && cards() === 3);
     var burg = await makeFile(function (x) { x.fillStyle = '#ddd'; x.fillRect(0, 0, 400, 600); x.fillStyle = '#34121c'; x.fillRect(90, 80, 220, 420); }, 'image/png', 'burgundy-look.png');
     await upload(burg);
     record('upload a dark burgundy jacket photo', 'a burgundy cloth, not black', cloth(), /Burgundy|Plum/.test(cloth()));
