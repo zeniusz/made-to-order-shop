@@ -608,6 +608,7 @@
     function localAnswer(q) {
       var t = q.toLowerCase(), sg = suggest(), bits = [];
       var gl = D.glossary.filter(function (g) { return g.rx.test(q); })[0];
+      if (/alternativ|option|what else|other (fabric|cloth|look)|similar|instead|show (them|him|her)|which (fabric|cloth)/.test(t)) return alternatives();
       if (/size|fit|fitting|shoulder|sleeve|chest|pants|trouser|loose|measure/.test(t)) {
         bits.push('Suggested jacket ' + sizeLabel(sg.size, sg.group) + ' ' + cap(sg.group) + ' (' + sg.level.toLowerCase() + ' confidence), pants ' + pantsSize() + '. ' + sg.text);
         bits.push(sg.level === 'High' ? 'Start with this size. Check the shoulder seam first, then the closed button, then the sleeve.' : 'Confidence is not high: measure chest and shoulders before the try-on and tick what changed afterwards.');
@@ -630,6 +631,22 @@
       }
       var kb = Brief.kb(q); if (kb) return { text: kb };
       return { text: 'I can help with size and fit, budget and cheaper cloths, what to ask first, what to add, or what a cloth is like. Try one of the suggestions above.' };
+    }
+    /* three different directions to show next: varied weaves, suit price within the customer's budget, closest to the chosen colour first;
+       options the customer already saw in Style me are marked, so the advisor can build on them */
+    function alternatives() {
+      var seen = sm.shown || [], now = eur(current.usd), picked = [], weaves = {};
+      var label = { plain: 'plain weave', herring: 'herringbone', flannel: 'flannel', check: 'check', stripe: 'stripe', textured: 'textured weave' };
+      cloths.forEach(function (c) {
+        if (picked.length >= 3 || c.id === current.id || weaves[c.weave] || (limit && eur(c.usd) > limit)) return;
+        weaves[c.weave] = 1; picked.push(c);
+      });
+      if (!picked.length) return { text: 'No other fabric is within the recorded budget. Confirm how flexible the budget is first.' };
+      var lines = picked.map(function (c, i) {
+        var d = eur(c.usd) - now;
+        return (i + 1) + '. ' + c.name + ' · ' + (label[c.weave] || c.weave) + ' · suit ' + money(eur(c.usd)) + ' (' + (d === 0 ? 'same price' : (d > 0 ? '+' : '−') + money(Math.abs(d))) + ')' + (seen.indexOf(c.id) > -1 ? ' · shown online' : '');
+      });
+      return { text: 'Three directions to show next' + (limit ? ', all within ' + money(limit) : '') + ':\n' + lines.join('\n') + '\nAsk what they liked about ' + current.name + ' before pulling swatches.', alt: picked[0] };
     }
     $('stylistPrep').onclick = function () {
       var opening = st.brief ? 'Start with their brief: “' + st.brief + '”. Ask which detail matters most.'
@@ -1341,6 +1358,7 @@
       }
       sm.brief = text ? (refine ? sm.lastBrief || message : message) : ''; sm.reference = reference; /* the customer's own words, not the chip */
       sm.recs = recs; sm.busy = false; $('smGo').disabled = false;
+      sm.shown = (sm.shown || []).concat(recs.map(function (r) { return r.cloth_id; })); /* everything the customer has seen, for the advisor */
       smSay(reply);
       applyRec(recs[0], true);
       smChips(SM_REFINE);
