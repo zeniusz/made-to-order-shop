@@ -106,6 +106,7 @@ window.StyleEngine = (function () {
       var s = dist(target, c.c);
       if (ctx.season && ctx.season !== 'any' && c.season !== 'all' && c.season !== ctx.season) s += 30;
       if (texture && c.weave !== 'plain') s -= 24;
+      if ((c.weave === 'flannel' && /flannel/.test(t)) || (c.weave === 'herring' && /herringbone/.test(t)) || (c.weave === 'stripe' && /stripe/.test(t)) || (c.weave === 'check' && /check|plaid|windowpane|houndstooth|tartan/.test(t))) s -= 130;
       if (!texture && c.weave !== 'plain') s += 4;
       if (linen && c.season === 'summer') s -= 12;
       if (travel && c.id === 'nwf') s -= 18;

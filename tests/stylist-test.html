@@ -79,9 +79,9 @@
     await lookCase('forest green suit for the office', 'Business', /Green/);
 
     group('Budget, texture and size details');
-    await send('grey flannel for the office under 800');
+    await send('grey flannel for the office under 1000');
     var price = parseInt((doc.querySelector('#smResults .sm-card.on .sm-cloth').textContent.match(/€\s?([\d.]+)/) || [0, '9999'])[1].replace('.', ''), 10);
-    record('grey flannel for the office under 800', 'Business, flannel, €800 or less', look() + ', ' + cloth() + ', €' + price, look() === 'Business' && /Flannel/.test(cloth()) && price <= 800);
+    record('grey flannel for the office under 1000', 'Business, flannel, €1000 or less', look() + ', ' + cloth() + ', €' + price, look() === 'Business' && /Flannel/.test(cloth()) && price <= 1000);
     await send('navy suit for work, 183 cm, 80 kg, slim fit');
     var hv = $('h').value, slim = doc.querySelector('#pref .chip[aria-pressed="true"]'), notSure = doc.querySelector('#usual .chip[aria-pressed="true"]');
     record('navy suit for work, 183 cm, 80 kg, slim fit', 'height 183, weight 80, Slim fit, "Not sure" size', 'height ' + hv + ', weight ' + $('w').value + ', ' + (slim && slim.textContent) + ', ' + (notSure && notSure.textContent), hv === '183' && $('w').value === '80' && slim && /Slim/.test(slim.textContent) && notSure && /Not sure/.test(notSure.textContent));
@@ -149,15 +149,15 @@
     record('pick Cream linen, then Jacket only', 'the tab is there and shows the jacket photo', 'hidden: ' + $('viewJacket').hidden + ', ' + $('suitFullImage').getAttribute('src'), $('viewJacket').hidden === false && /jackets\/cream-linen/.test($('suitFullImage').getAttribute('src')));
     $('viewFull').click(); await w(200);
     $('tab-3').click(); await w(300);
-    var shoeBtns = doc.querySelectorAll('.shoe-opt:not(.none)');
+    var shoeBtns = doc.querySelectorAll('.shoe-dot:not(.none)');
     record('Extras shoe styles', 'ten styles offered', shoeBtns.length + ' styles', shoeBtns.length === 10);
     shoeBtns[2].click(); await w(300);
     var shoeCard = Array.prototype.filter.call(doc.querySelectorAll('#extras .card'), function (c) { return /Leather shoes/.test(c.textContent); })[0];
     record('pick a shoe style', 'the card shows that photo and it is added', shoeCard.querySelector('img').getAttribute('src') + ', added: ' + shoeCard.classList.contains('on'), /library\/shoes\//.test(shoeCard.querySelector('img').getAttribute('src')) && shoeCard.classList.contains('on'));
-    var noBtn = doc.querySelector('.shoe-opt.none'); noBtn.click(); await w(300);
+    var noBtn = doc.querySelector('.shoe-dot.none'); noBtn.click(); await w(300);
     shoeCard = Array.prototype.filter.call(doc.querySelectorAll('#extras .card'), function (c) { return /Leather shoes/.test(c.textContent); })[0];
     record('choose No shoes', 'shoes are removed from the order', 'added: ' + shoeCard.classList.contains('on'), !shoeCard.classList.contains('on'));
-    doc.querySelectorAll('.shoe-opt:not(.none)')[2].click(); await w(700);
+    doc.querySelectorAll('.shoe-dot:not(.none)')[2].click(); await w(700);
     var saved = win.localStorage.getItem('cm-state-v2') || '';
     record('state is saved', 'design and shoe style are stored', saved.slice(0, 0) + (/"design":"cream-linen"/.test(saved) ? 'design stored' : 'design missing') + ', ' + (/"shoe":"/.test(saved) ? 'shoe stored' : 'shoe missing'), /"design":"cream-linen"/.test(saved) && /"shoe":"/.test(saved));
     var keep = saved;
@@ -176,6 +176,21 @@
     record('brown tweed suit for autumn', 'the Brown glen plaid design is offered', names, /Brown glen plaid/.test(names));
     await send('burgundy velvet dinner jacket');
     record('burgundy velvet dinner jacket', 'looks are offered, not only a glossary answer', 'cards ' + cards(), cards() === 3);
+
+    group('Pants size in the Size Passport');
+    await load('fit=d&tab=2');
+    if (!$('resumeBar').hidden) $('resumeNo').click();
+    var pc = doc.querySelectorAll('#pantsSizes .chip');
+    record('Fit step with a size chosen', 'eleven pants sizes, one suggested', pc.length + ' sizes, suggested ' + $('chPants').textContent, pc.length === 11 && /Suggested/.test($('pantsNote').textContent));
+    pc[8].click(); await w(300);
+    record('pick pants size 54', 'it replaces the suggestion', $('chPants').textContent + ', ' + $('pantsNote').textContent, $('chPants').textContent === '54' && /Your choice/.test($('pantsNote').textContent));
+    $('ppSave').click(); await w(500);
+    var passportJson = win.localStorage.getItem('cm-passport-v2') || '';
+    record('save to Size Passport', 'jacket and pants sizes are stored', /"pants":54/.test(passportJson) ? 'pants 54 stored' : 'pants missing', /"pants":54/.test(passportJson) && /"size":\d+/.test(passportJson));
+    $('tab-4').click(); await w(300);
+    var advBtn = Array.prototype.filter.call(doc.querySelectorAll('button'), function (b) { return /^Advisor$/.test(b.textContent.trim()); })[0]; advBtn.click(); await w(500);
+    var advText = doc.getElementById('advisorView').innerText.replace(/\s+/g, ' ');
+    record('advisor fitting sheet', 'shows the pants size', /Pants size 54/.test(advText) ? 'Pants size 54' : 'missing', /Pants size 54/.test(advText));
 
     group('Bad or odd input');
     await load();

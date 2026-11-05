@@ -26,7 +26,7 @@
     style: { shoulder: 'natural', lapel: 'notch', closure: 'sb2', pockets: 'flap', canvas: 'half', button: 'horn' },
     lining: '#1f2d4d', mono: '',
     h: 180, w: 78, pref: 'Regular', usual: 50, notSure: false, size: null, group: 'regular', level: null, sug: null, fitMode: 'a', mode: 'client', finalSize: null, notes: '', book: false, walk: false, adj: { sleeve: 0, jlen: 0, waist: 0, tlen: 0, rise: 0 },
-    self: null, city: 'Amsterdam', slot: null,
+    self: null, pants: null, city: 'Amsterdam', slot: null,
     on: {}, col: {}, name: '', email: '', phone: '', cpref: 'Email', code: null, season: null, budget: null, boost: [], change: '', chest: null, chat: []
   };
   var byId = function (id) { return D.cloths.filter(function (c) { return c.id === id; })[0]; };
@@ -116,6 +116,12 @@
     return String(reg);
   }
   function sizeText() { return st.size ? sizeLabel(st.size, st.group) + ' ' + cap(st.group) : ''; }
+  /* pants: waist estimated from the chest measurement if given, else from height and weight; EU size = half the waist in cm */
+  function pantsSuggest() {
+    var bmi = st.w / Math.pow(st.h / 100, 2), waist = st.chest ? st.chest - 8 : 2.35 * bmi + 28;
+    return Math.max(38, Math.min(58, Math.round(waist / 4) * 2));
+  }
+  function pantsSize() { return st.pants || pantsSuggest(); }
   var evenSize = function (v) { return Math.max(44, Math.min(58, Math.round(v / 2) * 2)); };
   function bodyRaw() { return 7.2 + 0.286 * st.w + 0.114 * st.h + ({ Slim: -1, Regular: 0, Relaxed: 1 }[st.pref] || 0); }
   function nearBoundary() { return Math.abs(st.h - 168) <= 2 || Math.abs(st.h - 186) <= 2; }
@@ -339,6 +345,9 @@
       $('chSize').textContent = sizeText();
       var sc = confidence(), lv = confLabel(sc);
       $('chLevel').textContent = lv;
+      $('chPants').textContent = String(pantsSize());
+      fill('pantsSizes', D.pantsSizes.map(function (x) { return chip(String(x), pantsSize() === x, function () { st.pants = x; update(); }); }));
+      $('pantsNote').textContent = st.pants && st.pants !== pantsSuggest() ? 'Your choice. We suggested ' + pantsSuggest() + '.' : 'Suggested ' + pantsSuggest() + ' from your ' + (st.chest ? 'chest measurement' : 'height and weight') + '. Pick another if you prefer.';
       $('meterI').style.width = sc + '%';
       $('meter').setAttribute('aria-valuenow', sc); $('meter').setAttribute('aria-label', 'Fit confidence ' + lv);
       $('confLabel').textContent = 'Fit confidence: ' + lv;
@@ -477,17 +486,17 @@
   function renderChange() { $('changeNote').textContent = st.change || ''; }
 
   /* ---------- Size Passport and resume (this device only) ---------- */
-  var KEEP = ['chest', 'occ', 'target', 'cloth', 'season', 'budget', 'boost', 'style', 'lining', 'mono', 'h', 'w', 'pref', 'usual', 'notSure', 'size', 'group', 'level', 'adj', 'book', 'walk', 'slot', 'city', 'on', 'col', 'design', 'shoe', 'noShoes'];
+  var KEEP = ['chest', 'occ', 'target', 'cloth', 'season', 'budget', 'boost', 'style', 'lining', 'mono', 'h', 'w', 'pref', 'usual', 'notSure', 'size', 'group', 'level', 'adj', 'book', 'walk', 'slot', 'city', 'on', 'col', 'design', 'shoe', 'noShoes', 'pants'];
   function snap(keys) { var o = {}; keys.forEach(function (k) { o[k] = st[k]; }); return JSON.parse(JSON.stringify(o)); }
   function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   function load(k) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
-  var PASS = ['chest', 'h', 'w', 'pref', 'usual', 'notSure', 'size', 'group', 'level', 'adj'];
+  var PASS = ['chest', 'h', 'w', 'pref', 'usual', 'notSure', 'size', 'group', 'level', 'adj', 'pants'];
   var saveTimer = 0, canSave = false; /* held until we know whether a saved session is waiting */
   function persist() { if (!canSave) return; clearTimeout(saveTimer); saveTimer = setTimeout(function () { store('cm-state-v2', snap(KEEP)); }, 400); }
   function renderPassport() {
     var p = load('cm-passport-v2');
     $('ppUse').hidden = !(p && p.size && st.fitMode === 'a');
-    if (p && p.size) $('ppText').textContent = 'Your saved size: ' + sizeLabel(p.size, p.group) + ' ' + cap(p.group);
+    if (p && p.size) $('ppText').textContent = 'Your saved sizes: jacket ' + sizeLabel(p.size, p.group) + ' ' + cap(p.group) + (p.pants ? ', pants ' + p.pants : '');
     $('ppSave').checked = !!p;
   }
 
@@ -540,7 +549,7 @@
       '<div class="sheet-look"><div class="look" style="background-image:url(' + shot + ')"></div><div class="kv">' +
         kv('Cloth', c.name, true) + kv('Style', styleText(), true) + kv('Extras', ex.length ? ex.join(', ') : 'None', true) + kv('Total', money(total())) + kv('Ready in', '2–3 weeks') + '</div></div>' +
       '<div>' + contactHtml() + '</div><div>' + scheduleHtml() + '</div>' +
-      '<div><h3>Client</h3><div class="kv">' + kv('Height and weight', st.h + ' cm, ' + st.w + ' kg') + kv('Usual size', st.notSure ? 'Not sure' + (st.chest ? ', chest ' + st.chest + ' cm' : '') : String(st.usual)) + kv('Fit preference', st.pref) + kv('Photo', st.self ? 'Provided' : 'None') + '</div></div>' +
+      '<div><h3>Client</h3><div class="kv">' + kv('Height and weight', st.h + ' cm, ' + st.w + ' kg') + kv('Usual size', st.notSure ? 'Not sure' + (st.chest ? ', chest ' + st.chest + ' cm' : '') : String(st.usual)) + kv('Fit preference', st.pref) + kv('Pants size', String(pantsSize())) + kv('Photo', st.self ? 'Provided' : 'None') + '</div></div>' +
       '<div><h3>Size</h3><div class="sug"><b>' + sizeLabel(sg.size, sg.group) + ' ' + cap(sg.group) + '</b><span class="pill ' + sg.level.toLowerCase() + '">' + sg.level + ' confidence</span><p>' + sg.text + '</p></div>' +
         '<h3 style="margin-top:16px">Final size</h3><div class="chips" id="advSizes"></div><p class="cmp" id="advCmp"></p></div>' +
       '<div><h3>Adjustments agreed</h3><div class="adjs" id="advAdjs"></div></div>' +

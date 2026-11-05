@@ -156,6 +156,7 @@ window.CM = {
 
   builds: ['Slim', 'Regular', 'Athletic', 'Broad'],
   sizes: [44, 46, 48, 50, 52, 54, 56, 58],
+  pantsSizes: [38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58],
 
   adjustments: [
     { key: 'sleeve', label: 'Sleeve' },
