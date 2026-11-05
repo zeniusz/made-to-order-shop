@@ -18,7 +18,7 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 
 | Size and pants size | Extras |
 |---|---|
-| ![Size and pants size](docs/preview/05-size-and-pants.jpg) | ![Extras](docs/preview/06-extras-prices.jpg) |
+| ![Size and pants size](docs/preview/05-size-and-pants-v2.jpg) | ![Extras](docs/preview/06-extras-prices.jpg) |
 
 | Review | Style me |
 |---|---|
@@ -26,7 +26,7 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 
 | Advisor mode | On a phone |
 |---|---|
-| ![Advisor mode](docs/preview/09-advisor-v2.jpg) | <img src="docs/preview/10-phone-v2.jpg" alt="On a phone" width="240"> |
+| ![Advisor mode](docs/preview/09-advisor-v3.jpg) | <img src="docs/preview/10-phone-v2.jpg" alt="On a phone" width="240"> |
 
 ## What it does
 
@@ -36,7 +36,7 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 - **Find my size.** One suggested size with a High, Medium or Low confidence label and the reason. A low result offers a store fitting. A size grid is there for people who know theirs.
 - **Extras** in matching colours, each with its own photo, ten shoe styles with their own prices, or no shoes and a monogram preview. Prices are itemised in euros.
 - **Style me**, inside the Cloth step. It starts collapsed. Open it, type a line or add an inspiration photo and get three ranked looks. Looks are chosen from all 13 designs and 46 cloths. Pick one to apply it, or refine with Darker, Lighter, Cheaper, More relaxed or More formal. Questions get a short answer. It runs in the browser with no setup.
-- **Client / Advisor switch.** Advisor mode shows a fitting sheet: the look, contact details, a sample schedule, the suggested and final size, adjustments and notes. It can be printed.
+- **Client / Advisor switch.** Advisor mode is the fitting sheet for the employee: open a fitting by its code or start a walk-in, see the look, contact details, a sample schedule, the suggested and final jacket and pants size with the reason for any change, adjustments and notes, and keep a follow-up list. A stylist assistant answers questions about the fitting, the size and the budget on the device, and a search box finds fabrics to compare by colour, weave or name. The sheet can be printed and the fitting log exported as CSV.
 - **Remembers you on this device:** resume, a saved size, a link that reopens the design, and a calendar file for the fitting.
 
 ## Run it
