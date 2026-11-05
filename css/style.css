@@ -666,7 +666,7 @@ details.adv-card[open] > summary{border-bottom:1px solid var(--line)}
 /* action bar */
 .adv-utility{margin-top:-8px}
 .adv-log{font-size:.82rem;color:var(--muted);white-space:pre-line}
-.adv-actions{position:sticky;bottom:0;z-index:20;display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;justify-content:space-between;margin:var(--gap) calc(-1*clamp(16px,3vw,32px)) 0;padding:12px clamp(16px,3vw,32px);background:rgba(255,255,255,.96);border-top:1px solid var(--line)}
+.adv-actions{position:sticky;bottom:0;z-index:20;display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;justify-content:space-between;margin:var(--gap) calc(-1*clamp(16px,3vw,32px)) 0;padding:12px clamp(16px,3vw,32px);background:#fff;border-top:1px solid var(--line);box-shadow:0 -6px 16px rgba(0,0,0,.04)}
 .adv-actions-quiet{display:flex;gap:4px}
 .adv-quiet{min-height:44px;padding:0 12px;border:0;background:none;color:var(--muted);font:inherit;font-size:.85rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .adv-quiet:hover{color:var(--ink)}

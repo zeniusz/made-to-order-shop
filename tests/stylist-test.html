@@ -263,6 +263,13 @@
     record('unsaved changes', 'indicator shows after choosing sizes', doc.getElementById('advDirty').hidden ? 'hidden' : 'shown', !doc.getElementById('advDirty').hidden);
     doc.getElementById('advSave').click(); await w(250);
     record('complete fitting', 'status becomes Ready for order review', doc.querySelector('.adv-state').textContent, /Ready for order review/.test(doc.querySelector('.adv-state').textContent) && /completed/i.test(doc.getElementById('advStatus').textContent));
+    var pOn = doc.querySelector('#advPants .chip[aria-pressed=true]'); if (pOn) { pOn.click(); await w(150); }
+    doc.getElementById('advDraft').click(); await w(200);
+    record('save progress as Ready for order review without a trouser size', 'is refused and names the missing size', doc.getElementById('advStatus').textContent.slice(0, 70), /trouser size/i.test(doc.getElementById('advStatus').textContent));
+    doc.querySelector('#advPants .chip').click(); await w(150);
+    doc.getElementById('advDraft').click(); await w(250);
+    await findCloth('velvet'); var vi = doc.querySelector('#altResults .alt-item'); if (vi) vi.click(); await w(250);
+    record('shortlisting a fabric', 'marks unsaved changes', doc.getElementById('advDirty').hidden ? 'hidden' : 'shown', !doc.getElementById('advDirty').hidden);
 
     group('More Style me requests: new designs and cloths');
     await load();

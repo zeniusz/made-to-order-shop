@@ -550,7 +550,7 @@
   }
   /* transient advisor interface state: kept here so a re-render never loses what the advisor was doing */
   var advUi = { walk: false, follow: false, question: '', search: '', answer: null, status: null };
-  function advSig() { return JSON.stringify([st.notes, st.finalSize, st.finalPants, st.why, st.agreed, st.outcome, st.followDate, st.nextStep, st.cloth]); }
+  function advSig() { return JSON.stringify([st.notes, st.finalSize, st.finalPants, st.why, st.agreed, st.outcome, st.followDate, st.nextStep, st.cloth, st.alternative || '']); }
   function advDirty() { return advUi.base != null && advSig() !== advUi.base; }
   function paintDirty() { var d = $('advDirty'); if (d) d.hidden = !advDirty(); }
   /* switching customers never throws away unsaved work: save and switch, or discard, or keep editing */
@@ -720,14 +720,16 @@
     D.occasions.forEach(function (item) { occasions.add(new Option(item.label,item.id)); });
     $('walkForm').onsubmit = function (event) {
       event.preventDefault();
-      guardSwitch(startWalkIn);
+      /* read the form first: the unsaved-changes prompt redraws it */
+      var entered = { name: $('walkName').value.trim(), occ: occasions.value, date: $('walkDate').value, budget: $('walkBudget').value };
+      guardSwitch(function () { startWalkIn(entered); });
     };
-    function startWalkIn() {
+    function startWalkIn(entered) {
       var previous = st;
       st = JSON.parse(initialFitting);
-      st.walk = true; st.advWalk = true; st.mode = 'advisor'; st.name = $('walkName').value.trim();
-      st.occ = occasions.value; st.eventDate = $('walkDate').value;
-      st.consultBudget = $('walkBudget').value; st.outcome = deciding;
+      st.walk = true; st.advWalk = true; st.mode = 'advisor'; st.name = entered.name;
+      st.occ = entered.occ; st.eventDate = entered.date;
+      st.consultBudget = entered.budget; st.outcome = deciding;
       st.target = activeLook().c; st.cloth = ranked()[0].c.id; resetOutfit();
       try { consultPage(writeFitting('draft')); }
       catch (e) { st = previous; $('lookupStatus').textContent = 'Could not start the fitting in this browser.'; }
@@ -799,7 +801,7 @@
       $('priceChange').textContent = delta === 0 ? 'Same total price' : money(Math.abs(delta)) + (delta > 0 ? ' more' : ' less') + ' for the full look';
       $('priceChange').className = 'adv-diff' + (delta < 0 ? ' is-less' : delta > 0 ? ' is-more' : '');
     }
-    select.onchange = function () { st.alternative = this.value; compare(); };
+    select.onchange = function () { st.alternative = this.value; compare(); paintDirty(); };
     compare();
     if (advUi.search.trim() && document.activeElement && document.activeElement.id === 'altSearch') showMatches();
     $('applyAlt').onclick = function () {
@@ -1017,7 +1019,10 @@
     if (wide.matches) { assist.open = true; assist.querySelector('summary').onclick = function (e) { e.preventDefault(); }; }
     else { assist.open = !!advUi.assist; assist.ontoggle = function () { advUi.assist = assist.open; }; }
     $('advDraft').onclick = function () {
-      if (st.outcome === orderReview && !st.finalSize) { $('advLog').textContent = 'Choose a final jacket size for order review, or save as Customer deciding.'; flash('Choose a final jacket size first, or save as Customer deciding.', 'error'); return; }
+      if (st.outcome === orderReview && (!st.finalSize || !st.finalPants)) {
+        var missing = !st.finalSize ? 'jacket' : 'trouser', msg = 'Ready for order review needs the final ' + missing + ' size. Choose it, or set the status to Customer deciding.';
+        $('advLog').textContent = msg; advUi.sizes = true; renderAdvisor(); flash(msg, 'error'); return;
+      }
       try {
         var code = writeFitting('draft'); advUi.base = null; renderAdvisor();
         $('advLog').textContent = 'Progress saved · ' + code;
