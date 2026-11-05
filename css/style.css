@@ -564,3 +564,5 @@ body.adv .studio{min-height:0}
 .shoe-dot.none::after{content:"";position:absolute;left:50%;top:3px;bottom:3px;width:1.5px;background:var(--muted,#8a8a8a);transform:translateX(-50%) rotate(45deg)}
 .pc small{font-size:.72rem;color:var(--muted);font-weight:400}
 .pc small{display:none}
+.chosen + .field{margin-top:22px}
+.adv-log{white-space:pre-line}

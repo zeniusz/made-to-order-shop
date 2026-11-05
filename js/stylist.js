@@ -45,7 +45,7 @@ window.StyleEngine = (function () {
     var v = rgb(h).map(function (n) { n /= 255; return n <= 0.04045 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4); });
     return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
   }
-  var NAMES = [['Navy', '#1d2a44'], ['Midnight blue', '#18233a'], ['Black', '#121316'], ['Charcoal', '#3a3d43'], ['Grey', '#6f737a'], ['Light grey', '#aeb1b5'], ['Sand', '#b9a68a'], ['Taupe', '#9b8262'], ['Blue', '#3f6ea8'], ['Blue-grey', '#42536b'], ['Forest green', '#2c4538'], ['Burgundy', '#5a2030'], ['Cream', '#e8ddc8']];
+  var NAMES = [['Navy', '#1d2a44'], ['Midnight blue', '#18233a'], ['Black', '#121316'], ['Charcoal', '#3a3d43'], ['Grey', '#6f737a'], ['Light grey', '#aeb1b5'], ['Sand', '#b9a68a'], ['Taupe', '#9b8262'], ['Blue', '#3f6ea8'], ['Blue-grey', '#42536b'], ['Forest green', '#2c4538'], ['Burgundy', '#5a2030'], ['Cream', '#e8ddc8'], ['Brown', '#5e4540'], ['Dark brown', '#564433'], ['Rust', '#8a4f2c'], ['Camel', '#b08a5b'], ['Olive', '#4d5238'], ['Sage', '#899987'], ['Plum', '#543148']];
   function closestName(h) { return NAMES.slice().sort(function (a, b) { return dist(h, a[1]) - dist(h, b[1]); })[0][0]; }
   function title(s) { return String(s || '').replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); }); }
 
@@ -74,6 +74,12 @@ window.StyleEngine = (function () {
     }
     var list = Object.keys(bins).map(function (k) { return bins[k]; }).sort(function (a, b) { return b.w - a.w; });
     var dominant = list.length ? hexOf([list[0].r / list[0].w, list[0].g / list[0].w, list[0].b / list[0].w]) : hexOf(fb.map(function (v) { return v / Math.max(1, n); }));
+    /* studio shading makes saturated dark cloths (burgundy, deep green) read nearly black: lift lightness a little, only for red and plum hues with clear colour (navy and green photos read fine) */
+    (function () {
+      var c = rgb(dominant), mx = Math.max(c[0], c[1], c[2]) / 255, mn = Math.min(c[0], c[1], c[2]) / 255, l = (mx + mn) / 2, d = mx - mn, sat = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+      var hue = d === 0 ? 0 : (mx === c[0] / 255 ? ((c[1] - c[2]) / 255 / d + 6) % 6 : mx === c[1] / 255 ? (c[2] - c[0]) / 255 / d + 2 : (c[0] - c[1]) / 255 / d + 4) * 60;
+      if (sat > 0.35 && l < 0.2 && (hue < 25 || hue > 300)) { var k = Math.min(0.3, l * 1.7) / l; dominant = hexOf([c[0] * k, c[1] * k, c[2] * k]); }
+    })();
     var pal = [];
     list.forEach(function (e2) { var h = hexOf([e2.r / e2.w, e2.g / e2.w, e2.b / e2.w]); if (pal.length < 4 && pal.every(function (p) { return dist(p, h) > 42; })) pal.push(h); });
     if (!pal.length) pal.push(dominant);

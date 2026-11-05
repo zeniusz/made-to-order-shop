@@ -26,7 +26,7 @@
     style: { shoulder: 'natural', lapel: 'notch', closure: 'sb2', pockets: 'flap', canvas: 'half', button: 'horn' },
     lining: '#1f2d4d', mono: '',
     h: 180, w: 78, pref: 'Regular', usual: 50, notSure: false, size: null, group: 'regular', level: null, sug: null, fitMode: 'a', mode: 'client', finalSize: null, notes: '', book: false, walk: false, adj: { sleeve: 0, jlen: 0, waist: 0, tlen: 0, rise: 0 },
-    self: null, pants: null, city: 'Amsterdam', slot: null,
+    self: null, pants: null, finalPants: null, why: [], city: 'Amsterdam', slot: null,
     on: {}, col: {}, name: '', email: '', phone: '', cpref: 'Email', code: null, season: null, budget: null, boost: [], change: '', chest: null, chat: []
   };
   var byId = function (id) { return D.cloths.filter(function (c) { return c.id === id; })[0]; };
@@ -502,9 +502,28 @@
 
   /* ---------- advisor mode: the fitting sheet ---------- */
   var FITLOG = 'cm-fitlog-v1';
+  var FIT_REV = 'sizing-v2-pants', WHY = ['Shoulders', 'Chest', 'Waist', 'Length', 'Posture', 'Client preference'];
+  /* what the advisor saw, in numbers: how often the suggestion held, by confidence level and for pants, and why it changed */
   function fitStats() {
-    var log = load(FITLOG) || [], hit = log.filter(function (x) { return x.sug === x.final; }).length;
-    return log.length ? log.length + (log.length === 1 ? ' fitting' : ' fittings') + ' logged. The suggested size matched in ' + hit + '.' : 'No fittings logged yet.';
+    var log = load(FITLOG) || [];
+    if (!log.length) return 'No fittings logged yet.';
+    var hit = log.filter(function (x) { return x.sug === x.final; }).length;
+    var lines = [log.length + (log.length === 1 ? ' fitting' : ' fittings') + ' logged. Jacket size matched the suggestion in ' + hit + '.'];
+    var pl = log.filter(function (x) { return x.pFinal != null; });
+    if (pl.length) lines.push('Pants size matched in ' + pl.filter(function (x) { return x.pSug === x.pFinal; }).length + ' of ' + pl.length + '.');
+    var lv = ['High', 'Medium', 'Low'].map(function (k) { var l = log.filter(function (x) { return x.level === k; }); return l.length ? k + ' ' + l.filter(function (x) { return x.sug === x.final; }).length + '/' + l.length : null; }).filter(Boolean);
+    if (lv.length) lines.push('By confidence: ' + lv.join(', ') + '.');
+    var tally = {}; log.forEach(function (x) { (x.why || []).forEach(function (w) { tally[w] = (tally[w] || 0) + 1; }); });
+    var top = Object.keys(tally).sort(function (m, n) { return tally[n] - tally[m]; })[0];
+    if (top) lines.push('Most common reason for a change: ' + top.toLowerCase() + ' (' + tally[top] + ').');
+    return lines.join('\n');
+  }
+  function exportFitLog() {
+    var log = load(FITLOG) || [], rows = [['date', 'version', 'confidence', 'jacket_suggested', 'jacket_final', 'pants_suggested', 'pants_final', 'adjustments', 'reasons']];
+    log.forEach(function (x) { rows.push([x.date, x.rev || '', x.level || '', x.sug, x.final, x.pSug == null ? '' : x.pSug, x.pFinal == null ? '' : x.pFinal, x.adjN == null ? '' : x.adjN, (x.why || []).join('; ')]); });
+    var csv = rows.map(function (rw) { return rw.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+    var url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })), lnk = document.createElement('a');
+    lnk.href = url; lnk.download = 'fitting-log.csv'; document.body.appendChild(lnk); lnk.click(); document.body.removeChild(lnk); setTimeout(function () { URL.revokeObjectURL(url); }, 500);
   }
   function setMode(m) {
     st.mode = m; var adv = m === 'advisor';
@@ -551,21 +570,28 @@
       '<div>' + contactHtml() + '</div><div>' + scheduleHtml() + '</div>' +
       '<div><h3>Client</h3><div class="kv">' + kv('Height and weight', st.h + ' cm, ' + st.w + ' kg') + kv('Usual size', st.notSure ? 'Not sure' + (st.chest ? ', chest ' + st.chest + ' cm' : '') : String(st.usual)) + kv('Fit preference', st.pref) + kv('Pants size', String(pantsSize())) + kv('Photo', st.self ? 'Provided' : 'None') + '</div></div>' +
       '<div><h3>Size</h3><div class="sug"><b>' + sizeLabel(sg.size, sg.group) + ' ' + cap(sg.group) + '</b><span class="pill ' + sg.level.toLowerCase() + '">' + sg.level + ' confidence</span><p>' + sg.text + '</p></div>' +
-        '<h3 style="margin-top:16px">Final size</h3><div class="chips" id="advSizes"></div><p class="cmp" id="advCmp"></p></div>' +
+        '<h3 style="margin-top:16px">Final size</h3><div class="chips" id="advSizes"></div><p class="cmp" id="advCmp"></p>' +
+        '<h3 style="margin-top:16px">Final pants size</h3><div class="chips" id="advPants"></div><p class="cmp" id="advPCmp"></p>' +
+        '<h3 style="margin-top:16px">What changed? <span class="muted">optional</span></h3><div class="chips" id="advWhy"></div></div>' +
       '<div><h3>Adjustments agreed</h3><div class="adjs" id="advAdjs"></div></div>' +
       '<div><h3>Check first</h3><ul class="adv-list">' + checks.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>' +
       '<div><h3>Notes</h3><textarea id="advNotes" placeholder="Shoulders, posture, anything for the workroom" aria-label="Fitting notes"></textarea></div>' +
-      '<div class="sheet-actions adv-noprint"><button type="button" class="btn" id="advSave">Save fitting</button><button type="button" class="btn ghost" id="advPrint">Print sheet</button></div>' +
+      '<div class="sheet-actions adv-noprint"><button type="button" class="btn" id="advSave">Save fitting</button><button type="button" class="btn ghost" id="advPrint">Print sheet</button><button type="button" class="btn ghost" id="advCsv">Export log (CSV)</button></div>' +
       '<p class="adv-log adv-noprint" id="advLog" aria-live="polite">' + fitStats() + '</p></div>';
     fill('advSizes', D.sizes.map(function (x) { return chip(sizeLabel(x, g), st.finalSize === x, function () { st.finalSize = st.finalSize === x ? null : x; renderAdvisor(); }); }));
     var cmp = $('advCmp');
     if (st.finalSize) { var same = st.finalSize === sg.size; cmp.className = 'cmp ' + (same ? 'ok' : 'diff'); cmp.textContent = same ? 'Matches the suggestion.' : 'Differs from the suggestion (' + sizeLabel(sg.size, g) + ' suggested, ' + sizeLabel(st.finalSize, g) + ' final).'; }
+    fill('advPants', D.pantsSizes.map(function (x) { return chip(String(x), st.finalPants === x, function () { st.finalPants = st.finalPants === x ? null : x; renderAdvisor(); }); }));
+    var pcmp = $('advPCmp');
+    if (st.finalPants) { var psame = st.finalPants === pantsSize(); pcmp.className = 'cmp ' + (psame ? 'ok' : 'diff'); pcmp.textContent = psame ? 'Matches the suggestion.' : 'Differs from the suggestion (' + pantsSize() + ' suggested, ' + st.finalPants + ' final).'; }
+    fill('advWhy', WHY.map(function (w) { return chip(w, st.why.indexOf(w) > -1, function () { var i = st.why.indexOf(w); if (i > -1) st.why.splice(i, 1); else st.why.push(w); renderAdvisor(); }); }));
+    $('advCsv').onclick = exportFitLog;
     buildAdjustments($('advAdjs'));
     $('advNotes').value = st.notes || ''; $('advNotes').oninput = function () { st.notes = this.value; };
     $('advPrint').onclick = function () { window.print(); };
     $('advSave').onclick = function () {
       if (!st.finalSize) { $('advLog').textContent = 'Choose the final size first.'; return; }
-      var log = load(FITLOG) || []; log.push({ sug: sg.size, final: st.finalSize, group: g, date: new Date().toISOString().slice(0, 10) }); store(FITLOG, log);
+      var log = load(FITLOG) || []; log.push({ sug: sg.size, final: st.finalSize, group: g, level: sg.level, pSug: pantsSize(), pFinal: st.finalPants || null, why: st.why.slice(), adjN: D.adjustments.filter(function (x) { return st.adj[x.key]; }).length, rev: FIT_REV, date: new Date().toISOString().slice(0, 10) }); store(FITLOG, log);
       $('advLog').textContent = 'Saved. ' + fitStats();
     };
   }

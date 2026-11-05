@@ -16,9 +16,9 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 |---|---|
 | ![Style](docs/preview/03-style-v2.jpg) | ![Find my size](docs/preview/04-find-my-size-v2.jpg) |
 
-| Size suggestion | Extras |
+| Size and pants size | Extras |
 |---|---|
-| ![Size suggestion](docs/preview/05-size-suggestion-v2.jpg) | ![Extras](docs/preview/06-extras-prices.jpg) |
+| ![Size and pants size](docs/preview/05-size-and-pants.jpg) | ![Extras](docs/preview/06-extras-prices.jpg) |
 
 | Review | Style me |
 |---|---|
@@ -49,6 +49,10 @@ Open http://localhost:8770. Use a local server rather than opening the file dire
 
 Useful links: `?mode=advisor`, `?tab=2` (steps 0 to 4), `?occ=wed`, `?design=brown-glen-plaid`, `?cloth=rust_linen`, `?view=jacket`, `?brief=summer wedding`, `?stylist=open`, `?intro=0`.
 
+## One-file version
+
+`python tools/build_standalone.py . Custom-Made-Studio-standalone.html` writes a single HTML file with the styles, scripts and all images inside (about 4 MB). It opens straight from a file and can be sent by email. Images are shrunk for size.
+
 ## Files
 
 ```
@@ -60,7 +64,7 @@ js/assistant.js       reads the line you type
 js/stylist.js         palette sampling and look ranking
 js/config.js          optional address of a hosted AI proxy
 worker/               optional proxy that keeps an AI key off the page
-tests/stylist-test.html  51 checks, open it on the local server
+tests/stylist-test.html  58 checks, open it on the local server
 assets/img/           photos and textures
 docs/preview/         screenshots
 catalog-gallery.html  browse every image
