@@ -45,13 +45,13 @@ The same page has two views, switched at the top right. The customer builds the 
 
 ### For the style advisor
 
-- **A calm, compact workspace** (tablet first): customer name, appointment and fitting code at the top; open a fitting or start a walk-in from a small toolbar, with follow-ups in an expandable list. On wide screens the stylist assistant sits beside the fitting; on a tablet it folds under the look summary.
-- **Look and brief:** the full suit photo, fabric, design, total and delivery estimate, the customer's own request and inspiration photo, and "Edit look together".
-- **Compare fabrics side by side:** search by colour, weave or name (arrow keys and Enter work), see both full-outfit totals and the difference, then "Use this fabric". Sizes, alterations and notes are kept.
-- **Sizing and alterations:** what the customer gave, the suggested starting size with its reason, the advisor's final jacket and trouser size, alterations as requested against agreed in cm, and workroom notes right under them.
-- **Appointment outcome:** status, next step and follow-up date. "Save progress" works without a final size; "Complete fitting" asks for one. The saved message just shows the fitting code.
-- **Stylist assistant:** four suggestions (Prepare fitting, Lower budget, Explain cloth, What to ask) and a question box. When it suggests another fabric it shows the name, new total, the difference and a Compare fabrics button. It answers on the device without any cloud service; an optional hosted AI can be connected (see below).
-- **Measure what works:** each saved fitting records suggested against final size. "Export log" gives a CSV with a version tag for the sizing rules.
+- **A calm, compact workspace** (tablet first): customer name, appointment and fitting code at the top; open a fitting or start a walk-in from a small toolbar, with follow-ups in an expandable list. The stylist assistant stays in view beside the fitting on wide screens and folds under the look summary on a tablet. Contact details are collapsed until needed.
+- **Look and brief:** the full suit photo, fabric, design, total and delivery estimate, the customer's request and inspiration photo, and "Edit look together".
+- **Fabric:** the chosen cloth sits in one line with "Compare another fabric". It opens by itself when the assistant recommends an alternative, with both fabrics side by side, their totals, the difference and one "Use this fabric" button. Sizes, alterations and notes are kept.
+- **Sizing and alterations:** what the customer gave, the suggested starting size with its reason, only the things that need attention under "Check first", final jacket and trouser sizes shown compactly with a Change button, a reason for change only when a final size differs from the suggestion, alterations as requested against agreed in cm, and workroom notes under them.
+- **Appointment outcome:** status, next step and follow-up date. "Save progress" works without a final size; "Complete fitting" asks for one. The saved message just shows the fitting code. Print sheet is in the bar; Export log is under More.
+- **Stylist assistant:** three shortcuts (Prepare fitting, Find alternatives, Explain cloth) and a question box. When it suggests another fabric it shows the name, new total and difference with a Compare fabrics button. It answers on the device without any cloud service; an optional hosted AI can be connected (see below).
+- **Measure what works:** each saved fitting records suggested against final size, exported as CSV with a version tag for the sizing rules.
 
 | Advisor workspace on a tablet | Start a walk-in |
 |---|---|

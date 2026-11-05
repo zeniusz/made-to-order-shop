@@ -240,6 +240,8 @@
     group('Advisor workspace: compare fabrics, apply, save, complete');
     var cur = doc.getElementById('advFabric') ? 'present' : 'missing';
     record('advisor workspace', 'has look, fabric, sizing and outcome sections', cur, ['advLook', 'advFabric', 'advFit', 'advOutcome'].every(function (id) { return !!doc.getElementById(id); }));
+    record('simplified advisor', 'no sample schedule, three assistant shortcuts, contact collapsed, fabric comparison open after the assistant recommended one', 'chips ' + doc.querySelectorAll('#stylistChips .chip').length, !doc.getElementById('advSchedule') && doc.querySelectorAll('#stylistChips .chip').length === 3 && doc.getElementById('advFabric').open && !doc.getElementById('advContact').open);
+    record('reason for change', 'shown only when a final size differs from its suggestion', doc.getElementById('advWhy') ? 'shown' : 'hidden', !doc.querySelector('#advSizes .chip[aria-pressed=true]') && !doc.querySelector('#advPants .chip[aria-pressed=true]') ? !doc.getElementById('advWhy') : true);
     doc.getElementById('advNotes').value = 'Left shoulder drops'; doc.getElementById('advNotes').dispatchEvent(new win.Event('input'));
     var picks = await findCloth('velvet');
     var firstItem = doc.querySelector('#altResults .alt-item'); if (firstItem) firstItem.click(); await w(250);
