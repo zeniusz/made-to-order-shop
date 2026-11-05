@@ -374,6 +374,7 @@
       var row = el('div', 'adj');
       row.appendChild(el('span', '', a.label));
       if (requested) { var rq = requested[a.key] || 0; row.appendChild(el('span', 'adj-req', rq ? (rq > 0 ? '+' : '') + rq + ' cm' : '0 cm')); }
+      if (requested) row.appendChild(el('span', 'adj-agreed-lab', 'Agreed'));
       var s = el('div', 'stepper');
       s.innerHTML = '<button type="button" aria-label="Shorter">−</button><label><input type="text" inputmode="decimal" value="0" aria-label="' + a.label + ' in cm"><span>cm</span></label><button type="button" aria-label="Longer">+</button>';
       var inp = s.querySelector('input'), bt = s.querySelectorAll('button');
@@ -550,15 +551,20 @@
   }
   /* transient advisor interface state: kept here so a re-render never loses what the advisor was doing */
   var advUi = { walk: false, follow: false, question: '', search: '', answer: null, status: null };
-  function advSig() { return JSON.stringify([st.notes, st.finalSize, st.finalPants, st.why, st.agreed, st.outcome, st.followDate, st.nextStep, st.cloth, st.alternative || '']); }
+  function advSig() { return JSON.stringify([st.notes, st.finalSize, st.finalPants, st.why, st.agreed, st.outcome, st.followDate, st.nextStep, st.cloth, st.alternative || '', st.email || '', st.phone || '']); }
   function advDirty() { return advUi.base != null && advSig() !== advUi.base; }
-  function paintDirty() { var d = $('advDirty'); if (d) d.hidden = !advDirty(); }
+  function paintDirty() {
+    var d = $('advDirty'); if (d) d.hidden = !advDirty();
+    if (advDirty() && advUi.status && !advUi.saveFail) advUi.status = null; /* an edit replaces the last message at once */
+    paintStatus();
+  }
+  function nowHM() { var d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
   /* switching customers never throws away unsaved work: save and switch, or discard, or keep editing */
   function guardSwitch(go) {
     if (!advDirty()) { go(); return; }
     advUi.pending = go; renderAdvisor();
   }
-  function advReset() { advUi.base = null; advUi.pending = null; advUi.walk = false; advUi.follow = false; advUi.question = ''; advUi.search = ''; advUi.answer = null; advUi.status = null; advUi.assist = false; advUi.fabric = false; advUi.sizes = false; }
+  function advReset() { advUi.base = null; advUi.pending = null; advUi.lookup = false; advUi.contact = false; advUi.sizeError = null; advUi.optMore = false; advUi.savedAt = null; advUi.saveFail = false; advUi.lookRows = false; advUi.focusSize = null; advUi.walk = false; advUi.follow = false; advUi.question = ''; advUi.search = ''; advUi.answer = null; advUi.status = null; advUi.assist = null; advUi.fabric = false; advUi.sizes = false; }
   function flash(message, kind) {
     var d = new Date(), at = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
     advUi.status = { text: message, kind: kind || 'ok', at: at };
@@ -566,9 +572,15 @@
   }
   function paintStatus() {
     var box = $('advStatus'); if (!box) return;
-    var s = advUi.status;
-    box.className = 'adv-status-line' + (s ? ' is-' + s.kind : '');
-    box.textContent = s ? s.text + (s.kind === 'ok' ? ' · ' + s.at : '') : '';
+    var s = advUi.status, dirty = advDirty();
+    if (s && (s.kind === 'error' || !dirty)) {
+      box.className = 'adv-status-line is-' + s.kind;
+      box.textContent = s.text + (s.kind === 'ok' ? ' · ' + s.at : '');
+      return;
+    }
+    var state = advUi.saveFail ? 'Save failed. Retry' : dirty ? 'Unsaved changes' : advUi.savedAt ? 'Saved at ' + advUi.savedAt + ' in this browser' : st.code ? 'Saved in this browser' : 'Not saved';
+    box.className = 'adv-status-line is-state' + (advUi.saveFail ? ' is-error' : dirty ? ' is-dirty' : '');
+    box.textContent = state;
   }
 
   function wireStylistAssistant() {
@@ -582,7 +594,10 @@
     var connected = !!String(window.CUSTOM_STYLIST_AI_ENDPOINT || '').trim();
     var input = $('stylistQuestion');
     input.value = advUi.question;
-    input.oninput = function () { advUi.question = this.value; };
+    function grow() { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight + 2, 140) + 'px'; }
+    input.oninput = function () { advUi.question = this.value; grow(); };
+    input.onkeydown = function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('stylistFree').requestSubmit(); } };
+    grow();
 
     /* one place that draws the assistant's answer: empty, loading, error or a normal answer, with an optional alternative fabric */
     function paint() {
@@ -605,7 +620,7 @@
         $('stylistAltDiff').className = diff < 0 ? 'is-less' : '';
       }
     }
-    function say(text, alt, options) { advUi.answer = { state: 'ok', text: text, alt: alt || null, options: options || null }; paint(); }
+    function say(text, alt, options) { advUi.optMore = false; advUi.answer = { state: 'ok', text: text, alt: alt || null, options: options || null }; paint(); }
     /* put one fabric into the side-by-side comparison and bring the advisor to it */
     function openCompare(c) {
       var select = $('altCloth'); select.value = c.id; $('altSearch').value = c.name; advUi.search = c.name; $('altResults').hidden = true;
@@ -619,19 +634,25 @@
       var picks = (ids || []).map(byId).filter(Boolean);
       list.hidden = !picks.length;
       var seen = sm.shown || [], now = eur(cloth().usd);
-      picks.forEach(function (c) {
-        var d = eur(c.usd) - now, li = el('li', 'adv-option');
+      picks.forEach(function (c, idx) {
+        var d = eur(c.usd) - now, li = el('li', 'adv-option'); li.hidden = idx > 0 && !advUi.optMore;
         var sw = el('i', 'adv-swatch is-small'); sw.setAttribute('style', swatch(c, 60));
         var body = el('div', 'adv-option-text');
         body.appendChild(el('b', '', c.name));
         body.appendChild(el('span', 'adv-option-weave', weaveLabel[c.weave] || c.weave));
-        var price = el('span', 'adv-option-price' + (d < 0 ? ' is-less' : ''), 'Full look ' + money(total() + d) + ' · ' + (d === 0 ? 'same price' : (d > 0 ? '+' : '−') + money(Math.abs(d))));
+        var price = el('span', 'adv-option-price' + (d < 0 ? ' is-less' : ''), 'Full look ' + money(total() + d) + ' · '); price.appendChild(el('span', 'nw', d === 0 ? 'same price' : (d > 0 ? '+' : '−') + money(Math.abs(d))));
         body.appendChild(price);
         if (seen.indexOf(c.id) > -1) body.appendChild(el('span', 'adv-option-tag', 'Shown online'));
         var go = el('button', 'btn ghost', 'Compare'); go.type = 'button'; go.setAttribute('aria-label', 'Compare ' + c.name);
         go.onclick = function () { openCompare(c); };
         li.appendChild(sw); li.appendChild(body); li.appendChild(go); list.appendChild(li);
       });
+      if (picks.length > 1) {
+        var more = el('li', 'adv-option-more'), mb = el('button', 'adv-quiet', advUi.optMore ? 'Show fewer' : 'Show ' + (picks.length - 1) + ' more'); mb.type = 'button'; mb.id = 'stylistMore';
+        mb.setAttribute('aria-expanded', String(!!advUi.optMore));
+        mb.onclick = function () { advUi.optMore = !advUi.optMore; paintOptions(ids); };
+        more.appendChild(mb); list.appendChild(more);
+      }
     }
     /* answers from the fitting and catalogue facts on this device, so it works without any cloud service */
     function localAnswer(q) {
@@ -926,7 +947,8 @@
     var lines = '';
     if (st.email) lines += '<div><span>Email' + (st.cpref === 'Email' ? ' · preferred' : '') + '</span>' + (okMail ? '<a href="mailto:' + esc(st.email) + '">' + esc(st.email) + '</a>' : esc(st.email)) + '</div>';
     if (st.phone) lines += '<div><span>Phone' + (st.cpref === 'Phone' ? ' · preferred' : '') + '</span>' + (okTel ? '<a href="tel:' + esc(st.phone.replace(/[^+0-9]/g, '')) + '">' + esc(st.phone) + '</a>' : esc(st.phone)) + '</div>';
-    return lines ? '<div class="contact-lines">' + lines + '</div>' : '<p class="adv-empty">No contact details yet. The client adds them in Review.</p>';
+    if (lines) return '<div class="contact-lines">' + lines + '</div>';
+    return '<form id="contactForm" class="adv-contact-form adv-noprint"><p class="adv-empty">No contact details yet. Add them now to follow up after the appointment.</p><label for="contactEmail">Email<input id="contactEmail" type="email" autocomplete="off"></label><label for="contactPhone">Phone<input id="contactPhone" type="tel" autocomplete="off"></label><p id="contactMsg" class="adv-field-error" role="alert" hidden></p><button class="btn ghost">Add contact details</button></form>';
   }
 
   /* ---- the advisor workspace: header, look and brief, fabric comparison, sizing, outcome, with the assistant beside it ---- */
@@ -954,17 +976,19 @@
     box.innerHTML =
       '<div class="adv-ws">' +
       /* appointment tools, kept apart from the active fitting */
-      '<div class="adv-bar adv-noprint">' +
+      '<div class="adv-bar adv-noprint' + (advUi.lookup ? ' is-lookup' : '') + '">' +
         '<div class="adv-bar-row">' +
           '<form id="openFitting" class="adv-open"><label for="lookupCode">Fitting code</label><input id="lookupCode" type="text" placeholder="CM-XXXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16"><button type="submit" class="btn">Open fitting</button></form>' +
-          '<div class="adv-bar-tools"><button type="button" class="btn ghost" id="advWalkToggle" aria-expanded="false" aria-controls="walkPanel">Start walk-in</button><button type="button" class="btn ghost" id="advFollowToggle" aria-expanded="false" aria-controls="followPanel"><span id="followCount">Follow-ups</span></button></div>' +
+          '<div class="adv-bar-tools"><button type="button" class="btn ghost" id="advWalkToggle" aria-expanded="false" aria-controls="walkPanel">Start walk-in</button><button type="button" class="btn ghost" id="advFollowToggle" aria-expanded="false" aria-controls="followPanel"><span id="followCount">Follow-ups</span></button><button type="button" class="btn ghost adv-mobile-only" id="advLookupToggle" aria-expanded="' + (advUi.lookup ? 'true' : 'false') + '" aria-controls="openFitting">Open another fitting</button><span class="adv-mobile-only adv-tool-quiet"><button type="button" class="adv-quiet" id="advPrintTop">Print sheet</button><details class="adv-more"><summary class="adv-quiet">More</summary><div class="adv-more-menu"><button type="button" class="adv-quiet" id="advCsvTop">Export log</button></div></details></span></div>' +
         '</div>' +
         '<p id="lookupStatus" class="adv-bar-note" role="status"></p>' +
-        '<section id="walkPanel" class="adv-panel" aria-label="Start a walk-in" hidden><form id="walkForm" class="adv-form-grid"><label for="walkName">Customer name<input id="walkName" type="text" maxlength="80" autocomplete="off"></label><label for="walkOcc">Occasion<select id="walkOcc"></select></label><label for="walkDate">Event date (optional)<input type="date" id="walkDate"></label><label for="walkBudget">Budget in euros (optional)<input type="number" min="1" id="walkBudget" inputmode="numeric"></label><div class="adv-form-actions"><button class="btn">Start consultation</button></div></form></section>' +
+        '<section id="walkPanel" class="adv-panel" aria-label="Start a walk-in" hidden><div class="adv-panel-head"><h4>New walk-in</h4><button type="button" class="adv-quiet" id="walkCancel">Cancel</button></div><form id="walkForm" class="adv-form-grid"><label for="walkName">Customer name<input id="walkName" type="text" maxlength="80" autocomplete="off"></label><label for="walkOcc">Occasion<select id="walkOcc"></select></label><label for="walkDate">Event date (optional)<input type="date" id="walkDate"></label><label for="walkBudget">Budget in euros (optional)<input type="number" min="1" id="walkBudget" inputmode="numeric"></label><div class="adv-form-actions"><button class="btn">Start consultation</button></div></form></section>' +
         '<section id="followPanel" class="adv-panel" aria-label="Follow-ups" hidden><div id="followQueue"></div></section>' +
       '</div>' +
       '<div id="advSwitch" class="adv-switch adv-noprint" role="alertdialog" aria-labelledby="advSwitchMsg"' + (advUi.pending ? '' : ' hidden') + '><p id="advSwitchMsg">' + escapeName(st.name || 'This fitting') + ' has unsaved changes.</p><div class="adv-switch-actions"><button type="button" class="btn" id="advSwitchSave">Save and switch</button><button type="button" class="btn ghost" id="advSwitchDiscard">Discard changes</button><button type="button" class="adv-quiet" id="advSwitchKeep">Keep editing</button></div></div>' +
+      '<dialog id="advLookDlg" class="adv-photo-dlg adv-noprint"><img id="advLookDlgImg" alt="Selected look, larger"><form method="dialog"><button class="btn">Close</button></form></dialog>' +
       '<dialog id="advPhotoDlg" class="adv-photo-dlg adv-noprint"><img id="advPhotoImg" alt="Customer photo"><form method="dialog"><button class="btn">Close</button></form></dialog>' +
+      '<div class="adv-print-only adv-print-head" id="advPrintHead"></div>' +
       /* the active fitting */
       '<header class="adv-head"><div class="adv-head-main"><h2 class="adv-name">' + escapeName(st.name || 'Guest') + '</h2>' +
         '<p class="adv-meta"><span>' + escapeName(when) + '</span>' + (st.eventDate ? '<span>Event ' + escapeName(st.eventDate) + '</span>' : '') + '<span class="adv-code">' + (st.code || 'Not saved yet') + '</span></p></div>' +
@@ -974,9 +998,9 @@
           '<section class="adv-card" id="advLook" aria-labelledby="advLookH">' +
             '<div class="adv-card-head"><h3 id="advLookH">Look and brief</h3><button type="button" class="btn ghost adv-noprint" id="editConsultLook">Edit look together</button></div>' +
             '<div class="adv-look">' +
-              '<div class="adv-summary"><div class="adv-suit"><img src="' + shot + '" alt="Selected look: ' + escapeName(c.name) + '"></div>' +
+              '<div class="adv-summary"><button type="button" class="adv-suit" id="advSuitBtn" aria-label="Enlarge the look photo"><img src="' + shot + '" alt="Selected look: ' + escapeName(c.name) + '"></button>' +
                 '<div class="adv-summary-body">' +
-                  advRows([['Fabric', escapeName(c.name)], ['Occasion', escapeName(activeLook().label)], dz ? ['Design', escapeName(dz.name)] : null, ['Style', escapeName(styleText())], ['Extras', ex.length ? escapeName(ex.join(', ')) : 'None'], st.consultBudget ? ['Budget', money(Number(st.consultBudget))] : null]) +
+                  advRows([['Selected fabric', escapeName(c.name)]]) + '<details class="adv-detail-rows" id="advLookRows"><summary>Design details</summary>' + advRows([['Occasion', escapeName(activeLook().label)], dz ? ['Base look', escapeName(dz.name)] : null, ['Style', escapeName(styleText())], ['Extras', ex.length ? escapeName(ex.join(', ')) : 'None'], st.consultBudget ? ['Budget', money(Number(st.consultBudget))] : null]) + '</details>' +
                   '<div class="adv-total"><div><span class="adv-total-label">Total</span><b class="adv-total-value">' + money(total()) + '</b></div><span class="adv-delivery">Ready in 2–3 weeks</span></div>' +
                 '</div></div>' +
               '<div class="adv-brief" id="advBrief"><h4>Customer’s request</h4><p id="advBriefText"></p><img id="advReference" hidden alt="Customer’s inspiration photo"></div>' +
@@ -995,14 +1019,14 @@
             '<h3 id="advFitH">Sizing and alterations</h3>' +
             '<div class="adv-two">' +
               '<div><h4>From the customer</h4>' + advRows(unprov ? [['Height and weight', '<span class="muted">Not provided</span>'], ['Usual size', '<span class="muted">Not provided</span>'], ['Fit preference', '<span class="muted">Not provided</span>'], ['Photo for the advisor', 'None']] : [['Height and weight', st.h + ' cm, ' + st.w + ' kg'], ['Usual size', st.notSure ? 'Not sure' + (st.chest ? ', chest ' + st.chest + ' cm' : '') : String(st.usual)], ['Fit preference', escapeName(st.pref)], ['Suggested trouser size', String(pantsSize())], ['Photo for the advisor', st.self ? '<button type="button" class="adv-link" id="advPhoto">View photo</button>' : 'None']]) + '</div>' +
-              '<div class="adv-start"><h4>' + (unprov ? 'Provisional starting size' : 'Suggested starting size') + '</h4><p class="adv-start-size"><b>' + sizeLabel(sg.size, sg.group) + ' ' + cap(sg.group) + '</b><span class="pill ' + (unprov ? 'low' : sg.level.toLowerCase()) + '">' + (unprov ? 'Provisional' : sg.level + ' confidence') + '</span></p><p class="adv-start-why">' + (unprov ? 'Based on default measurements, not on the customer. Confirm in person.' : sg.text) + '</p></div>' +
+              '<div class="adv-start"><h4>' + (unprov ? 'Provisional starting size' : 'Estimated starting size') + '</h4><p class="adv-start-size"><b>' + sizeLabel(sg.size, sg.group) + ' ' + cap(sg.group) + '</b><span class="pill neutral' + (unprov ? ' low' : '') + '">' + (unprov ? 'Provisional' : sg.level + ' confidence') + '</span></p><p class="adv-start-confirm">Confirm during try-on</p><p class="adv-start-why">' + (unprov ? 'Based on default measurements, not on the customer. Confirm in person.' : sg.text.replace(/\byour\b/g, 'their')) + '</p></div>' +
             '</div>' +
             (checks.length ? '<div class="adv-block"><h4>Check first</h4><ul class="adv-list">' + checks.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>' : '') +
-            '<div class="adv-block adv-final"><div class="adv-final-head"><h4>Final sizes</h4><button type="button" class="btn ghost adv-noprint" id="advSizeToggle" aria-expanded="' + (advUi.sizes ? 'true' : 'false') + '" aria-controls="advSizePick">' + (advUi.sizes ? 'Done' : (st.finalSize || st.finalPants ? 'Change' : 'Choose')) + '</button></div>' +
+            '<div class="adv-block adv-final" id="advFinal"><div class="adv-final-head"><h4>Final sizes</h4><button type="button" class="btn ghost adv-noprint" id="advSizeToggle" aria-expanded="' + (advUi.sizes ? 'true' : 'false') + '" aria-controls="advSizePick">' + (advUi.sizes ? 'Close size options' : (st.finalSize || st.finalPants ? 'Change sizes' : 'Choose sizes')) + '</button></div>' +
               '<p class="adv-final-line" id="advFinalLine">' + (st.finalSize ? 'Jacket <b>' + sizeLabel(st.finalSize, g) + '</b>' : 'Jacket <span class="muted">not chosen</span>') + ' · ' + (st.finalPants ? 'Trousers <b>' + st.finalPants + '</b>' : 'Trousers <span class="muted">not chosen</span>') + '</p>' +
               '<div id="advSizePick" class="adv-size-pick"' + (advUi.sizes ? '' : ' hidden') + '>' +
-                '<h4 id="finalJacketLbl">Final jacket size</h4><div class="chips" id="advSizes" role="group" aria-labelledby="finalJacketLbl"></div>' +
-                '<h4 id="finalTrouserLbl">Final trouser size</h4><div class="chips" id="advPants" role="group" aria-labelledby="finalTrouserLbl"></div>' +
+                '<h4 id="finalJacketLbl">Final jacket size</h4><div class="chips" id="advSizes" role="group" aria-labelledby="finalJacketLbl"></div><p class="adv-field-error" id="advSizeError" role="alert"' + (advUi.sizeError && advUi.sizeFor === 'jacket' ? '' : ' hidden') + '>' + escapeName(advUi.sizeError || '') + '</p>' +
+                '<h4 id="finalTrouserLbl">Final trouser size</h4><div class="chips" id="advPants" role="group" aria-labelledby="finalTrouserLbl"></div><p class="adv-field-error" id="advPantsError" role="alert"' + (advUi.sizeError && advUi.sizeFor === 'trouser' ? '' : ' hidden') + '>' + escapeName(advUi.sizeError || '') + '</p>' +
               '</div>' +
               '<p class="cmp" id="advCmp"></p><p class="cmp" id="advPCmp"></p></div>' +
             (differs ? '<div class="adv-block"><h4 id="whyLbl">Reason for change <span class="muted">optional</span></h4><div class="chips" id="advWhy" role="group" aria-labelledby="whyLbl"></div></div>' : '') +
@@ -1018,28 +1042,46 @@
         '<aside class="adv-side" aria-label="Stylist assistant and contact">' +
           '<details class="adv-card adv-assist adv-noprint" id="advAssist" open><summary>Stylist assistant</summary><div class="adv-assist-body">' +
             '<div class="adv-suggest" id="stylistChips" role="group" aria-label="Suggestions"><button type="button" class="chip" id="stylistPrep">Prepare fitting</button><button type="button" class="chip" id="stylistFabric">Lower-priced fabric</button><button type="button" class="chip" id="stylistExplain">Explain cloth</button></div>' +
-            '<form id="stylistFree" class="adv-ask"><label for="stylistQuestion">Ask a question</label><div class="ask-row"><input id="stylistQuestion" type="text" maxlength="700" placeholder="For example: is the size right?" autocomplete="off"><button class="btn" id="stylistSend">Ask</button></div></form>' +
+            '<form id="stylistFree" class="adv-ask"><label for="stylistQuestion">Ask a question</label><div class="ask-row"><textarea id="stylistQuestion" rows="2" maxlength="700" placeholder="For example: is the size right?" autocomplete="off"></textarea><button class="btn" id="stylistSend">Ask</button></div></form>' +
             '<div id="stylistReply" aria-live="polite" aria-busy="false"><p id="stylistAnswer" class="adv-answer is-empty"></p><ul id="stylistOptions" class="adv-options" aria-label="Suggested fabrics" hidden></ul>' +
               '<div id="stylistAlt" class="adv-alt" hidden><i id="stylistAltSwatch" class="adv-swatch is-small"></i><div class="adv-alt-text"><b id="stylistAltName"></b><span id="stylistAltTotal"></span><span id="stylistAltDiff"></span></div><button type="button" class="btn ghost" id="stylistCompare">Compare fabrics</button></div>' +
             '</div>' +
           '</div></details>' +
-          '<details class="adv-card adv-contact" id="advContact"><summary>Contact</summary><div class="adv-detail-body">' + contactHtml() + '</div></details>' +
+          '<details class="adv-card adv-contact" id="advContact"' + (advUi.contact ? ' open' : '') + '><summary>Contact</summary><div class="adv-detail-body">' + contactHtml() + '</div></details>' +
         '</aside>' +
       '</div>' +
-      '<div class="adv-actions adv-noprint"><div class="adv-actions-quiet"><button type="button" class="adv-quiet" id="advPrint">Print sheet</button><details class="adv-more"><summary class="adv-quiet">More</summary><div class="adv-more-menu"><button type="button" class="adv-quiet" id="advCsv">Export log</button></div></details></div><p id="advStatus" class="adv-status-line" role="status" aria-live="polite"></p><div class="adv-actions-main"><button type="button" class="btn ghost" id="advDraft">Save progress</button><button type="button" class="btn" id="advSave">Complete fitting</button></div></div>' +
+      '<div class="adv-actions adv-noprint"><div class="adv-actions-quiet adv-desktop-only"><button type="button" class="adv-quiet" id="advPrint">Print sheet</button><details class="adv-more"><summary class="adv-quiet">More</summary><div class="adv-more-menu"><button type="button" class="adv-quiet" id="advCsv">Export log</button></div></details></div><p id="advStatus" class="adv-status-line" role="status" aria-live="polite"></p><div class="adv-actions-main"><button type="button" class="btn ghost" id="advDraft">Save progress</button><button type="button" class="btn" id="advSave">Complete fitting</button></div></div>' +
       '</div>';
 
-    fill('advSizes', D.sizes.map(function (x) { var b = chip(sizeLabel(x, g), st.finalSize === x, function () { st.finalSize = st.finalSize === x ? null : x; renderAdvisor(); }); b.id = 'advSize-' + x; return b; }));
+    fill('advSizes', D.sizes.map(function (x) { var b = chip(sizeLabel(x, g), st.finalSize === x, function () { st.finalSize = st.finalSize === x ? null : x; advUi.sizeError = null; renderAdvisor(); }); b.id = 'advSize-' + x; return b; }));
     var cmp = $('advCmp');
     if (st.finalSize) { var same = st.finalSize === sg.size; cmp.className = 'cmp ' + (same ? 'ok' : 'diff'); cmp.textContent = same ? 'Matches the suggestion.' : 'Differs from the suggestion (' + sizeLabel(sg.size, g) + ' suggested, ' + sizeLabel(st.finalSize, g) + ' final).'; }
-    fill('advPants', D.pantsSizes.map(function (x) { var b = chip(String(x), st.finalPants === x, function () { st.finalPants = st.finalPants === x ? null : x; renderAdvisor(); }); b.id = 'advPantsSize-' + x; return b; }));
+    fill('advPants', D.pantsSizes.map(function (x) { var b = chip(String(x), st.finalPants === x, function () { st.finalPants = st.finalPants === x ? null : x; advUi.sizeError = null; renderAdvisor(); }); b.id = 'advPantsSize-' + x; return b; }));
     var pcmp = $('advPCmp');
     if (st.finalPants) { var psame = st.finalPants === pantsSize(); pcmp.className = 'cmp ' + (psame ? 'ok' : 'diff'); pcmp.textContent = psame ? 'Matches the suggestion.' : 'Differs from the suggestion (' + pantsSize() + ' suggested, ' + st.finalPants + ' final).'; }
     if ($('advWhy')) fill('advWhy', WHY.map(function (w, i) { var b = chip(w, st.why.indexOf(w) > -1, function () { var k = st.why.indexOf(w); if (k > -1) st.why.splice(k, 1); else st.why.push(w); renderAdvisor(); }); b.id = 'advWhy-' + i; return b; }));
     $('advCsv').onclick = exportFitLog;
     $('fabSwatch').setAttribute('style', swatch(c, 60));
     var fab = $('advFabric'); fab.open = !!advUi.fabric; fab.ontoggle = function () { advUi.fabric = fab.open; };
-    $('advSizeToggle').onclick = function () { advUi.sizes = !advUi.sizes; renderAdvisor(); };
+    $('advSizeToggle').onclick = function () { advUi.sizes = !advUi.sizes; advUi.sizeError = null; renderAdvisor(); };
+    $('advLookupToggle').onclick = function () { advUi.lookup = !advUi.lookup; renderAdvisor(); if (advUi.lookup) $('lookupCode').focus(); };
+    $('advPrintTop').onclick = function () { window.print(); };
+    $('advCsvTop').onclick = exportFitLog;
+    $('walkCancel').onclick = function () { $('advWalkToggle').click(); };
+    $('advSuitBtn').onclick = function () { $('advLookDlgImg').src = shot; $('advLookDlg').showModal(); };
+    var tabletUp = window.matchMedia('(min-width:768px)'), rows = $('advLookRows');
+    rows.open = tabletUp.matches || !!advUi.lookRows; rows.ontoggle = function () { if (!tabletUp.matches) advUi.lookRows = rows.open; };
+    var ct = $('advContact'); ct.ontoggle = function () { advUi.contact = ct.open; };
+    if ($('contactForm')) $('contactForm').onsubmit = function (event) {
+      event.preventDefault();
+      var mail = $('contactEmail').value.trim(), tel = $('contactPhone').value.trim(), msg = $('contactMsg');
+      if (!mail && !tel) { msg.textContent = 'Enter an email or a phone number.'; msg.hidden = false; return; }
+      if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { msg.textContent = 'That email address looks incomplete.'; msg.hidden = false; return; }
+      st.email = mail; st.phone = tel; advUi.contact = true; renderAdvisor();
+    };
+    function fillPrintHead() { var h = $('advPrintHead'); if (h) h.textContent = 'Fitting sheet · ' + (st.code || 'not saved') + ' · printed ' + localDay() + ((st.outcome || deciding) === orderReview ? '' : ' · DRAFT, not completed'); }
+    fillPrintHead(); window.onbeforeprint = fillPrintHead;
+    function blockSizes(which, inline, short) { advUi.sizes = true; advUi.sizeError = inline; advUi.sizeFor = which; advUi.focusSize = which; renderAdvisor(); flash(short, 'error'); }
     $('advBriefText').textContent = st.brief || (st.reference ? '' : 'No styling request from the customer yet. Ask where they will wear the suit.');
     $('advBriefText').className = st.brief || st.reference ? '' : 'adv-empty';
     if (st.reference) { $('advReference').src = st.reference; $('advReference').hidden = false; }
@@ -1057,30 +1099,29 @@
     renderConsultation();
     /* the assistant stays open beside the fitting on wide screens, and folds away on narrow ones */
     var assist = $('advAssist'), wide = window.matchMedia('(min-width:1024px)');
-    if (wide.matches) { assist.open = true; assist.querySelector('summary').onclick = function (e) { e.preventDefault(); }; }
-    else { assist.open = !!advUi.assist; assist.ontoggle = function () { advUi.assist = assist.open; }; }
+    assist.open = advUi.assist == null ? wide.matches : advUi.assist; assist.ontoggle = function () { advUi.assist = assist.open; };
     $('advDraft').onclick = function () {
       if (st.outcome === orderReview && (!st.finalSize || !st.finalPants)) {
         var missing = !st.finalSize ? 'jacket' : 'trouser', msg = 'Ready for order review needs the final ' + missing + ' size. Choose it, or set the status to Customer deciding.';
-        $('advLog').textContent = msg; advUi.sizes = true; renderAdvisor(); flash(msg, 'error'); return;
+        $('advLog').textContent = msg; blockSizes(missing, msg, msg); return;
       }
       try {
-        var code = writeFitting('draft'); advUi.base = null; renderAdvisor();
+        var code = writeFitting('draft'); advUi.base = null; advUi.savedAt = nowHM(); advUi.saveFail = false; renderAdvisor();
         $('advLog').textContent = 'Progress saved · ' + code;
         flash('Progress saved · ' + code);
-      } catch (e) { $('advLog').textContent = 'Could not save in this browser.'; flash('Could not save in this browser.', 'error'); }
+      } catch (e) { advUi.saveFail = true; $('advLog').textContent = 'Could not save in this browser.'; flash('Could not save in this browser.', 'error'); }
     };
     $('advSave').onclick = function () {
-      if (!st.finalSize) { $('advLog').textContent = 'Choose the final size first.'; advUi.sizes = true; renderAdvisor(); flash('Choose the final jacket size first.', 'error'); return; }
-      if (!st.finalPants) { $('advLog').textContent = 'Choose the final trouser size too.'; advUi.sizes = true; renderAdvisor(); flash('Choose the final trouser size too.', 'error'); $('advPants').querySelector('.chip').focus(); return; }
+      if (!st.finalSize) { $('advLog').textContent = 'Choose the final size first.'; blockSizes('jacket', 'Choose the final jacket size to complete the fitting.', 'Choose the final jacket size first.'); return; }
+      if (!st.finalPants) { $('advLog').textContent = 'Choose the final trouser size too.'; blockSizes('trouser', 'Choose the final trouser size to complete the fitting.', 'Choose the final trouser size too.'); return; }
       try {
         st.agreed = Object.assign({}, st.adj, st.agreed);
         st.outcome = orderReview; st.followDate = ''; st.nextStep = '';
         var code = writeFitting(true);
-        advUi.base = null; renderAdvisor();
+        advUi.base = null; advUi.savedAt = nowHM(); advUi.saveFail = false; renderAdvisor();
         $('advLog').textContent = 'Saved ' + code + ' in this browser.';
         flash('Fitting completed and saved · ' + code);
-      } catch (e) { $('advLog').textContent = 'Could not save on this device. You can print the sheet.'; flash('Could not save on this device. You can print the sheet.', 'error'); }
+      } catch (e) { advUi.saveFail = true; $('advLog').textContent = 'Could not save on this device. You can print the sheet.'; flash('Could not save on this device. You can print the sheet.', 'error'); }
     };
     if (advUi.base == null) advUi.base = advSig();
     box.oninput = box.onchange = paintDirty;
@@ -1101,6 +1142,12 @@
     }
     window.scrollTo({ top: scrollY, behavior: 'instant' });
     if (advUi.pending) { $('advSwitchSave').focus(); $('advSwitch').scrollIntoView({ block: 'nearest' }); }
+    /* a blocked completion takes the advisor to the missing size, with the message right there */
+    if (advUi.focusSize) {
+      var which = advUi.focusSize; advUi.focusSize = null;
+      $('advFinal').scrollIntoView({ block: 'start', behavior: 'instant' });
+      var group = which === 'trouser' ? $('advPants') : $('advSizes'); group.querySelector('.chip').focus({ preventScroll: true });
+    }
   }
 
   /* ---------- stage: original catalog photography, never recoloured ---------- */

@@ -282,6 +282,34 @@
     var chipCount = doc.querySelectorAll('#stylistChips .chip').length;
     record('assistant shortcuts', 'still three', String(chipCount), chipCount === 3);
 
+    group('Advisor review fixes: inline errors, save state, wording, compact assistant');
+    var onJ = doc.querySelector('#advSizes .chip[aria-pressed=true]'); if (onJ) { onJ.click(); await w(150); }
+    doc.getElementById('advSave').click(); await w(300);
+    var inl = doc.getElementById('advSizeError');
+    record('blocked completion', 'the error appears under the final jacket sizes and focus moves there', inl.textContent.slice(0, 60), !inl.hidden && /jacket/i.test(inl.textContent) && !!doc.getElementById('advSizes').contains(doc.activeElement));
+    doc.querySelector('#advSizes .chip').click(); await w(150);
+    record('choosing the missing size', 'clears the inline error', doc.getElementById('advSizeError').hidden ? 'cleared' : 'still shown', doc.getElementById('advSizeError').hidden);
+    var nt = doc.getElementById('advNotes'); nt.value = 'status check'; nt.dispatchEvent(new win.Event('input', { bubbles: true })); await w(100);
+    record('save state after an edit', 'says Unsaved changes', doc.getElementById('advStatus').textContent, /Unsaved changes/.test(doc.getElementById('advStatus').textContent));
+    doc.getElementById('advDraft').click(); await w(250);
+    record('save state after saving', 'confirms the save', doc.getElementById('advStatus').textContent, /Progress saved|Saved at/.test(doc.getElementById('advStatus').textContent));
+    nt = doc.getElementById('advNotes'); nt.value = 'status check 2'; nt.dispatchEvent(new win.Event('input', { bubbles: true })); await w(100);
+    record('save state after a later edit', 'replaces the saved message at once', doc.getElementById('advStatus').textContent, /Unsaved changes/.test(doc.getElementById('advStatus').textContent));
+    var lookTxt = doc.getElementById('advLook').textContent, fitTxt = doc.getElementById('advFit').textContent;
+    record('wording', 'Selected fabric, Base look and Estimated starting size', 'look/fit labels', /Selected fabric/.test(lookTxt) && /Base look/.test(lookTxt) && !/Design\b/.test(doc.getElementById('advLookRows').textContent.replace(/Design details/, '')) && /Estimated starting size|Provisional starting size/.test(fitTxt) && /Confirm during try-on/.test(fitTxt));
+    record('size options control', 'is named Choose sizes, Change sizes or Close size options', doc.getElementById('advSizeToggle').textContent, /^(Choose sizes|Change sizes|Close size options)$/.test(doc.getElementById('advSizeToggle').textContent));
+    record('assistant question field', 'is an auto-growing text area', doc.getElementById('stylistQuestion').tagName, doc.getElementById('stylistQuestion').tagName === 'TEXTAREA');
+    await ask('What else could we show them?');
+    var vis = Array.prototype.filter.call(doc.querySelectorAll('#stylistOptions .adv-option'), function (li) { return !li.hidden; }).length;
+    record('option cards', 'show the strongest option first with a Show more control', vis + ' visible', vis === 1 && !!doc.getElementById('stylistMore'));
+    doc.getElementById('stylistMore').click(); await w(100);
+    var vis2 = Array.prototype.filter.call(doc.querySelectorAll('#stylistOptions .adv-option'), function (li) { return !li.hidden; }).length;
+    record('Show more', 'reveals the other options', vis2 + ' visible', vis2 === doc.querySelectorAll('#stylistOptions .adv-option').length && vis2 > 1);
+    doc.getElementById('advWalkToggle').click(); await w(100);
+    record('walk-in panel', 'has a New walk-in heading and a Cancel button', doc.getElementById('walkPanel').querySelector('h4').textContent, !doc.getElementById('walkPanel').hidden && /New walk-in/.test(doc.getElementById('walkPanel').textContent) && !!doc.getElementById('walkCancel'));
+    doc.getElementById('walkCancel').click(); await w(100);
+    record('Cancel walk-in', 'closes the panel', doc.getElementById('walkPanel').hidden ? 'closed' : 'open', doc.getElementById('walkPanel').hidden);
+
     group('More Style me requests: new designs and cloths');
     await load();
     var briefs = [
