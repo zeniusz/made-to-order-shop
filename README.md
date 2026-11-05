@@ -26,7 +26,7 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 
 | Advisor mode | On a phone |
 |---|---|
-| ![Advisor mode](docs/preview/09-advisor-v3.jpg) | <img src="docs/preview/10-phone-v2.jpg" alt="On a phone" width="240"> |
+| ![Advisor mode](docs/preview/09-advisor-v4.jpg) | <img src="docs/preview/10-phone-v2.jpg" alt="On a phone" width="240"> |
 
 ## What it does
 
@@ -45,21 +45,23 @@ The same page has two views, switched at the top right. The customer builds the 
 
 ### For the style advisor
 
-- **Open a fitting by its code**, or start a walk-in with the customer's name, occasion, event date and budget.
-- **The fitting sheet:** the look, contact details, a sample schedule, the customer's brief, the suggested jacket and pants size with the reason, and a short "check first" list.
-- **Record what happened:** the final jacket and pants size, one tap for why it changed (shoulders, chest, waist, length, posture, preference), the adjustments agreed in 0.5 cm steps, notes, and an outcome with a next step and a follow-up date.
-- **Follow-ups:** customers who need a call back are listed by date.
-- **Stylist assistant:** "Prepare this fitting", "Find a lower-priced fabric", "Explain this cloth", and a question box with quick questions such as "What should I ask first?" or "Is the size right?". It answers from the fitting and catalogue facts on the device, so it works without any cloud service. An optional hosted AI can be connected (see below).
-- **Compare fabrics by keyword:** type a colour, weave or name (or "cheaper") and pick from the matches, with the price difference shown.
-- **Measure what works:** each saved fitting records suggested against final size, so the sheet shows how often the suggestion held, by confidence level and for pants, and the most common reason for a change. The log can be exported as CSV, and each entry carries a version tag so a rule change can be compared before and after.
+- **A calm, compact workspace** (tablet first): customer name, appointment and fitting code at the top; open a fitting or start a walk-in from a small toolbar, with follow-ups in an expandable list. On wide screens the stylist assistant sits beside the fitting; on a tablet it folds under the look summary.
+- **Look and brief:** the full suit photo, fabric, design, total and delivery estimate, the customer's own request and inspiration photo, and "Edit look together".
+- **Compare fabrics side by side:** search by colour, weave or name (arrow keys and Enter work), see both full-outfit totals and the difference, then "Use this fabric". Sizes, alterations and notes are kept.
+- **Sizing and alterations:** what the customer gave, the suggested starting size with its reason, the advisor's final jacket and trouser size, alterations as requested against agreed in cm, and workroom notes right under them.
+- **Appointment outcome:** status, next step and follow-up date. "Save progress" works without a final size; "Complete fitting" asks for one. The saved message just shows the fitting code.
+- **Stylist assistant:** four suggestions (Prepare fitting, Lower budget, Explain cloth, What to ask) and a question box. When it suggests another fabric it shows the name, new total, the difference and a Compare fabrics button. It answers on the device without any cloud service; an optional hosted AI can be connected (see below).
+- **Measure what works:** each saved fitting records suggested against final size. "Export log" gives a CSV with a version tag for the sizing rules.
 
-| Open a fitting or start a walk-in | Follow-ups |
+| Advisor workspace on a tablet | Start a walk-in |
 |---|---|
-| ![Walk-in](docs/preview/15-advisor-walkin.jpg) | ![Follow-ups](docs/preview/17-advisor-followups.jpg) |
+| <img src="docs/preview/19-advisor-tablet.jpg" alt="Tablet" width="300"> | ![Walk-in](docs/preview/15-advisor-walkin-v2.jpg) |
 
-| Stylist assistant | Compare fabrics by keyword |
+| Stylist assistant and a cheaper fabric | Compare fabrics |
 |---|---|
-| ![Stylist assistant](docs/preview/14-advisor-assistant.jpg) | ![Fabric search](docs/preview/16-advisor-fabric-search.jpg) |
+| ![Stylist assistant](docs/preview/14-advisor-assistant-v2.jpg) | ![Fabric comparison](docs/preview/16-advisor-fabric-compare.jpg) |
+
+![Sizing and alterations](docs/preview/18-advisor-sizing.jpg)
 
 ## Run it
 

@@ -190,7 +190,7 @@
     $('tab-4').click(); await w(300);
     var advBtn = Array.prototype.filter.call(doc.querySelectorAll('button'), function (b) { return /^Advisor$/.test(b.textContent.trim()); })[0]; advBtn.click(); await w(500);
     var advText = doc.getElementById('advisorView').innerText.replace(/\s+/g, ' ');
-    record('advisor fitting sheet', 'shows the pants size', /Pants size 54/.test(advText) ? 'Pants size 54' : 'missing', /Pants size 54/.test(advText));
+    record('advisor fitting sheet', 'shows the suggested trouser size', /trouser size 54/i.test(advText) ? 'trouser size 54' : 'missing', /trouser size 54/i.test(advText));
 
     group('Advisor: observe, decide, measure');
     Object.keys(win.localStorage).forEach(function (k) { if (k.indexOf('cm-fitting-v1-') === 0 || k === 'cm-fitlog-v1') win.localStorage.removeItem(k); });
@@ -200,7 +200,7 @@
     doc.getElementById('advSave').click(); await w(300);
     var recKey = Object.keys(win.localStorage).filter(function (k) { return k.indexOf('cm-fitting-v1-') === 0; })[0], fl = (recKey && win.localStorage.getItem(recKey)) || '', logTxt = doc.getElementById('advLog').textContent;
     record('save a fitting with pants size and a reason', 'the log keeps confidence, pants sizes, reason and version', fl.slice(0, 90), /"level":"/.test(fl) && /"pFinal":46/.test(fl) && /"why":\["Shoulders"\]/.test(fl) && /"rev":"sizing-v2-pants"/.test(fl));
-    record('stats after saving', 'jacket match, pants match, by confidence and the top reason', logTxt.replace(/\n/g, ' | ').slice(0, 160), /Jacket size matched/.test(logTxt) && /Pants size matched/.test(logTxt) && /By confidence/.test(logTxt) && /shoulders/.test(logTxt));
+    record('saved message', 'shows only the fitting code, no statistics', logTxt.replace(/\n/g, ' | ').slice(0, 160), /Saved CM-/.test(logTxt) && !/Jacket size matched/.test(logTxt) );
 
     group('Advisor assistant and fabric search (works on the device, no cloud service)');
     async function ask(question) {
@@ -236,6 +236,26 @@
     record('fabric search: cheaper', 'only fabrics cheaper than the current one', cheap.length + ' results', cheap.length > 0 && doc.querySelectorAll('#altResults .alt-item small').length === cheap.length && Array.prototype.every.call(doc.querySelectorAll('#altResults .alt-item small'), function (s) { return /less/.test(s.textContent); }));
     var none = await findCloth('zzzz');
     record('fabric search: zzzz', 'says nothing matches', doc.getElementById('altResults').textContent.slice(0, 40), none.length === 0 && /No fabric matches/.test(doc.getElementById('altResults').textContent));
+
+    group('Advisor workspace: compare fabrics, apply, save, complete');
+    var cur = doc.getElementById('advFabric') ? 'present' : 'missing';
+    record('advisor workspace', 'has look, fabric, sizing and outcome sections', cur, ['advLook', 'advFabric', 'advFit', 'advOutcome'].every(function (id) { return !!doc.getElementById(id); }));
+    doc.getElementById('advNotes').value = 'Left shoulder drops'; doc.getElementById('advNotes').dispatchEvent(new win.Event('input'));
+    var picks = await findCloth('velvet');
+    var firstItem = doc.querySelector('#altResults .alt-item'); if (firstItem) firstItem.click(); await w(250);
+    var pairShown = !doc.getElementById('clothPair').hidden;
+    record('compare fabric', 'selected and alternative shown side by side with the price difference', doc.getElementById('priceChange').textContent, pairShown && /€/.test(doc.getElementById('firstPrice').textContent) && /€/.test(doc.getElementById('secondPrice').textContent) && /(more|less|same)/.test(doc.getElementById('priceChange').textContent));
+    var altName = doc.getElementById('secondName').textContent;
+    doc.getElementById('applyAlt').click(); await w(300);
+    record('use this fabric', 'the fabric changes and the notes are kept', altName, doc.getElementById('advNotes').value === 'Left shoulder drops' && doc.getElementById('advLook').textContent.indexOf(altName) > -1);
+    doc.getElementById('advDraft').click(); await w(200);
+    record('save progress without a final size', 'saves and says so', doc.getElementById('advStatus').textContent, /Progress saved/.test(doc.getElementById('advStatus').textContent));
+    var onChip = doc.querySelector('#advSizes .chip[aria-pressed=true]'); if (onChip) { onChip.click(); await w(150); }
+    doc.getElementById('advSave').click(); await w(200);
+    record('complete fitting without a final size', 'asks for the final jacket size', doc.getElementById('advStatus').textContent, /final jacket size/i.test(doc.getElementById('advStatus').textContent));
+    doc.querySelector('#advSizes .chip').click(); await w(150);
+    doc.getElementById('advSave').click(); await w(250);
+    record('complete fitting', 'status becomes Ready for order review', doc.querySelector('.adv-state').textContent, /Ready for order review/.test(doc.querySelector('.adv-state').textContent) && /completed/i.test(doc.getElementById('advStatus').textContent));
 
     group('More Style me requests: new designs and cloths');
     await load();
