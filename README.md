@@ -6,6 +6,17 @@ A learning project built with AI. Plain HTML, CSS and JavaScript. No framework, 
 
 ![Custom Made Studio: choosing an occasion](docs/preview/01-occasions-v2.jpg)
 
+## The problem I was trying to solve
+
+Buying a made-to-measure suit is a good idea and a hard first step. Most people arrive with a feeling ("something navy for a job interview, not too expensive") and face hundreds of fabrics, unfamiliar words (half canvas, S110s, glen plaid), a size they are not sure of, and a price that grows with every choice. In store, the advisor then has to rebuild that conversation from scratch, so the first minutes go on re-asking what the customer already thought about.
+
+This prototype explores one question: **can the customer arrive at a look and a rough size on their own, and can the advisor pick up exactly where they stopped?**
+
+- **For the customer:** start from the occasion, a sentence or a photo instead of a catalogue. See the price change as they choose, and get a starting size with an honest "confirm at the fitting" label.
+- **For the advisor:** open the customer's look by code (or start a walk-in), see their request, compare fabrics inside the budget, confirm sizes and alterations, and save the fitting with a clear status. Nothing is hidden or overstated: unknown measurements say "Not provided", unreviewed alterations say "Not reviewed", and saved data says it is only on this device.
+
+What it deliberately does not do: place orders, take payment, check stock, or claim that the size suggestion is validated. Those would be the next steps, and the ideas here are hypotheses to test with real customers and advisors, not results.
+
 ## Screenshots
 
 | Jacket only | Fabric sample |
