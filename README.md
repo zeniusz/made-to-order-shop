@@ -12,8 +12,10 @@ Buying a made-to-measure suit is a good idea and a hard first step. Most people 
 
 This prototype explores one question: **can the customer arrive at a look and a rough size on their own, and can the advisor pick up exactly where they stopped?**
 
-- **For the customer:** start from the occasion, a sentence or a photo instead of a catalogue. See the price change as they choose, and get a starting size with an honest "confirm at the fitting" label.
-- **For the advisor:** open the customer's look by code (or start a walk-in), see their request, compare fabrics inside the budget, confirm sizes and alterations, and save the fitting with a clear status. Nothing is hidden or overstated: unknown measurements say "Not provided", unreviewed alterations say "Not reviewed", and saved data says it is only on this device.
+- **For the customer:** start from the occasion, a sentence or a photo instead of a catalogue. **Style me** reads what they type ("light linen suit for a summer wedding, under 900") or the colours in an inspiration photo and offers three looks, matched to the 13 designs and 46 fabrics. They see the price change as they choose, and get a starting size with an honest "confirm at the fitting" label.
+- **For the advisor:** open the customer's look by code (or start a walk-in), see their request, and use the **stylist assistant** to prepare the fitting, suggest other fabrics inside the budget with the price of each, and explain a cloth in plain words. Then confirm sizes and alterations and save the fitting with a clear status. Nothing is hidden or overstated: unknown measurements say "Not provided", unreviewed alterations say "Not reviewed", and saved data says it is only on this device.
+
+**Where the AI fits.** The project was built with AI, and Style me and the stylist assistant are the "smart" parts of the product. They run on rules and catalogue facts in the browser, so they work without any cloud service and never invent a fabric or a price. An optional hosted AI (Claude) can be connected through a protected proxy for free-text and photo questions; it is switched off in this repository, and no API key is ever stored in the browser files.
 
 What it deliberately does not do: place orders, take payment, check stock, or claim that the size suggestion is validated. Those would be the next steps, and the ideas here are hypotheses to test with real customers and advisors, not results.
 
